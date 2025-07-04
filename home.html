@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complaint Cloud - Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #6e8efb;
+            --secondary: #a777e3;
+            --accent: #4caf50;
+            --warning: #ff9800;
+            --danger: #f44336;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --cloud-color: rgba(255, 255, 255, 0.95);
+        }
+
+        body {
+            background: linear-gradient(135deg, #d0e0ff, #e3d5ff, #d8f0ff);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Enhanced cloud animation */
+        .cloud {
+            position: absolute;
+            background: var(--cloud-color);
+            border-radius: 50%;
+            animation: float 25s infinite ease-in-out;
+            z-index: -1;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+
+        .cloud:nth-child(1) {
+            width: 160px;
+            height: 160px;
+            top: 10%;
+            left: 5%;
+            animation-delay: 0s;
+        }
+
+        .cloud:nth-child(2) {
+            width: 220px;
+            height: 220px;
+            top: 25%;
+            right: 10%;
+            animation-delay: 3s;
+        }
+
+        .cloud:nth-child(3) {
+            width: 130px;
+            height: 130px;
+            bottom: 20%;
+            left: 15%;
+            animation-delay: 6s;
+        }
+
+        .cloud:nth-child(4) {
+            width: 190px;
+            height: 190px;
+            bottom: 15%;
+            right: 20%;
+            animation-delay: 9s;
+        }
+
+        .cloud:nth-child(5) {
+            width: 110px;
+            height: 110px;
+            top: 40%;
+            left: 25%;
+            animation-delay: 12s;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0) translateX(0);
+            }
+            25% {
+                transform: translateY(-30px) translateX(25px);
+            }
+            50% {
+                transform: translateY(10px) translateX(50px);
+            }
+            75% {
+                transform: translateY(20px) translateX(25px);
+            }
+            100% {
+                transform: translateY(0) translateX(0);
+            }
+        }
+
+        /* Dashboard layout */
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header styles */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .brand h1 {
+            font-size: 32px;
+            color: var(--primary);
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 0.5px;
+        }
+
+        .logo-container {
+            width: 70px;
+            height: 70px;
+            border-radius: 20px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+
+        .logo-container:hover {
+            transform: rotate(5deg) scale(1.08);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.18);
+        }
+
+        .custom-logo {
+            width: 80%;
+            height: 80%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .logo-cloud {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.6);
+        }
+
+        .logo-cloud::before,
+        .logo-cloud::after {
+            content: '';
+            position: absolute;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+        }
+
+        .logo-cloud::before {
+            width: 60%;
+            height: 60%;
+            top: -25%;
+            left: -15%;
+        }
+
+        .logo-cloud::after {
+            width: 50%;
+            height: 50%;
+            top: -20%;
+            right: -15%;
+        }
+
+        .logo-text {
+            position: absolute;
+            font-size: 28px;
+            font-weight: 800;
+            color: white;
+            z-index: 2;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            letter-spacing: 1px;
+        }
+
+        .user-area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-info .name {
+            font-weight: 700;
+            font-size: 18px;
+            letter-spacing: 0.5px;
+        }
+
+        .user-info .role {
+            color: var(--gray);
+            font-size: 14px;
+            margin-top: 3px;
+        }
+
+        .avatar {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 22px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease;
+        }
+
+        .avatar:hover {
+            transform: scale(1.05);
+        }
+
+        .logout-btn {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            box-shadow: 0 6px 18px rgba(244, 67, 54, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logout-btn:hover {
+            background: #d32f2f;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 22px rgba(244, 67, 54, 0.4);
+        }
+
+        /* Dashboard grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        /* Card styles */
+        .card {
+            background: var(--card-bg);
+            border-radius: 18px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            padding: 25px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 45px rgba(0,0,0,0.15);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 19px;
+            font-weight: 700;
+            color: var(--dark);
+            letter-spacing: 0.3px;
+        }
+
+        .card-icon {
+            width: 55px;
+            height: 55px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+        }
+
+        .stats-card .card-icon {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+        }
+
+        .card-value {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 5px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .card-label {
+            color: var(--gray);
+            font-size: 15px;
+            margin-bottom: 10px;
+        }
+
+        .stats-card .trend {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .trend.up {
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        .trend.down {
+            color: var(--danger);
+            font-weight: 500;
+        }
+
+        /* Recent complaints */
+        .recent-complaints {
+            grid-column: span 2;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        th, td {
+            padding: 16px 20px;
+            text-align: left;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        th {
+            color: var(--gray);
+            font-weight: 600;
+            font-size: 14px;
+            background: rgba(248, 249, 250, 0.7);
+        }
+
+        tr {
+            transition: background 0.2s ease;
+        }
+
+        tr:hover {
+            background: rgba(110, 142, 251, 0.05);
+        }
+
+        .status {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .status.open {
+            background: rgba(76, 175, 80, 0.12);
+            color: var(--accent);
+        }
+
+        .status.in-progress {
+            background: rgba(255, 152, 0, 0.12);
+            color: var(--warning);
+        }
+
+        .status.closed {
+            background: rgba(244, 67, 54, 0.12);
+            color: var(--danger);
+        }
+
+        .priority {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .priority.high {
+            background: var(--danger);
+            box-shadow: 0 0 8px rgba(244, 67, 54, 0.4);
+        }
+
+        .priority.medium {
+            background: var(--warning);
+            box-shadow: 0 0 8px rgba(255, 152, 0, 0.4);
+        }
+
+        .priority.low {
+            background: var(--accent);
+            box-shadow: 0 0 8px rgba(76, 175, 80, 0.4);
+        }
+
+        /* Quick actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+        }
+
+        .action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 22px 15px;
+            background: var(--card-bg);
+            border-radius: 14px;
+            text-align: center;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            border: 1px solid rgba(0,0,0,0.05);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+        }
+
+        .action-btn:hover {
+            background: white;
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.12);
+        }
+
+        .action-btn i {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            margin-bottom: 12px;
+            color: white;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+        }
+
+        .action-btn:nth-child(1) i {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+        }
+
+        .action-btn:nth-child(2) i {
+            background: linear-gradient(to right, #4caf50, #8bc34a);
+        }
+
+        .action-btn:nth-child(3) i {
+            background: linear-gradient(to right, #ff9800, #ffc107);
+        }
+
+        .action-btn:nth-child(4) i {
+            background: linear-gradient(to right, #9c27b0, #e91e63);
+        }
+
+        .action-btn span {
+            font-weight: 600;
+            font-size: 15px;
+            color: var(--dark);
+        }
+
+        /* Stats chart */
+        .stats-chart {
+            height: 250px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            margin-top: 20px;
+            padding: 0 15px;
+        }
+
+        .chart-bar {
+            width: 45px;
+            background: linear-gradient(to top, var(--primary), var(--secondary));
+            border-radius: 8px 8px 0 0;
+            position: relative;
+            transition: all 0.5s ease;
+            box-shadow: 0 6px 18px rgba(110, 142, 251, 0.35);
+        }
+
+        .chart-bar:hover {
+            transform: scale(1.08);
+            opacity: 0.9;
+        }
+
+        .chart-label {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 13px;
+            color: var(--gray);
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .recent-complaints {
+                grid-column: 1;
+            }
+            
+            .quick-actions {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            header {
+                flex-direction: column;
+                text-align: center;
+                gap: 20px;
+            }
+            
+            .brand {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .user-area {
+                margin-top: 10px;
+                flex-direction: column;
+            }
+            
+            .user-info {
+                text-align: center;
+                margin: 10px 0;
+            }
+            
+            .logout-btn {
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background clouds - increased number for better visibility -->
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header>
+            <div class="brand">
+                <div class="logo-container">
+                    <!-- Custom CC Logo -->
+                    <div class="custom-logo">
+                        <div class="logo-cloud">
+                            <div class="logo-text">CC</div>
+                        </div>
+                    </div>
+                </div>
+                <h1>Complaint Cloud</h1>
+            </div>
+            
+            <div class="user-area">
+                <div class="user-info">
+                    <div class="name">Alex Johnson</div>
+                    <div class="role">Support Manager</div>
+                </div>
+                <div class="avatar">AJ</div>
+                <button class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </button>
+            </div>
+        </header>
+        
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid">
+            <!-- Stats Cards -->
+            <div class="card stats-card">
+                <div class="card-header">
+                    <div class="card-title">Total Complaints</div>
+                    <div class="card-icon">
+                        <i class="fas fa-ticket-alt"></i>
+                    </div>
+                </div>
+                <div class="card-value">142</div>
+                <div class="card-label">This Month</div>
+                <div class="trend up">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>12% increase from last month</span>
+                </div>
+            </div>
+            
+            <div class="card stats-card">
+                <div class="card-header">
+                    <div class="card-title">Resolved</div>
+                    <div class="card-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                </div>
+                <div class="card-value">87</div>
+                <div class="card-label">This Month</div>
+                <div class="trend up">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>8% increase from last month</span>
+                </div>
+            </div>
+            
+            <div class="card stats-card">
+                <div class="card-header">
+                    <div class="card-title">Pending</div>
+                    <div class="card-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                </div>
+                <div class="card-value">32</div>
+                <div class="card-label">Require Action</div>
+                <div class="trend down">
+                    <i class="fas fa-arrow-down"></i>
+                    <span>5% decrease from last month</span>
+                </div>
+            </div>
+            
+            <div class="card stats-card">
+                <div class="card-header">
+                    <div class="card-title">Avg. Resolution</div>
+                    <div class="card-icon">
+                        <i class="fas fa-stopwatch"></i>
+                    </div>
+                </div>
+                <div class="card-value">1.8</div>
+                <div class="card-label">Days per complaint</div>
+                <div class="trend up">
+                    <i class="fas fa-arrow-down"></i>
+                    <span>0.3 days improvement</span>
+                </div>
+            </div>
+            
+            <!-- Recent Complaints -->
+            <div class="card recent-complaints">
+                <div class="card-header">
+                    <div class="card-title">Recent Complaints</div>
+                    <div class="card-icon">
+                        <i class="fas fa-list"></i>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Customer</th>
+                                <th>Subject</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>#COMP-284</td>
+                                <td>Sarah Williams</td>
+                                <td>Product not working after update</td>
+                                <td><span class="priority high"></span> High</td>
+                                <td><span class="status in-progress">In Progress</span></td>
+                                <td>Today, 10:30 AM</td>
+                            </tr>
+                            <tr>
+                                <td>#COMP-283</td>
+                                <td>Michael Brown</td>
+                                <td>Billing discrepancy on invoice</td>
+                                <td><span class="priority medium"></span> Medium</td>
+                                <td><span class="status open">Open</span></td>
+                                <td>Today, 09:15 AM</td>
+                            </tr>
+                            <tr>
+                                <td>#COMP-282</td>
+                                <td>Tech Solutions Inc.</td>
+                                <td>API connection issues</td>
+                                <td><span class="priority high"></span> High</td>
+                                <td><span class="status in-progress">In Progress</span></td>
+                                <td>Yesterday, 04:45 PM</td>
+                            </tr>
+                            <tr>
+                                <td>#COMP-281</td>
+                                <td>Jennifer Lopez</td>
+                                <td>Request for feature addition</td>
+                                <td><span class="priority low"></span> Low</td>
+                                <td><span class="status open">Open</span></td>
+                                <td>Yesterday, 02:20 PM</td>
+                            </tr>
+                            <tr>
+                                <td>#COMP-280</td>
+                                <td>Robert Chen</td>
+                                <td>Account access issue</td>
+                                <td><span class="priority medium"></span> Medium</td>
+                                <td><span class="status closed">Closed</span></td>
+                                <td>May 12, 2023</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Quick Actions</div>
+                    <div class="card-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                </div>
+                <div class="quick-actions">
+                    <div class="action-btn">
+                        <i class="fas fa-plus"></i>
+                        <span>New Complaint</span>
+                    </div>
+                    <div class="action-btn">
+                        <i class="fas fa-search"></i>
+                        <span>Search Complaints</span>
+                    </div>
+                    <div class="action-btn">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>Generate Report</span>
+                    </div>
+                    <div class="action-btn">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stats Chart -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Complaints by Status</div>
+                    <div class="card-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                </div>
+                <div class="stats-chart">
+                    <div class="chart-bar" style="height: 80%;">
+                        <div class="chart-label">Open</div>
+                    </div>
+                    <div class="chart-bar" style="height: 65%;">
+                        <div class="chart-label">In Progress</div>
+                    </div>
+                    <div class="chart-bar" style="height: 95%;">
+                        <div class="chart-label">Resolved</div>
+                    </div>
+                    <div class="chart-bar" style="height: 45%;">
+                        <div class="chart-label">Pending</div>
+                    </div>
+                    <div class="chart-bar" style="height: 30%;">
+                        <div class="chart-label">Reopened</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Animate chart bars on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const chartBars = document.querySelectorAll('.chart-bar');
+            
+            // Reset heights for animation
+            chartBars.forEach(bar => {
+                const originalHeight = bar.style.height;
+                bar.style.height = '0%';
+                
+                setTimeout(() => {
+                    bar.style.height = originalHeight;
+                }, 500);
+            });
+            
+            // Logout button functionality
+            document.querySelector('.logout-btn').addEventListener('click', function() {
+                alert('Logging out... Redirecting to login page.');
+                // In a real app: window.location.href = 'login.html';
+            });
+            
+            // Action buttons functionality
+            document.querySelectorAll('.action-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const action = this.querySelector('span').textContent;
+                    alert(`Action triggered: ${action}`);
+                });
+            });
+            
+            // Add subtle hover animations to all cards
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', () => {
+                    card.style.transform = 'translateY(-8px)';
+                });
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = 'translateY(0)';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
