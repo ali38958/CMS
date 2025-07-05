@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complaint Cloud - Complaints</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* CSS specific to Complaints page */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #6e8efb;
+            --secondary: #a777e3;
+            --accent: #4caf50;
+            --warning: #ff9800;
+            --danger: #f44336;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --cloud-color: rgba(255, 255, 255, 0.98);
+            --nav-bg: rgba(255, 255, 255, 0.85);
+            --nav-active: rgba(110, 142, 251, 0.15);
+            --nav-hover: rgba(110, 142, 251, 0.08);
+        }
+
+        body {
+            background: linear-gradient(135deg, #a0c0ff, #c3b5ff, #b8e0ff);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .cloud {
+            position: absolute;
+            background: var(--cloud-color);
+            border-radius: 50%;
+            animation: float 25s infinite ease-in-out;
+            z-index: -1;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.1));
+        }
+
+        .cloud:nth-child(1) {
+            width: 180px;
+            height: 180px;
+            top: 10%;
+            left: 5%;
+            animation-delay: 0s;
+        }
+
+        .cloud:nth-child(2) {
+            width: 240px;
+            height: 240px;
+            top: 25%;
+            right: 10%;
+            animation-delay: 3s;
+        }
+
+        .cloud:nth-child(3) {
+            width: 150px;
+            height: 150px;
+            bottom: 20%;
+            left: 15%;
+            animation-delay: 6s;
+        }
+
+        .cloud:nth-child(4) {
+            width: 210px;
+            height: 210px;
+            bottom: 15%;
+            right: 20%;
+            animation-delay: 9s;
+        }
+
+        .cloud:nth-child(5) {
+            width: 130px;
+            height: 130px;
+            top: 40%;
+            left: 25%;
+            animation-delay: 12s;
+        }
+        
+        .cloud:nth-child(6) {
+            width: 190px;
+            height: 190px;
+            top: 60%;
+            left: 40%;
+            animation-delay: 15s;
+        }
+        
+        .cloud:nth-child(7) {
+            width: 160px;
+            height: 160px;
+            top: 30%;
+            left: 70%;
+            animation-delay: 18s;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0) translateX(0);
+            }
+            25% {
+                transform: translateY(-40px) translateX(30px);
+            }
+            50% {
+                transform: translateY(15px) translateX(60px);
+            }
+            75% {
+                transform: translateY(25px) translateX(30px);
+            }
+            100% {
+                transform: translateY(0) translateX(0);
+            }
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .brand h1 {
+            font-size: 32px;
+            color: var(--primary);
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 0.5px;
+        }
+
+        .logo-container {
+            width: 70px;
+            height: 70px;
+            border-radius: 20px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+
+        .logo-container:hover {
+            transform: rotate(5deg) scale(1.08);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.18);
+        }
+
+        .custom-logo {
+            width: 80%;
+            height: 80%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .logo-cloud {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.6);
+        }
+
+        .logo-cloud::before,
+        .logo-cloud::after {
+            content: '';
+            position: absolute;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+        }
+
+        .logo-cloud::before {
+            width: 60%;
+            height: 60%;
+            top: -25%;
+            left: -15%;
+        }
+
+        .logo-cloud::after {
+            width: 50%;
+            height: 50%;
+            top: -20%;
+            right: -15%;
+        }
+
+        .logo-text {
+            position: absolute;
+            font-size: 28px;
+            font-weight: 800;
+            color: white;
+            z-index: 2;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            letter-spacing: 1px;
+        }
+
+        .user-area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-info .name {
+            font-weight: 700;
+            font-size: 18px;
+            letter-spacing: 0.5px;
+        }
+
+        .user-info .role {
+            color: var(--gray);
+            font-size: 14px;
+            margin-top: 3px;
+        }
+
+        .avatar {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 22px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease;
+        }
+
+        .avatar:hover {
+            transform: scale(1.05);
+        }
+
+        .logout-btn {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            box-shadow: 0 6px 18px rgba(244, 67, 54, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logout-btn:hover {
+            background: #d32f2f;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 22px rgba(244, 67, 54, 0.4);
+        }
+
+        .nav-container {
+            margin: 20px 0 30px;
+            background: var(--nav-bg);
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+        }
+
+        .nav-bar {
+            display: flex;
+            padding: 0 20px;
+        }
+
+        .nav-item {
+            padding: 18px 25px;
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--dark);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-item:hover {
+            background: var(--nav-hover);
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            background: var(--nav-active);
+        }
+
+        .nav-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            border-radius: 0 0 4px 4px;
+        }
+
+        .nav-item i {
+            font-size: 20px;
+        }
+
+        .complaints-section-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 30px;
+            min-height: 600px;
+        }
+        
+        .complaints-sidebar {
+            background: var(--card-bg);
+            border-radius: 18px;
+            padding: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+        
+        .complaints-option {
+            padding: 18px 20px;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(248, 249, 250, 0.7);
+        }
+        
+        .complaints-option:hover {
+            background: var(--nav-hover);
+        }
+        
+        .complaints-option.active {
+            background: var(--nav-active);
+            color: var(--primary);
+            box-shadow: 0 5px 15px rgba(110, 142, 251, 0.2);
+        }
+        
+        .complaints-option i {
+            font-size: 20px;
+        }
+        
+        .complaints-content {
+            background: var(--card-bg);
+            border-radius: 18px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .complaints-panel {
+            display: none;
+        }
+        
+        .complaints-panel.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .panel-header {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+        }
+        
+        .panel-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 14px 18px;
+            border-radius: 12px;
+            border: 1px solid rgba(0,0,0,0.1);
+            background: rgba(248, 249, 250, 0.5);
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(110, 142, 251, 0.2);
+        }
+        
+        .btn {
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 6px 18px rgba(110, 142, 251, 0.4);
+        }
+        
+        .btn-primary:hover {
+            background: #5d7df9;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 22px rgba(110, 142, 251, 0.5);
+        }
+        
+        .search-box {
+            display: flex;
+            margin-bottom: 30px;
+        }
+        
+        .search-box input {
+            flex: 1;
+            border-radius: 12px 0 0 12px;
+        }
+        
+        .search-box button {
+            border-radius: 0 12px 12px 0;
+        }
+        
+        .complaint-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .complaint-card {
+            background: rgba(248, 249, 250, 0.7);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(0,0,0,0.05);
+            transition: all 0.3s;
+        }
+        
+        .complaint-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        }
+        
+        .complaint-card-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        
+        .complaint-card-id {
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .complaint-card-title {
+            font-weight: 600;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        
+        .complaint-card-desc {
+            color: var(--gray);
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        .complaint-card-footer {
+            display: flex;
+            justify-content: space-between;
+            color: var(--gray);
+            font-size: 14px;
+        }
+        
+        .nature-chart {
+            height: 300px;
+            background: linear-gradient(45deg, #d0e0ff, #e3d5ff);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 24px;
+            font-weight: 700;
+            margin-top: 20px;
+        }
+        
+        .priority {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .priority.high {
+            background: var(--danger);
+            box-shadow: 0 0 8px rgba(244, 67, 54, 0.4);
+        }
+
+        .priority.medium {
+            background: var(--warning);
+            box-shadow: 0 0 8px rgba(255, 152, 0, 0.4);
+        }
+
+        .priority.low {
+            background: var(--accent);
+            box-shadow: 0 0 8px rgba(76, 175, 80, 0.4);
+        }
+        
+        .stats-chart {
+            height: 250px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            margin-top: 20px;
+            padding: 0 15px;
+        }
+
+        .chart-bar {
+            width: 45px;
+            background: linear-gradient(to top, var(--primary), var(--secondary));
+            border-radius: 8px 8px 0 0;
+            position: relative;
+            transition: all 0.5s ease;
+            box-shadow: 0 6px 18px rgba(110, 142, 251, 0.35);
+        }
+
+        .chart-bar:hover {
+            transform: scale(1.08);
+            opacity: 0.9;
+        }
+
+        .chart-label {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 13px;
+            color: var(--gray);
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        
+        @media (max-width: 992px) {
+            .complaints-section-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .complaints-sidebar {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            
+            .complaints-option {
+                margin-bottom: 0;
+                flex: 1;
+                min-width: 150px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-bar {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .nav-item {
+                padding: 15px;
+                font-size: 15px;
+            }
+            
+            header {
+                flex-direction: column;
+                text-align: center;
+                gap: 20px;
+            }
+            
+            .brand {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .user-area {
+                margin-top: 10px;
+                flex-direction: column;
+            }
+            
+            .user-info {
+                text-align: center;
+                margin: 10px 0;
+            }
+            
+            .logout-btn {
+                margin-top: 10px;
+            }
+            
+            .complaints-option {
+                padding: 12px 15px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background clouds -->
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header>
+            <div class="brand">
+                <div class="logo-container">
+                    <div class="custom-logo">
+                        <div class="logo-cloud">
+                            <div class="logo-text">CC</div>
+                        </div>
+                    </div>
+                </div>
+                <h1>Complaint Cloud</h1>
+            </div>
+            
+            <div class="user-area">
+                <div class="user-info">
+                    <div class="name">Alex Johnson</div>
+                    <div class="role">Support Manager</div>
+                </div>
+                <div class="avatar">AJ</div>
+                <button class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </button>
+            </div>
+        </header>
+        
+        <!-- Navigation Bar -->
+        <div class="nav-container">
+            <div class="nav-bar">
+                <div class="nav-item">
+                    <i class="fas fa-chart-line"></i>
+                    Dashboard
+                </div>
+                <div class="nav-item active">
+                    <i class="fas fa-ticket-alt"></i>
+                    Complaints
+                </div>
+                <div class="nav-item">
+                    <i class="fas fa-users"></i>
+                    Users
+                </div>
+                <div class="nav-item">
+                    <i class="fas fa-store"></i>
+                    Store
+                </div>
+                <div class="nav-item">
+                    <i class="fas fa-file-alt"></i>
+                    Reporting
+                </div>
+            </div>
+        </div>
+        
+        <!-- Complaints Section -->
+        <div class="complaints-section-container">
+            <div class="complaints-sidebar">
+                <div class="complaints-option active" data-panel="new-complaint">
+                    <i class="fas fa-plus-circle"></i>
+                    New Complaint
+                </div>
+                <div class="complaints-option" data-panel="find-complaint">
+                    <i class="fas fa-search"></i>
+                    Find Complaint
+                </div>
+                <div class="complaints-option" data-panel="complaint-nature">
+                    <i class="fas fa-chart-pie"></i>
+                    Complaint Nature
+                </div>
+            </div>
+            
+            <div class="complaints-content">
+                <!-- New Complaint Panel -->
+                <div id="new-complaint" class="complaints-panel active">
+                    <div class="panel-header">
+                        <h2 class="panel-title">Create New Complaint</h2>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="customer-name">Customer Name</label>
+                        <input type="text" id="customer-name" class="form-control" placeholder="Enter customer name">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="subject">Subject</label>
+                        <input type="text" id="subject" class="form-control" placeholder="Enter complaint subject">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" class="form-control" rows="4" placeholder="Enter detailed description of the complaint"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="priority">Priority</label>
+                        <select id="priority" class="form-control">
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                            <option value="critical">Critical</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="category">Category</label>
+                        <select id="category" class="form-control">
+                            <option value="technical">Technical Issue</option>
+                            <option value="billing">Billing Problem</option>
+                            <option value="service">Service Quality</option>
+                            <option value="feature">Feature Request</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <button class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i>
+                        Submit Complaint
+                    </button>
+                </div>
+                
+                <!-- Find Complaint Panel -->
+                <div id="find-complaint" class="complaints-panel">
+                    <div class="panel-header">
+                        <h2 class="panel-title">Find Complaint</h2>
+                    </div>
+                    
+                    <div class="search-box">
+                        <input type="text" class="form-control" placeholder="Search by ID, customer name, or subject">
+                        <button class="btn btn-primary">
+                            <i class="fas fa-search"></i>
+                            Search
+                        </button>
+                    </div>
+                    
+                    <div class="complaint-cards" id="complaint-cards-container">
+                        <!-- Complaint cards will be generated here -->
+                    </div>
+                </div>
+                
+                <!-- Complaint Nature Panel -->
+                <div id="complaint-nature" class="complaints-panel">
+                    <div class="panel-header">
+                        <h2 class="panel-title">Complaint Nature Analysis</h2>
+                    </div>
+                    
+                    <div class="stats-chart" id="complaint-nature-chart">
+                        <!-- Chart bars will be generated here -->
+                    </div>
+                    
+                    <div class="nature-chart">
+                        Complaint Nature Distribution Chart
+                    </div>
+                    
+                    <div style="margin-top: 30px;">
+                        <h3 style="margin-bottom: 15px;">Trend Analysis</h3>
+                        <p id="trend-analysis-text" style="line-height: 1.6;">
+                            <!-- Trend analysis text will be generated here -->
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Complaints data
+        const complaintsData = {
+            complaintCards: [
+                {
+                    id: "#COMP-284",
+                    date: "Today, 10:30 AM",
+                    title: "Product not working after update",
+                    desc: "After the latest software update, the product stopped functioning...",
+                    customer: "Sarah Williams",
+                    priority: { level: "high", text: "High" }
+                },
+                {
+                    id: "#COMP-283",
+                    date: "Today, 09:15 AM",
+                    title: "Billing discrepancy on invoice",
+                    desc: "My monthly invoice shows charges for services I didn't use...",
+                    customer: "Michael Brown",
+                    priority: { level: "medium", text: "Medium" }
+                },
+                {
+                    id: "#COMP-282",
+                    date: "Yesterday, 04:45 PM",
+                    title: "API connection issues",
+                    desc: "Our integration with your API has been failing consistently for the past 24 hours...",
+                    customer: "Tech Solutions Inc.",
+                    priority: { level: "high", text: "High" }
+                },
+                {
+                    id: "#COMP-281",
+                    date: "Yesterday, 02:20 PM",
+                    title: "Request for feature addition",
+                    desc: "I would like to request a dark mode option for the mobile application...",
+                    customer: "Jennifer Lopez",
+                    priority: { level: "low", text: "Low" }
+                }
+            ],
+            complaintNature: [
+                {
+                    label: "Technical",
+                    height: "90%",
+                    background: "linear-gradient(to top, #6e8efb, #a777e3)"
+                },
+                {
+                    label: "Billing",
+                    height: "70%",
+                    background: "linear-gradient(to top, #4caf50, #8bc34a)"
+                },
+                {
+                    label: "Service",
+                    height: "60%",
+                    background: "linear-gradient(to top, #ff9800, #ffc107)"
+                },
+                {
+                    label: "Feature",
+                    height: "40%",
+                    background: "linear-gradient(to top, #9c27b0, #e91e63)"
+                },
+                {
+                    label: "Other",
+                    height: "30%",
+                    background: "linear-gradient(to top, #f44336, #ff5252)"
+                }
+            ],
+            trendAnalysis: "Technical complaints have increased by 15% this month, primarily due to the recent software update. Billing issues have decreased by 8% following the implementation of our new payment processing system. Service quality complaints remain steady, while feature requests continue to grow as our user base expands."
+        };
+
+        // Function to generate complaint cards HTML
+        function generateComplaintCards() {
+            return complaintsData.complaintCards.map(card => `
+                <div class="complaint-card">
+                    <div class="complaint-card-header">
+                        <div class="complaint-card-id">${card.id}</div>
+                        <div class="complaint-card-date">${card.date}</div>
+                    </div>
+                    <div class="complaint-card-title">${card.title}</div>
+                    <div class="complaint-card-desc">${card.desc}</div>
+                    <div class="complaint-card-footer">
+                        <span>${card.customer}</span>
+                        <span><span class="priority ${card.priority.level}"></span> ${card.priority.text}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Function to generate complaint nature chart HTML
+        function generateComplaintNatureChart() {
+            return complaintsData.complaintNature.map(nature => `
+                <div class="chart-bar" style="height: ${nature.height}; background: ${nature.background};">
+                    <div class="chart-label">${nature.label}</div>
+                </div>
+            `).join('');
+        }
+
+        // Initialize complaints content
+        function initializeComplaintsContent() {
+            const complaintCardsContainer = document.getElementById('complaint-cards-container');
+            if (complaintCardsContainer) {
+                complaintCardsContainer.innerHTML = generateComplaintCards();
+            }
+            
+            const complaintNatureChart = document.getElementById('complaint-nature-chart');
+            if (complaintNatureChart) {
+                complaintNatureChart.innerHTML = generateComplaintNatureChart();
+            }
+            
+            const trendAnalysisText = document.getElementById('trend-analysis-text');
+            if (trendAnalysisText) {
+                trendAnalysisText.textContent = complaintsData.trendAnalysis;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize complaints content
+            initializeComplaintsContent();
+            
+            // Logout button functionality
+            document.querySelector('.logout-btn').addEventListener('click', function() {
+                alert('Logging out... Redirecting to login page.');
+            });
+            
+            // Navigation functionality
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const page = this.textContent.trim().toLowerCase();
+                    if (page === 'dashboard') window.location.href = 'dashboard.html';
+                    if (page === 'users') window.location.href = 'users.html';
+                    if (page === 'store') window.location.href = 'store.html';
+                    if (page === 'reporting') window.location.href = 'reporting.html';
+                });
+            });
+            
+            // Complaints sidebar navigation
+            const complaintsOptions = document.querySelectorAll('.complaints-option');
+            const complaintsPanels = document.querySelectorAll('.complaints-panel');
+            
+            complaintsOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    // Remove active class from all options and panels
+                    complaintsOptions.forEach(opt => opt.classList.remove('active'));
+                    complaintsPanels.forEach(panel => panel.classList.remove('active'));
+                    
+                    // Add active class to clicked option
+                    this.classList.add('active');
+                    
+                    // Show corresponding panel
+                    const panelId = this.getAttribute('data-panel');
+                    document.getElementById(panelId).classList.add('active');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complaint Cloud - Store</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* CSS specific to Store page */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #6e8efb;
+            --secondary: #a777e3;
+            --accent: #4caf50;
+            --warning: #ff9800;
+            --danger: #f44336;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --cloud-color: rgba(255, 255, 255, 0.98);
+            --nav-bg: rgba(255, 255, 255, 0.85);
+            --nav-active: rgba(110, 142, 251, 0.15);
+            --nav-hover: rgba(110, 142, 251, 0.08);
+        }
+
+        body {
+            background: linear-gradient(135deg, #a0c0ff, #c3b5ff, #b8e0ff);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .cloud {
+            position: absolute;
+            background: var(--cloud-color);
+            border-radius: 50%;
+            animation: float 25s infinite ease-in-out;
+            z-index: -1;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.1));
+        }
+
+        .cloud:nth-child(1) {
+            width: 180px;
+            height: 180px;
+            top: 10%;
+            left: 5%;
+            animation-delay: 0s;
+        }
+
+        .cloud:nth-child(2) {
+            width: 240px;
+            height: 240px;
+            top: 25%;
+            right: 10%;
+            animation-delay: 3s;
+        }
+
+        .cloud:nth-child(3) {
+            width: 150px;
+            height: 150px;
+            bottom: 20%;
+            left: 15%;
+            animation-delay: 6s;
+        }
+
+        .cloud:nth-child(4) {
+            width: 210px;
+            height: 210px;
+            bottom: 15%;
+            right: 20%;
+            animation-delay: 9s;
+        }
+
+        .cloud:nth-child(5) {
+            width: 130px;
+            height: 130px;
+            top: 40%;
+            left: 25%;
+            animation-delay: 12s;
+        }
+        
+        .cloud:nth-child(6) {
+            width: 190px;
+            height: 190px;
+            top: 60%;
+            left: 40%;
+            animation-delay: 15s;
+        }
+        
+        .cloud:nth-child(7) {
+            width: 160px;
+            height: 160px;
+            top: 30%;
+            left: 70%;
+            animation-delay: 18s;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0) translateX(0);
+            }
+            25% {
+                transform: translateY(-40px) translateX(30px);
+            }
+            50% {
+                transform: translateY(15px) translateX(60px);
+            }
+            75% {
+                transform: translateY(25px) translateX(30px);
+            }
+            100% {
+                transform: translateY(0) translateX(0);
+            }
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .brand h1 {
+            font-size: 32px;
+            color: var(--primary);
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 0.5px;
+        }
+
+        .logo-container {
+            width: 70px;
+            height: 70px;
+            border-radius: 20px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+
+        .logo-container:hover {
+            transform: rotate(5deg) scale(1.08);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.18);
+        }
+
+        .custom-logo {
+            width: 80%;
+            height: 80%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .logo-cloud {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.6);
+        }
+
+        .logo-cloud::before,
+        .logo-cloud::after {
+            content: '';
+            position: absolute;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+        }
+
+        .logo-cloud::before {
+            width: 60%;
+            height: 60%;
+            top: -25%;
+            left: -15%;
+        }
+
+        .logo-cloud::after {
+            width: 50%;
+            height: 50%;
+            top: -20%;
+            right: -15%;
+        }
+
+        .logo-text {
+            position: absolute;
+            font-size: 28px;
+            font-weight: 800;
+            color: white;
+            z-index: 2;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            letter-spacing: 1px;
+        }
+
+        .user-area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-info .name {
+            font-weight: 700;
+            font-size: 18px;
+            letter-spacing: 0.5px;
+        }
+
+        .user-info .role {
+            color: var(--gray);
+            font-size: 14px;
+            margin-top: 3px;
+        }
+
+        .avatar {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 22px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease;
+        }
+
+        .avatar:hover {
+            transform: scale(1.05);
+        }
+
+        .logout-btn {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            box-shadow: 0 6px 18px rgba(244, 67, 54, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logout-btn:hover {
+            background: #d32f2f;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 22px rgba(244, 67, 54, 0.4);
+        }
+
+        .nav-container {
+            margin: 20px 0 30px;
+            background: var(--nav-bg);
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+        }
+
+        .nav-bar {
+            display: flex;
+            padding: 0 20px;
+        }
+
+        .nav-item {
+            padding: 18px 25px;
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--dark);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-item:hover {
+            background: var(--nav-hover);
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            background: var(--nav-active);
+        }
+
+        .nav-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            border-radius: 0 0 4px 4px;
+        }
+
+        .nav-item i {
+            font-size: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 18px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            padding: 25px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 45px rgba(0,0,0,0.15);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 19px;
+            font-weight: 700;
+            color: var(--dark);
+            letter-spacing: 0.3px;
+        }
+
+        .card-icon {
+            width: 55px;
+            height: 55px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+        }
+        
+        .stats-chart {
+            height: 250px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            margin-top: 20px;
+            padding: 0 15px;
+        }
+
+        .chart-bar {
+            width: 45px;
+            background: linear-gradient(to top, var(--primary), var(--secondary));
+            border-radius: 8px 8px 0 0;
+            position: relative;
+            transition: all 0.5s ease;
+            box-shadow: 0 6px 18px rgba(110, 142, 251, 0.35);
+        }
+
+        .chart-bar:hover {
+            transform: scale(1.08);
+            opacity: 0.9;
+        }
+
+        .chart-label {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 13px;
+            color: var(--gray);
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        
+        .package-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        .package-card {
+            background: var(--card-bg);
+            border-radius: 18px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0,0,0,0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+        
+        .package-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+        
+        .package-card.basic {
+            border-top: 5px solid var(--primary);
+        }
+        
+        .package-card.pro {
+            border-top: 5px solid var(--accent);
+        }
+        
+        .package-card.enterprise {
+            border-top: 5px solid var(--warning);
+        }
+        
+        .package-name {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--dark);
+        }
+        
+        .package-price {
+            font-size: 42px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .package-features {
+            list-style: none;
+            margin: 30px 0;
+            text-align: left;
+            padding: 0 20px;
+        }
+        
+        .package-features li {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .package-features li i {
+            color: var(--accent);
+            font-size: 18px;
+        }
+        
+        .btn-purchase {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .btn-purchase.basic {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 6px 18px rgba(110, 142, 251, 0.4);
+        }
+        
+        .btn-purchase.pro {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 6px 18px rgba(76, 175, 80, 0.4);
+        }
+        
+        .btn-purchase.enterprise {
+            background: var(--warning);
+            color: white;
+            box-shadow: 0 6px 18px rgba(255, 152, 0, 0.4);
+        }
+        
+        .btn-purchase:hover {
+            transform: translateY(-3px);
+            opacity: 0.9;
+        }
+
+        @media (max-width: 768px) {
+            .nav-bar {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .nav-item {
+                padding: 15px;
+                font-size: 15px;
+            }
+            
+            header {
+                flex-direction: column;
+                text-align: center;
+                gap: 20px;
+            }
+            
+            .brand {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .user-area {
+                margin-top: 10px;
+                flex-direction: column;
+            }
+            
+            .user-info {
+                text-align: center;
+                margin: 10px 0;
+            }
+            
+            .logout-btn {
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background clouds -->
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header>
+            <div class="brand">
+                <div class="logo-container">
+                    <div class="custom-logo">
+                        <div class="logo-cloud">
+                            <div class="logo-text">CC</div>
+                        </div>
+                    </div>
+                </div>
+                <h1>Complaint Cloud</h1>
+            </div>
+            
+            <div class="user-area">
+                <div class="user-info">
+                    <div class="name">Alex Johnson</div>
+                    <div class="role">Support Manager</div>
+                </div>
+                <div class="avatar">AJ</div>
+                <button class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </button>
+            </div>
+        </header>
+        
+        <!-- Navigation Bar -->
+        <div class="nav-container">
+            <div class="nav-bar">
+                <div class="nav-item">
+                    <i class="fas fa-chart-line"></i>
+                    Dashboard
+                </div>
+                <div class="nav-item">
+                    <i class="fas fa-ticket-alt"></i>
+                    Complaints
+                </div>
+                <div class="nav-item">
+                    <i class="fas fa-users"></i>
+                    Users
+                </div>
+                <div class="nav-item active">
+                    <i class="fas fa-store"></i>
+                    Store
+                </div>
+                <div class="nav-item">
+                    <i class="fas fa-file-alt"></i>
+                    Reporting
+                </div>
+            </div>
+        </div>
+        
+        <!-- Store Section -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Complaint Cloud Store</div>
+                <div class="card-icon">
+                    <i class="fas fa-store"></i>
+                </div>
+            </div>
+            <div style="padding: 20px; text-align: center;">
+                <h2 style="color: var(--primary); margin-bottom: 30px;">Upgrade Your Experience</h2>
+                <div class="stats-chart" id="store-chart">
+                    <!-- Chart bars will be generated here -->
+                </div>
+                <p style="margin-top: 40px; font-size: 18px; line-height: 1.6;">
+                    Explore our premium packages to enhance your complaint management capabilities with advanced features and priority support.
+                </p>
+                
+                <div class="package-cards">
+                    <div class="package-card basic">
+                        <h3 class="package-name">Basic</h3>
+                        <div class="package-price">$19<span style="font-size: 18px; color: var(--gray);">/month</span></div>
+                        <ul class="package-features">
+                            <li><i class="fas fa-check-circle"></i> Up to 500 complaints per month</li>
+                            <li><i class="fas fa-check-circle"></i> 1 GB storage</li>
+                            <li><i class="fas fa-check-circle"></i> Basic reporting</li>
+                            <li><i class="fas fa-check-circle"></i> Email support</li>
+                        </ul>
+                        <button class="btn-purchase basic">
+                            <i class="fas fa-shopping-cart"></i>
+                            Get Started
+                        </button>
+                    </div>
+                    
+                    <div class="package-card pro">
+                        <h3 class="package-name">Pro</h3>
+                        <div class="package-price">$49<span style="font-size: 18px; color: var(--gray);">/month</span></div>
+                        <ul class="package-features">
+                            <li><i class="fas fa-check-circle"></i> Up to 2,000 complaints per month</li>
+                            <li><i class="fas fa-check-circle"></i> 5 GB storage</li>
+                            <li><i class="fas fa-check-circle"></i> Advanced reporting</li>
+                            <li><i class="fas fa-check-circle"></i> Priority support</li>
+                            <li><i class="fas fa-check-circle"></i> Custom branding</li>
+                        </ul>
+                        <button class="btn-purchase pro">
+                            <i class="fas fa-shopping-cart"></i>
+                            Get Started
+                        </button>
+                    </div>
+                    
+                    <div class="package-card enterprise">
+                        <h3 class="package-name">Enterprise</h3>
+                        <div class="package-price">$99<span style="font-size: 18px; color: var(--gray);">/month</span></div>
+                        <ul class="package-features">
+                            <li><i class="fas fa-check-circle"></i> Unlimited complaints</li>
+                            <li><i class="fas fa-check-circle"></i> 50 GB storage</li>
+                            <li><i class="fas fa-check-circle"></i> Advanced analytics</li>
+                            <li><i class="fas fa-check-circle"></i> 24/7 dedicated support</li>
+                            <li><i class="fas fa-check-circle"></i> Custom integrations</li>
+                            <li><i class="fas fa-check-circle"></i> API access</li>
+                        </ul>
+                        <button class="btn-purchase enterprise">
+                            <i class="fas fa-shopping-cart"></i>
+                            Get Started
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Store data
+        const storeData = {
+            packages: [
+                {
+                    label: "Basic",
+                    height: "70%",
+                    background: "linear-gradient(to top, #6e8efb, #a777e3)"
+                },
+                {
+                    label: "Pro",
+                    height: "85%",
+                    background: "linear-gradient(to top, #4caf50, #8bc34a)"
+                },
+                {
+                    label: "Enterprise",
+                    height: "95%",
+                    background: "linear-gradient(to top, #ff9800, #ffc107)"
+                }
+            ]
+        };
+
+        // Function to generate store chart HTML
+        function generateStoreChart() {
+            return storeData.packages.map(pkg => `
+                <div class="chart-bar" style="height: ${pkg.height}; background: ${pkg.background};">
+                    <div class="chart-label">${pkg.label}</div>
+                </div>
+            `).join('');
+        }
+
+        // Initialize store content
+        function initializeStoreContent() {
+            const storeChart = document.getElementById('store-chart');
+            if (storeChart) {
+                storeChart.innerHTML = generateStoreChart();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize store content
+            initializeStoreContent();
+            
+            // Animate chart bars
+            const chartBars = document.querySelectorAll('.chart-bar');
+            chartBars.forEach(bar => {
+                const originalHeight = bar.style.height;
+                bar.style.height = '0%';
+                
+                setTimeout(() => {
+                    bar.style.height = originalHeight;
+                }, 500);
+            });
+            
+            // Logout button functionality
+            document.querySelector('.logout-btn').addEventListener('click', function() {
+                alert('Logging out... Redirecting to login page.');
+            });
+            
+            // Navigation functionality
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const page = this.textContent.trim().toLowerCase();
+                    if (page === 'dashboard') window.location.href = 'dashboard.html';
+                    if (page === 'complaints') window.location.href = 'complaints.html';
+                    if (page === 'users') window.location.href = 'users.html';
+                    if (page === 'reporting') window.location.href = 'reporting.html';
+                });
+            });
+            
+            // Purchase button functionality
+            document.querySelectorAll('.btn-purchase').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const packageName = this.closest('.package-card').querySelector('.package-name').textContent;
+                    alert(`Thank you for choosing the ${packageName} package! Redirecting to checkout...`);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
