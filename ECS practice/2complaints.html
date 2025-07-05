@@ -6,7 +6,6 @@
     <title>Complaint Cloud - Complaints</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* CSS specific to Complaints page */
         * {
             margin: 0;
             padding: 0;
@@ -422,6 +421,11 @@
             color: var(--dark);
         }
         
+        .required:after {
+            content: " *";
+            color: var(--danger);
+        }
+        
         .form-control {
             width: 100%;
             padding: 14px 18px;
@@ -461,6 +465,18 @@
             background: #5d7df9;
             transform: translateY(-3px);
             box-shadow: 0 8px 22px rgba(110, 142, 251, 0.5);
+        }
+        
+        .btn-secondary {
+            background: var(--gray);
+            color: white;
+            box-shadow: 0 6px 18px rgba(108, 117, 125, 0.3);
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 22px rgba(108, 117, 125, 0.4);
         }
         
         .search-box {
@@ -597,6 +613,230 @@
             white-space: nowrap;
         }
         
+        /* New styles for the updated design */
+        .action-select {
+            width: 100%;
+            padding: 14px 18px;
+            border-radius: 12px;
+            border: 1px solid rgba(0,0,0,0.1);
+            background: rgba(248, 249, 250, 0.5);
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .user-addresses {
+            display: none;
+            margin-bottom: 20px;
+        }
+        
+        .user-addresses.active {
+            display: block;
+        }
+        
+        .user-address {
+            background: rgba(110, 142, 251, 0.1);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .user-address:hover {
+            background: rgba(110, 142, 251, 0.2);
+        }
+        
+        .user-address.selected {
+            background: rgba(110, 142, 251, 0.3);
+            border: 2px solid var(--primary);
+        }
+        
+        .user-address h4 {
+            margin-bottom: 5px;
+            color: var(--primary);
+        }
+        
+        .user-address p {
+            margin: 3px 0;
+            color: var(--dark);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 18px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 30px;
+            position: relative;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--gray);
+            transition: color 0.3s;
+        }
+        
+        .close-modal:hover {
+            color: var(--danger);
+        }
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 20px 0 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .new-building-toggle {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+        }
+        
+        .new-building-toggle label {
+            margin-left: 10px;
+            font-weight: 600;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .warning-note {
+            background: rgba(255, 152, 0, 0.1);
+            padding: 15px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border-left: 4px solid var(--warning);
+        }
+        
+        .nature-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .nature-table th {
+            background: rgba(110, 142, 251, 0.1);
+            color: var(--primary);
+            font-weight: 700;
+            padding: 16px;
+            text-align: left;
+        }
+        
+        .nature-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .nature-table tr:hover {
+            background: rgba(110, 142, 251, 0.05);
+        }
+        
+        .nature-types {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .nature-type {
+            background: rgba(110, 142, 251, 0.1);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .remove-type {
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            margin-left: 8px;
+            font-weight: bold;
+        }
+        
+        .add-type-form {
+            display: flex;
+            margin-top: 10px;
+        }
+        
+        .add-type-form input {
+            flex: 1;
+            padding: 10px 15px;
+            border-radius: 20px 0 0 20px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        .add-type-form button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0 20px;
+            border-radius: 0 20px 20px 0;
+            cursor: pointer;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .action-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .action-btn:hover {
+            opacity: 0.9;
+        }
+        
+        .action-btn.delete {
+            background: var(--danger);
+        }
+        
         @media (max-width: 992px) {
             .complaints-section-container {
                 grid-template-columns: 1fr;
@@ -655,6 +895,14 @@
                 padding: 12px 15px;
                 font-size: 14px;
             }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
@@ -667,6 +915,106 @@
     <div class="cloud"></div>
     <div class="cloud"></div>
     <div class="cloud"></div>
+    
+    <!-- Add User Modal -->
+    <div class="modal" id="add-user-modal">
+        <div class="modal-content">
+            <span class="close-modal" id="close-add-user-modal">&times;</span>
+            <h2 class="panel-title">Add New User</h2>
+            
+            <div class="section-title">Customer Information</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="customer-name" class="required">Full Name</label>
+                    <input type="text" id="customer-name" class="form-control" placeholder="Enter customer name" required>
+                </div>
+                <div class="form-group">
+                    <label for="customer-phone" class="required">Phone Number</label>
+                    <input type="tel" id="customer-phone" class="form-control" placeholder="Enter phone number" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="customer-username">User Name</label>
+                <input type="text" id="customer-username" class="form-control" placeholder="Enter username (optional)" readonly>
+            </div>
+            
+            <div class="section-title">Address Information</div>
+            <div class="form-group">
+                <label for="building-search">Search Building by name</label>
+                <div class="search-box">
+                    <input type="text" id="building-search" class="form-control" placeholder="Enter building name">
+                    <button class="btn btn-secondary" id="find-building-btn">
+                        <i class="fas fa-search"></i>
+                        Find
+                    </button>
+                </div>
+            </div>
+            
+            <div class="new-building-toggle">
+                <input type="checkbox" id="new-building-checkbox">
+                <label for="new-building-checkbox">New Building</label>
+            </div>
+            
+            <div id="new-building-form" style="display: none;">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="colony-select" class="required">Select Colony</label>
+                        <select id="colony-select" class="form-control" required>
+                            <option value="">Select Colony</option>
+                            <option value="colony1">Green Valley</option>
+                            <option value="colony2">Sunset Hills</option>
+                            <option value="colony3">River View</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="building-type" class="required">Select Building Type</label>
+                        <select id="building-type" class="form-control" required>
+                            <option value="">Select Type</option>
+                            <option value="residential">Residential</option>
+                            <option value="commercial">Commercial</option>
+                            <option value="mixed">Mixed Use</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="building-no" class="required">Building/House No</label>
+                        <input type="text" id="building-no" class="form-control" placeholder="Enter building number" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="apartment-no">Apartment/Unit</label>
+                        <input type="text" id="apartment-no" class="form-control" placeholder="Enter apartment number">
+                    </div>
+                    <div class="form-group">
+                        <label for="apartment-type">Apartment Type</label>
+                        <select id="apartment-type" class="form-control">
+                            <option value="">Select Type</option>
+                            <option value="studio">Studio</option>
+                            <option value="1bhk">1BHK</option>
+                            <option value="2bhk">2BHK</option>
+                            <option value="3bhk">3BHK</option>
+                            <option value="penthouse">Penthouse</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="warning-note">
+                <i class="fas fa-exclamation-triangle"></i> Apartments that are clearly accommodated will be overridden!
+            </div>
+            
+            <div class="form-actions">
+                <button class="btn btn-secondary" id="cancel-add-user">
+                    <i class="fas fa-times"></i>
+                    Close
+                </button>
+                <button class="btn btn-primary" id="save-new-user">
+                    <i class="fas fa-save"></i>
+                    Save User
+                </button>
+            </div>
+        </div>
+    </div>
     
     <div class="dashboard-container">
         <!-- Header -->
@@ -724,73 +1072,99 @@
         <!-- Complaints Section -->
         <div class="complaints-section-container">
             <div class="complaints-sidebar">
-                <div class="complaints-option active" data-panel="new-complaint">
-                    <i class="fas fa-plus-circle"></i>
-                    New Complaint
+                <div class="complaints-option active" data-panel="launch-complaints">
+                    <i class="fas fa-rocket"></i>
+                    Launch Complaints
                 </div>
-                <div class="complaints-option" data-panel="find-complaint">
-                    <i class="fas fa-search"></i>
-                    Find Complaint
+                <div class="complaints-option" data-panel="all-complaints">
+                    <i class="fas fa-list"></i>
+                    All Complaints
                 </div>
-                <div class="complaints-option" data-panel="complaint-nature">
+                <div class="complaints-option" data-panel="natures">
                     <i class="fas fa-chart-pie"></i>
-                    Complaint Nature
+                    Natures
                 </div>
             </div>
             
             <div class="complaints-content">
-                <!-- New Complaint Panel -->
-                <div id="new-complaint" class="complaints-panel active">
+                <!-- Launch Complaints Panel -->
+                <div id="launch-complaints" class="complaints-panel active">
                     <div class="panel-header">
-                        <h2 class="panel-title">Create New Complaint</h2>
+                        <h2 class="panel-title">Launch New Complaint</h2>
                     </div>
                     
                     <div class="form-group">
-                        <label for="customer-name">Customer Name</label>
-                        <input type="text" id="customer-name" class="form-control" placeholder="Enter customer name">
+                        <label for="find-phone" class="required">Find by Phone Number</label>
+                        <div class="search-box">
+                            <input type="tel" id="find-phone" class="form-control" placeholder="Enter phone number">
+                            <button class="btn btn-primary" id="find-user-btn">
+                                <i class="fas fa-search"></i>
+                                Find
+                            </button>
+                        </div>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="subject">Subject</label>
-                        <input type="text" id="subject" class="form-control" placeholder="Enter complaint subject">
+                    <div class="user-addresses" id="user-addresses">
+                        <h3>Select an Address</h3>
+                        <div class="user-address" data-address-id="1">
+                            <h4>Primary Address</h4>
+                            <p>123 Main St, Green Valley</p>
+                            <p>Building 5, Apartment 301 (2BHK)</p>
+                        </div>
+                        <div class="user-address" data-address-id="2">
+                            <h4>Work Address</h4>
+                            <p>456 Business Ave, Sunset Hills</p>
+                            <p>Commercial Building, Suite 1200</p>
+                        </div>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="description">Description</label>
-                        <textarea id="description" class="form-control" rows="4" placeholder="Enter detailed description of the complaint"></textarea>
+                    <div class="form-group" id="complaint-form" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="category-select" class="required">Select Category</label>
+                                <select id="category-select" class="form-control" required>
+                                    <option value="">Select Category</option>
+                                    <option value="air-conditioner">Air Conditioner</option>
+                                    <option value="aluminium">Aluminium</option>
+                                    <option value="cooking-range">Cooking Range/Hub Stove</option>
+                                    <option value="electrical">Electrical</option>
+                                    <option value="plumbing">Plumbing</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="category-description">Category Description</label>
+                                <textarea id="category-description" class="form-control" rows="2" placeholder="Enter category description"></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="skillman-select" class="required">Assign Skillman</label>
+                                <select id="skillman-select" class="form-control" required>
+                                    <option value="">Select Skillman</option>
+                                    <option value="john">John Davis (Electrician)</option>
+                                    <option value="mark">Mark Wilson (Plumber)</option>
+                                    <option value="lisa">Lisa Thompson (Carpenter)</option>
+                                    <option value="mike">Mike Chen (AC Specialist)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="poc" class="required">Point of Contact</label>
+                                <input type="text" id="poc" class="form-control" placeholder="Enter POC name" required>
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-primary" id="launch-complaint-btn">
+                            <i class="fas fa-paper-plane"></i>
+                            Launch Complaint
+                        </button>
                     </div>
-                    
-                    <div class="form-group">
-                        <label for="priority">Priority</label>
-                        <select id="priority" class="form-control">
-                            <option value="low">Low</option>
-                            <option value="medium">Medium</option>
-                            <option value="high">High</option>
-                            <option value="critical">Critical</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="category">Category</label>
-                        <select id="category" class="form-control">
-                            <option value="technical">Technical Issue</option>
-                            <option value="billing">Billing Problem</option>
-                            <option value="service">Service Quality</option>
-                            <option value="feature">Feature Request</option>
-                            <option value="other">Other</option>
-                        </select>
-                    </div>
-                    
-                    <button class="btn btn-primary">
-                        <i class="fas fa-paper-plane"></i>
-                        Submit Complaint
-                    </button>
                 </div>
                 
-                <!-- Find Complaint Panel -->
-                <div id="find-complaint" class="complaints-panel">
+                <!-- All Complaints Panel -->
+                <div id="all-complaints" class="complaints-panel">
                     <div class="panel-header">
-                        <h2 class="panel-title">Find Complaint</h2>
+                        <h2 class="panel-title">All Complaints</h2>
                     </div>
                     
                     <div class="search-box">
@@ -806,26 +1180,121 @@
                     </div>
                 </div>
                 
-                <!-- Complaint Nature Panel -->
-                <div id="complaint-nature" class="complaints-panel">
+                <!-- Natures Panel -->
+                <div id="natures" class="complaints-panel">
                     <div class="panel-header">
-                        <h2 class="panel-title">Complaint Nature Analysis</h2>
+                        <h2 class="panel-title">Complaint Natures</h2>
                     </div>
                     
-                    <div class="stats-chart" id="complaint-nature-chart">
-                        <!-- Chart bars will be generated here -->
-                    </div>
+                    <table class="nature-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Nature</th>
+                                <th>Category</th>
+                                <th>Nature Types</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="natures-table-body">
+                            <tr>
+                                <td>1</td>
+                                <td>Air Conditioner</td>
+                                <td>E & M - II</td>
+                                <td>
+                                    <div class="nature-types">
+                                        <div class="nature-type">
+                                            Circuit Breaker 3 Pin Shoe Damage
+                                            <button class="remove-type">&times;</button>
+                                        </div>
+                                        <div class="nature-type">
+                                            Capacitor Damage
+                                            <button class="remove-type">&times;</button>
+                                        </div>
+                                        <div class="nature-type">
+                                            Candanser Fan Motor Damage
+                                            <button class="remove-type">&times;</button>
+                                        </div>
+                                    </div>
+                                    <div class="add-type-form">
+                                        <input type="text" placeholder="Add new type">
+                                        <button><i class="fas fa-plus"></i></button>
+                                    </div>
+                                </td>
+                                <td class="action-buttons">
+                                    <button class="action-btn">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="action-btn delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>Aluminium</td>
+                                <td>B & R - I, B & R - II, B & R - III</td>
+                                <td>
+                                    <div class="nature-types">
+                                        <div class="nature-type">
+                                            Glass Replacement
+                                            <button class="remove-type">&times;</button>
+                                        </div>
+                                        <div class="nature-type">
+                                            Lock Repair
+                                            <button class="remove-type">&times;</button>
+                                        </div>
+                                    </div>
+                                    <div class="add-type-form">
+                                        <input type="text" placeholder="Add new type">
+                                        <button><i class="fas fa-plus"></i></button>
+                                    </div>
+                                </td>
+                                <td class="action-buttons">
+                                    <button class="action-btn">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="action-btn delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>Cooking Range/Hub Stove</td>
+                                <td>E & M - II</td>
+                                <td>
+                                    <div class="nature-types">
+                                        <div class="nature-type">
+                                            Burner Repair
+                                            <button class="remove-type">&times;</button>
+                                        </div>
+                                        <div class="nature-type">
+                                            Ignition Failure
+                                            <button class="remove-type">&times;</button>
+                                        </div>
+                                    </div>
+                                    <div class="add-type-form">
+                                        <input type="text" placeholder="Add new type">
+                                        <button><i class="fas fa-plus"></i></button>
+                                    </div>
+                                </td>
+                                <td class="action-buttons">
+                                    <button class="action-btn">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="action-btn delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                     
-                    <div class="nature-chart">
-                        Complaint Nature Distribution Chart
-                    </div>
-                    
-                    <div style="margin-top: 30px;">
-                        <h3 style="margin-bottom: 15px;">Trend Analysis</h3>
-                        <p id="trend-analysis-text" style="line-height: 1.6;">
-                            <!-- Trend analysis text will be generated here -->
-                        </p>
-                    </div>
+                    <button class="btn btn-primary" style="margin-top: 20px;">
+                        <i class="fas fa-plus"></i>
+                        Add New Nature
+                    </button>
                 </div>
             </div>
         </div>
@@ -916,30 +1385,11 @@
             `).join('');
         }
 
-        // Function to generate complaint nature chart HTML
-        function generateComplaintNatureChart() {
-            return complaintsData.complaintNature.map(nature => `
-                <div class="chart-bar" style="height: ${nature.height}; background: ${nature.background};">
-                    <div class="chart-label">${nature.label}</div>
-                </div>
-            `).join('');
-        }
-
         // Initialize complaints content
         function initializeComplaintsContent() {
             const complaintCardsContainer = document.getElementById('complaint-cards-container');
             if (complaintCardsContainer) {
                 complaintCardsContainer.innerHTML = generateComplaintCards();
-            }
-            
-            const complaintNatureChart = document.getElementById('complaint-nature-chart');
-            if (complaintNatureChart) {
-                complaintNatureChart.innerHTML = generateComplaintNatureChart();
-            }
-            
-            const trendAnalysisText = document.getElementById('trend-analysis-text');
-            if (trendAnalysisText) {
-                trendAnalysisText.textContent = complaintsData.trendAnalysis;
             }
         }
 
@@ -960,6 +1410,10 @@
                     if (page === 'users') window.location.href = 'users.html';
                     if (page === 'store') window.location.href = 'store.html';
                     if (page === 'reporting') window.location.href = 'reporting.html';
+                    
+                    // Update active state
+                    document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                    this.classList.add('active');
                 });
             });
             
@@ -979,6 +1433,127 @@
                     // Show corresponding panel
                     const panelId = this.getAttribute('data-panel');
                     document.getElementById(panelId).classList.add('active');
+                });
+            });
+            
+            // Find user by phone number
+            document.getElementById('find-user-btn').addEventListener('click', function() {
+                const phone = document.getElementById('find-phone').value;
+                if (phone) {
+                    // Simulate finding user
+                    document.getElementById('user-addresses').classList.add('active');
+                    document.getElementById('complaint-form').style.display = 'block';
+                } else {
+                    alert('Please enter a phone number');
+                }
+            });
+            
+            // Show modal for new user
+            document.getElementById('find-phone').addEventListener('input', function() {
+                if (this.value === '1234567890') {
+                    // Simulate user not found
+                    document.getElementById('add-user-modal').classList.add('active');
+                }
+            });
+            
+            // Close modal
+            document.getElementById('close-add-user-modal').addEventListener('click', function() {
+                document.getElementById('add-user-modal').classList.remove('active');
+            });
+            
+            document.getElementById('cancel-add-user').addEventListener('click', function() {
+                document.getElementById('add-user-modal').classList.remove('active');
+            });
+            
+            // New building toggle
+            document.getElementById('new-building-checkbox').addEventListener('change', function() {
+                document.getElementById('new-building-form').style.display = 
+                    this.checked ? 'block' : 'none';
+            });
+            
+            // Select address
+            document.querySelectorAll('.user-address').forEach(address => {
+                address.addEventListener('click', function() {
+                    document.querySelectorAll('.user-address').forEach(a => 
+                        a.classList.remove('selected')
+                    );
+                    this.classList.add('selected');
+                });
+            });
+            
+            // Save new user
+            document.getElementById('save-new-user').addEventListener('click', function() {
+                const name = document.getElementById('customer-name').value;
+                const phone = document.getElementById('customer-phone').value;
+                
+                if (!name || !phone) {
+                    alert('Please fill in all required fields');
+                    return;
+                }
+                
+                // In a real app, this would save to database
+                alert('User added successfully!');
+                document.getElementById('add-user-modal').classList.remove('active');
+                
+                // Show addresses and complaint form
+                document.getElementById('user-addresses').classList.add('active');
+                document.getElementById('complaint-form').style.display = 'block';
+            });
+            
+            // Launch complaint
+            document.getElementById('launch-complaint-btn').addEventListener('click', function() {
+                const category = document.getElementById('category-select').value;
+                const skillman = document.getElementById('skillman-select').value;
+                const poc = document.getElementById('poc').value;
+                
+                if (!category || !skillman || !poc) {
+                    alert('Please fill in all required fields');
+                    return;
+                }
+                
+                alert('Complaint launched successfully!');
+                
+                // Reset form
+                document.getElementById('find-phone').value = '';
+                document.getElementById('user-addresses').classList.remove('active');
+                document.querySelectorAll('.user-address').forEach(a => 
+                    a.classList.remove('selected')
+                );
+                document.getElementById('complaint-form').style.display = 'none';
+                document.getElementById('category-select').value = '';
+                document.getElementById('category-description').value = '';
+                document.getElementById('skillman-select').value = '';
+                document.getElementById('poc').value = '';
+            });
+            
+            // Nature type management
+            document.querySelectorAll('.remove-type').forEach(button => {
+                button.addEventListener('click', function() {
+                    this.parentElement.remove();
+                });
+            });
+            
+            document.querySelectorAll('.add-type-form button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const input = this.previousElementSibling;
+                    const type = input.value.trim();
+                    
+                    if (type) {
+                        const typeElement = document.createElement('div');
+                        typeElement.className = 'nature-type';
+                        typeElement.innerHTML = `
+                            ${type}
+                            <button class="remove-type">&times;</button>
+                        `;
+                        
+                        const removeBtn = typeElement.querySelector('.remove-type');
+                        removeBtn.addEventListener('click', function() {
+                            typeElement.remove();
+                        });
+                        
+                        this.parentElement.previousElementSibling.appendChild(typeElement);
+                        input.value = '';
+                    }
                 });
             });
         });
