@@ -888,6 +888,101 @@
         .complaints-history-table tr.selected {
             background: rgba(110, 142, 251, 0.2);
         }
+        
+        /* New Nature Panel Styles */
+        .nature-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .nature-table th {
+            background: rgba(110, 142, 251, 0.1);
+            color: var(--primary);
+            font-weight: 700;
+            padding: 16px;
+            text-align: left;
+        }
+        
+        .nature-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .nature-table tr:hover {
+            background: rgba(110, 142, 251, 0.05);
+        }
+        
+        .nature-types {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .nature-type {
+            background: rgba(110, 142, 251, 0.1);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .remove-type {
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            margin-left: 8px;
+            font-weight: bold;
+        }
+        
+        .add-type-form {
+            display: flex;
+            margin-top: 10px;
+        }
+        
+        .add-type-form input {
+            flex: 1;
+            padding: 10px 15px;
+            border-radius: 20px 0 0 20px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        .add-type-form button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0 20px;
+            border-radius: 0 20px 20px 0;
+            cursor: pointer;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .action-btn-nature {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .action-btn-nature:hover {
+            opacity: 0.9;
+        }
+        
+        .action-btn-nature.delete {
+            background: var(--danger);
+        }
 
         @media (max-width: 992px) {
             .complaints-section-container {
@@ -1279,13 +1374,13 @@
                     </table>
                 </div>
                 
-                <!-- Natures Panel -->
+                <!-- Updated Natures Panel -->
                 <div id="natures" class="complaints-panel">
                     <div class="panel-header">
                         <h2 class="panel-title">Complaint Natures</h2>
                     </div>
                     
-                    <table class="locations-table">
+                    <table class="nature-table">
                         <thead>
                             <tr>
                                 <th>#</th>
@@ -1295,38 +1390,96 @@
                                 <th>Action</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="natures-table-body">
                             <tr>
                                 <td>1</td>
                                 <td>Air Conditioner</td>
                                 <td>E & M - II</td>
                                 <td>
-                                    Circuit Breaker, Capacitor, Fan Motor
+                                    <div class="nature-types">
+                                        <div class="nature-type">
+                                            Circuit Breaker 3 Pin Shoe Damage
+                                            <button class="remove-type">&times;</button>
+                                        </div>
+                                        <div class="nature-type">
+                                            Capacitor Damage
+                                            <button class="remove-type">&times;</button>
+                                        </div>
+                                        <div class="nature-type">
+                                            Candanser Fan Motor Damage
+                                            <button class="remove-type">&times;</button>
+                                        </div>
+                                    </div>
+                                    <div class="add-type-form">
+                                        <input type="text" placeholder="Add new type">
+                                        <button><i class="fas fa-plus"></i></button>
+                                    </div>
                                 </td>
-                                <td>
-                                    <button class="btn btn-primary">Edit</button>
+                                <td class="action-buttons">
+                                    <button class="action-btn-nature">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="action-btn-nature delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
                                 </td>
                             </tr>
                             <tr>
                                 <td>2</td>
                                 <td>Aluminium</td>
-                                <td>B & R - I</td>
+                                <td>B & R - I, B & R - II, B & R - III</td>
                                 <td>
-                                    Glass Replacement, Lock Repair
+                                    <div class="nature-types">
+                                        <div class="nature-type">
+                                            Glass Replacement
+                                            <button class="remove-type">&times;</button>
+                                        </div>
+                                        <div class="nature-type">
+                                            Lock Repair
+                                            <button class="remove-type">&times;</button>
+                                        </div>
+                                    </div>
+                                    <div class="add-type-form">
+                                        <input type="text" placeholder="Add new type">
+                                        <button><i class="fas fa-plus"></i></button>
+                                    </div>
                                 </td>
-                                <td>
-                                    <button class="btn btn-primary">Edit</button>
+                                <td class="action-buttons">
+                                    <button class="action-btn-nature">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="action-btn-nature delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
                                 </td>
                             </tr>
                             <tr>
                                 <td>3</td>
-                                <td>Electrical</td>
-                                <td>E & M - I</td>
+                                <td>Cooking Range/Hub Stove</td>
+                                <td>E & M - II</td>
                                 <td>
-                                    Wiring, Switches, Outlets
+                                    <div class="nature-types">
+                                        <div class="nature-type">
+                                            Burner Repair
+                                            <button class="remove-type">&times;</button>
+                                        </div>
+                                        <div class="nature-type">
+                                            Ignition Failure
+                                            <button class="remove-type">&times;</button>
+                                        </div>
+                                    </div>
+                                    <div class="add-type-form">
+                                        <input type="text" placeholder="Add new type">
+                                        <button><i class="fas fa-plus"></i></button>
+                                    </div>
                                 </td>
-                                <td>
-                                    <button class="btn btn-primary">Edit</button>
+                                <td class="action-buttons">
+                                    <button class="action-btn-nature">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="action-btn-nature delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
                                 </td>
                             </tr>
                         </tbody>
@@ -2000,6 +2153,37 @@
                     // If switching to all-complaints, load the table
                     if (panelId === 'all-complaints') {
                         loadComplaintsTable();
+                    }
+                });
+            });
+            
+            // Nature type management (new from Code 2)
+            document.querySelectorAll('.remove-type').forEach(button => {
+                button.addEventListener('click', function() {
+                    this.parentElement.remove();
+                });
+            });
+            
+            document.querySelectorAll('.add-type-form button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const input = this.previousElementSibling;
+                    const type = input.value.trim();
+                    
+                    if (type) {
+                        const typeElement = document.createElement('div');
+                        typeElement.className = 'nature-type';
+                        typeElement.innerHTML = `
+                            ${type}
+                            <button class="remove-type">&times;</button>
+                        `;
+                        
+                        const removeBtn = typeElement.querySelector('.remove-type');
+                        removeBtn.addEventListener('click', function() {
+                            typeElement.remove();
+                        });
+                        
+                        this.parentElement.previousElementSibling.appendChild(typeElement);
+                        input.value = '';
                     }
                 });
             });
