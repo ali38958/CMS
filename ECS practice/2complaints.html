@@ -27,6 +27,7 @@
             --nav-bg: rgba(255, 255, 255, 0.85);
             --nav-active: rgba(110, 142, 251, 0.15);
             --nav-hover: rgba(110, 142, 251, 0.08);
+            --success: #4caf50;
         }
 
         body {
@@ -542,19 +543,6 @@
             font-size: 14px;
         }
         
-        .nature-chart {
-            height: 300px;
-            background: linear-gradient(45deg, #d0e0ff, #e3d5ff);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--primary);
-            font-size: 24px;
-            font-weight: 700;
-            margin-top: 20px;
-        }
-        
         .priority {
             display: inline-block;
             width: 12px;
@@ -579,41 +567,6 @@
             box-shadow: 0 0 8px rgba(76, 175, 80, 0.4);
         }
         
-        .stats-chart {
-            height: 250px;
-            display: flex;
-            align-items: flex-end;
-            justify-content: space-around;
-            margin-top: 20px;
-            padding: 0 15px;
-        }
-
-        .chart-bar {
-            width: 45px;
-            background: linear-gradient(to top, var(--primary), var(--secondary));
-            border-radius: 8px 8px 0 0;
-            position: relative;
-            transition: all 0.5s ease;
-            box-shadow: 0 6px 18px rgba(110, 142, 251, 0.35);
-        }
-
-        .chart-bar:hover {
-            transform: scale(1.08);
-            opacity: 0.9;
-        }
-
-        .chart-label {
-            position: absolute;
-            bottom: -30px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 13px;
-            color: var(--gray);
-            font-weight: 500;
-            white-space: nowrap;
-        }
-        
-        /* New styles for the updated design */
         .action-select {
             width: 100%;
             padding: 14px 18px;
@@ -743,7 +696,7 @@
             border-left: 4px solid var(--warning);
         }
         
-        .nature-table {
+        .locations-table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
@@ -752,7 +705,7 @@
             overflow: hidden;
         }
         
-        .nature-table th {
+        .locations-table th {
             background: rgba(110, 142, 251, 0.1);
             color: var(--primary);
             font-weight: 700;
@@ -760,83 +713,182 @@
             text-align: left;
         }
         
-        .nature-table td {
+        .locations-table td {
             padding: 14px 16px;
             border-bottom: 1px solid rgba(0,0,0,0.05);
         }
         
-        .nature-table tr:hover {
+        .locations-table tr:hover {
             background: rgba(110, 142, 251, 0.05);
         }
         
-        .nature-types {
+        .locations-table tr.selected {
+            background: rgba(110, 142, 251, 0.2);
+        }
+        
+        .user-found-details {
+            background: rgba(76, 175, 80, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--accent);
+            display: none;
+        }
+        
+        .user-found-details.active {
+            display: block;
+        }
+        
+        .user-detail-row {
             display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
+            margin-bottom: 10px;
         }
         
-        .nature-type {
-            background: rgba(110, 142, 251, 0.1);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
+        .user-detail-label {
+            font-weight: 600;
+            width: 120px;
+            color: var(--dark);
         }
         
-        .remove-type {
-            background: none;
-            border: none;
-            color: var(--danger);
-            cursor: pointer;
-            margin-left: 8px;
-            font-weight: bold;
-        }
-        
-        .add-type-form {
-            display: flex;
-            margin-top: 10px;
-        }
-        
-        .add-type-form input {
+        .user-detail-value {
             flex: 1;
-            padding: 10px 15px;
-            border-radius: 20px 0 0 20px;
-            border: 1px solid rgba(0,0,0,0.1);
+            color: var(--gray);
         }
         
-        .add-type-form button {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 0 20px;
-            border-radius: 0 20px 20px 0;
+        /* Status badges */
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .status-open {
+            background: rgba(33, 150, 243, 0.1);
+            color: #2196F3;
+        }
+        
+        .status-in-progress {
+            background: rgba(255, 152, 0, 0.1);
+            color: #FF9800;
+        }
+        
+        .status-resolved {
+            background: rgba(76, 175, 80, 0.1);
+            color: #4CAF50;
+        }
+        
+        .status-closed {
+            background: rgba(158, 158, 158, 0.1);
+            color: #9E9E9E;
+        }
+        
+        /* Editable table */
+        .editable-cell {
+            position: relative;
+        }
+        
+        .editable-cell .static-value {
+            padding: 5px 10px;
+            border-radius: 4px;
             cursor: pointer;
+            transition: background 0.2s;
         }
         
-        .action-buttons {
+        .editable-cell .static-value:hover {
+            background: rgba(110, 142, 251, 0.1);
+        }
+        
+        .editable-cell .edit-input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: transparent;
+            padding: 5px 10px;
+            font-size: inherit;
+            outline: 2px solid var(--primary);
+            border-radius: 4px;
+        }
+        
+        .editable-select {
+            width: 100%;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            outline: none;
+        }
+        
+        .editable-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(110, 142, 251, 0.2);
+        }
+        
+        .action-cell {
             display: flex;
-            gap: 10px;
+            gap: 5px;
         }
         
         .action-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 8px 15px;
+            padding: 5px 10px;
+            border-radius: 4px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.2s;
+            border: none;
+            background: rgba(110, 142, 251, 0.1);
+            color: var(--primary);
         }
         
         .action-btn:hover {
-            opacity: 0.9;
+            background: var(--primary);
+            color: white;
         }
         
         .action-btn.delete {
-            background: var(--danger);
+            background: rgba(244, 67, 54, 0.1);
+            color: var(--danger);
         }
         
+        .action-btn.delete:hover {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .complaints-history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border-radius: 12px;
+            overflow: hidden;
+            background: white;
+        }
+        
+        .complaints-history-table th {
+            background: rgba(110, 142, 251, 0.1);
+            color: var(--primary);
+            font-weight: 700;
+            padding: 16px;
+            text-align: left;
+        }
+        
+        .complaints-history-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .complaints-history-table tr:hover {
+            background: rgba(110, 142, 251, 0.05);
+        }
+        
+        .complaints-history-table tr.selected {
+            background: rgba(110, 142, 251, 0.2);
+        }
+
         @media (max-width: 992px) {
             .complaints-section-container {
                 grid-template-columns: 1fr;
@@ -852,6 +904,11 @@
                 margin-bottom: 0;
                 flex: 1;
                 min-width: 150px;
+            }
+            
+            .complaints-history-table {
+                display: block;
+                overflow-x: auto;
             }
         }
 
@@ -903,6 +960,15 @@
             .form-actions {
                 flex-direction: column;
             }
+            
+            .user-detail-row {
+                flex-direction: column;
+            }
+            
+            .user-detail-label {
+                width: 100%;
+                margin-bottom: 5px;
+            }
         }
     </style>
 </head>
@@ -933,10 +999,6 @@
                     <input type="tel" id="customer-phone" class="form-control" placeholder="Enter phone number" required>
                 </div>
             </div>
-            <div class="form-group">
-                <label for="customer-username">User Name</label>
-                <input type="text" id="customer-username" class="form-control" placeholder="Enter username (optional)" readonly>
-            </div>
             
             <div class="section-title">Address Information</div>
             <div class="form-group">
@@ -955,6 +1017,24 @@
                 <label for="new-building-checkbox">New Building</label>
             </div>
             
+            <!-- Existing locations table -->
+            <div id="existing-locations-section">
+                <table class="locations-table" id="locations-table">
+                    <thead>
+                        <tr>
+                            <th>Building Name</th>
+                            <th>Colony</th>
+                            <th>Building Type</th>
+                            <th>Building No</th>
+                        </tr>
+                    </thead>
+                    <tbody id="locations-table-body">
+                        <!-- Locations will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- New building form -->
             <div id="new-building-form" style="display: none;">
                 <div class="form-row">
                     <div class="form-group">
@@ -1104,18 +1184,22 @@
                         </div>
                     </div>
                     
+                    <!-- User details box when found -->
+                    <div class="user-found-details" id="user-found-details">
+                        <h3><i class="fas fa-user-check"></i> User Found</h3>
+                        <div class="user-detail-row">
+                            <div class="user-detail-label">Name:</div>
+                            <div class="user-detail-value" id="found-user-name"></div>
+                        </div>
+                        <div class="user-detail-row">
+                            <div class="user-detail-label">Phone:</div>
+                            <div class="user-detail-value" id="found-user-phone"></div>
+                        </div>
+                    </div>
+                    
                     <div class="user-addresses" id="user-addresses">
                         <h3>Select an Address</h3>
-                        <div class="user-address" data-address-id="1">
-                            <h4>Primary Address</h4>
-                            <p>123 Main St, Green Valley</p>
-                            <p>Building 5, Apartment 301 (2BHK)</p>
-                        </div>
-                        <div class="user-address" data-address-id="2">
-                            <h4>Work Address</h4>
-                            <p>456 Business Ave, Sunset Hills</p>
-                            <p>Commercial Building, Suite 1200</p>
-                        </div>
+                        <!-- User addresses will be populated here -->
                     </div>
                     
                     <div class="form-group" id="complaint-form" style="display: none;">
@@ -1142,10 +1226,10 @@
                                 <label for="skillman-select" class="required">Assign Skillman</label>
                                 <select id="skillman-select" class="form-control" required>
                                     <option value="">Select Skillman</option>
-                                    <option value="john">John Davis (Electrician)</option>
-                                    <option value="mark">Mark Wilson (Plumber)</option>
-                                    <option value="lisa">Lisa Thompson (Carpenter)</option>
-                                    <option value="mike">Mike Chen (AC Specialist)</option>
+                                    <option value="John Davis (Electrician)">John Davis (Electrician)</option>
+                                    <option value="Mark Wilson (Plumber)">Mark Wilson (Plumber)</option>
+                                    <option value="Lisa Thompson (Carpenter)">Lisa Thompson (Carpenter)</option>
+                                    <option value="Mike Chen (AC Specialist)">Mike Chen (AC Specialist)</option>
                                 </select>
                             </div>
                             <div class="form-group">
@@ -1168,16 +1252,31 @@
                     </div>
                     
                     <div class="search-box">
-                        <input type="text" class="form-control" placeholder="Search by ID, customer name, or subject">
-                        <button class="btn btn-primary">
+                        <input type="text" id="complaint-search" class="form-control" placeholder="Search by ID, customer name, or subject">
+                        <button class="btn btn-primary" id="search-complaints-btn">
                             <i class="fas fa-search"></i>
                             Search
                         </button>
                     </div>
                     
-                    <div class="complaint-cards" id="complaint-cards-container">
-                        <!-- Complaint cards will be generated here -->
-                    </div>
+                    <table class="complaints-history-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Customer</th>
+                                <th>Phone</th>
+                                <th>Category</th>
+                                <th>Description</th>
+                                <th>Skillman</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="complaints-table-body">
+                            <!-- Complaints will be populated here -->
+                        </tbody>
+                    </table>
                 </div>
                 
                 <!-- Natures Panel -->
@@ -1186,7 +1285,7 @@
                         <h2 class="panel-title">Complaint Natures</h2>
                     </div>
                     
-                    <table class="nature-table">
+                    <table class="locations-table">
                         <thead>
                             <tr>
                                 <th>#</th>
@@ -1196,96 +1295,38 @@
                                 <th>Action</th>
                             </tr>
                         </thead>
-                        <tbody id="natures-table-body">
+                        <tbody>
                             <tr>
                                 <td>1</td>
                                 <td>Air Conditioner</td>
                                 <td>E & M - II</td>
                                 <td>
-                                    <div class="nature-types">
-                                        <div class="nature-type">
-                                            Circuit Breaker 3 Pin Shoe Damage
-                                            <button class="remove-type">&times;</button>
-                                        </div>
-                                        <div class="nature-type">
-                                            Capacitor Damage
-                                            <button class="remove-type">&times;</button>
-                                        </div>
-                                        <div class="nature-type">
-                                            Candanser Fan Motor Damage
-                                            <button class="remove-type">&times;</button>
-                                        </div>
-                                    </div>
-                                    <div class="add-type-form">
-                                        <input type="text" placeholder="Add new type">
-                                        <button><i class="fas fa-plus"></i></button>
-                                    </div>
+                                    Circuit Breaker, Capacitor, Fan Motor
                                 </td>
-                                <td class="action-buttons">
-                                    <button class="action-btn">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="action-btn delete">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
+                                <td>
+                                    <button class="btn btn-primary">Edit</button>
                                 </td>
                             </tr>
                             <tr>
                                 <td>2</td>
                                 <td>Aluminium</td>
-                                <td>B & R - I, B & R - II, B & R - III</td>
+                                <td>B & R - I</td>
                                 <td>
-                                    <div class="nature-types">
-                                        <div class="nature-type">
-                                            Glass Replacement
-                                            <button class="remove-type">&times;</button>
-                                        </div>
-                                        <div class="nature-type">
-                                            Lock Repair
-                                            <button class="remove-type">&times;</button>
-                                        </div>
-                                    </div>
-                                    <div class="add-type-form">
-                                        <input type="text" placeholder="Add new type">
-                                        <button><i class="fas fa-plus"></i></button>
-                                    </div>
+                                    Glass Replacement, Lock Repair
                                 </td>
-                                <td class="action-buttons">
-                                    <button class="action-btn">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="action-btn delete">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
+                                <td>
+                                    <button class="btn btn-primary">Edit</button>
                                 </td>
                             </tr>
                             <tr>
                                 <td>3</td>
-                                <td>Cooking Range/Hub Stove</td>
-                                <td>E & M - II</td>
+                                <td>Electrical</td>
+                                <td>E & M - I</td>
                                 <td>
-                                    <div class="nature-types">
-                                        <div class="nature-type">
-                                            Burner Repair
-                                            <button class="remove-type">&times;</button>
-                                        </div>
-                                        <div class="nature-type">
-                                            Ignition Failure
-                                            <button class="remove-type">&times;</button>
-                                        </div>
-                                    </div>
-                                    <div class="add-type-form">
-                                        <input type="text" placeholder="Add new type">
-                                        <button><i class="fas fa-plus"></i></button>
-                                    </div>
+                                    Wiring, Switches, Outlets
                                 </td>
-                                <td class="action-buttons">
-                                    <button class="action-btn">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="action-btn delete">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
+                                <td>
+                                    <button class="btn btn-primary">Edit</button>
                                 </td>
                             </tr>
                         </tbody>
@@ -1301,158 +1342,423 @@
     </div>
     
     <script>
-        // Complaints data
-        const complaintsData = {
-            complaintCards: [
-                {
-                    id: "#COMP-284",
-                    date: "Today, 10:30 AM",
-                    title: "Product not working after update",
-                    desc: "After the latest software update, the product stopped functioning...",
-                    customer: "Sarah Williams",
-                    priority: { level: "high", text: "High" }
-                },
-                {
-                    id: "#COMP-283",
-                    date: "Today, 09:15 AM",
-                    title: "Billing discrepancy on invoice",
-                    desc: "My monthly invoice shows charges for services I didn't use...",
-                    customer: "Michael Brown",
-                    priority: { level: "medium", text: "Medium" }
-                },
-                {
-                    id: "#COMP-282",
-                    date: "Yesterday, 04:45 PM",
-                    title: "API connection issues",
-                    desc: "Our integration with your API has been failing consistently for the past 24 hours...",
-                    customer: "Tech Solutions Inc.",
-                    priority: { level: "high", text: "High" }
-                },
-                {
-                    id: "#COMP-281",
-                    date: "Yesterday, 02:20 PM",
-                    title: "Request for feature addition",
-                    desc: "I would like to request a dark mode option for the mobile application...",
-                    customer: "Jennifer Lopez",
-                    priority: { level: "low", text: "Low" }
-                }
-            ],
-            complaintNature: [
-                {
-                    label: "Technical",
-                    height: "90%",
-                    background: "linear-gradient(to top, #6e8efb, #a777e3)"
-                },
-                {
-                    label: "Billing",
-                    height: "70%",
-                    background: "linear-gradient(to top, #4caf50, #8bc34a)"
-                },
-                {
-                    label: "Service",
-                    height: "60%",
-                    background: "linear-gradient(to top, #ff9800, #ffc107)"
-                },
-                {
-                    label: "Feature",
-                    height: "40%",
-                    background: "linear-gradient(to top, #9c27b0, #e91e63)"
-                },
-                {
-                    label: "Other",
-                    height: "30%",
-                    background: "linear-gradient(to top, #f44336, #ff5252)"
-                }
-            ],
-            trendAnalysis: "Technical complaints have increased by 15% this month, primarily due to the recent software update. Billing issues have decreased by 8% following the implementation of our new payment processing system. Service quality complaints remain steady, while feature requests continue to grow as our user base expands."
-        };
-
-        // Function to generate complaint cards HTML
-        function generateComplaintCards() {
-            return complaintsData.complaintCards.map(card => `
-                <div class="complaint-card">
-                    <div class="complaint-card-header">
-                        <div class="complaint-card-id">${card.id}</div>
-                        <div class="complaint-card-date">${card.date}</div>
-                    </div>
-                    <div class="complaint-card-title">${card.title}</div>
-                    <div class="complaint-card-desc">${card.desc}</div>
-                    <div class="complaint-card-footer">
-                        <span>${card.customer}</span>
-                        <span><span class="priority ${card.priority.level}"></span> ${card.priority.text}</span>
-                    </div>
+        // Initialize localStorage if not already set
+        function initializeLocalStorage() {
+            if (!localStorage.getItem('complaintCloudUsers')) {
+                const initialUsers = [
+                    {
+                        id: 1,
+                        name: "Sarah Williams",
+                        phone: "+1 234 567 890",
+                        addresses: [
+                            {
+                                id: 1,
+                                name: "Home Address",
+                                street: "123 Main St",
+                                colony: "Green Valley",
+                                buildingType: "Residential",
+                                buildingNo: "5",
+                                apartmentNo: "301",
+                                apartmentType: "2BHK"
+                            }
+                        ]
+                    },
+                    {
+                        id: 2,
+                        name: "Michael Brown",
+                        phone: "+1 345 678 901",
+                        addresses: [
+                            {
+                                id: 1,
+                                name: "Office Address",
+                                street: "456 Business Ave",
+                                colony: "Sunset Hills",
+                                buildingType: "Commercial",
+                                buildingNo: "12",
+                                apartmentNo: "Suite 1200",
+                                apartmentType: "Office"
+                            },
+                            {
+                                id: 2,
+                                name: "Home Address",
+                                street: "789 Oak Lane",
+                                colony: "River View",
+                                buildingType: "Residential",
+                                buildingNo: "7B",
+                                apartmentNo: "102",
+                                apartmentType: "3BHK"
+                            }
+                        ]
+                    }
+                ];
+                localStorage.setItem('complaintCloudUsers', JSON.stringify(initialUsers));
+            }
+            
+            // Initialize complaints storage
+            if (!localStorage.getItem('complaintCloudComplaints')) {
+                const initialComplaints = [
+                    {
+                        id: 1001,
+                        customerName: "Sarah Williams",
+                        phone: "+1 234 567 890",
+                        address: "123 Main St, Green Valley, Building 5, Apt 301 (2BHK)",
+                        category: "Electrical",
+                        description: "Power outage in living room",
+                        skillman: "John Davis (Electrician)",
+                        status: "In Progress",
+                        date: "2023-05-15"
+                    },
+                    {
+                        id: 1002,
+                        customerName: "Michael Brown",
+                        phone: "+1 345 678 901",
+                        address: "789 Oak Lane, River View, Building 7B, Apt 102 (3BHK)",
+                        category: "Plumbing",
+                        description: "Kitchen sink leakage",
+                        skillman: "Mark Wilson (Plumber)",
+                        status: "Resolved",
+                        date: "2023-05-10"
+                    },
+                    {
+                        id: 1003,
+                        customerName: "Sarah Williams",
+                        phone: "+1 234 567 890",
+                        address: "123 Main St, Green Valley, Building 5, Apt 301 (2BHK)",
+                        category: "Air Conditioner",
+                        description: "AC not cooling properly",
+                        skillman: "Mike Chen (AC Specialist)",
+                        status: "Open",
+                        date: "2023-05-18"
+                    }
+                ];
+                localStorage.setItem('complaintCloudComplaints', JSON.stringify(initialComplaints));
+            }
+        }
+        
+        // Dummy locations data
+        const dummyLocations = [
+            {
+                id: 1,
+                name: "Green Valley Heights",
+                colony: "Green Valley",
+                buildingType: "Residential",
+                buildingNo: "GV-12"
+            },
+            {
+                id: 2,
+                name: "Sunset Business Center",
+                colony: "Sunset Hills",
+                buildingType: "Commercial",
+                buildingNo: "SH-05"
+            },
+            {
+                id: 3,
+                name: "River View Apartments",
+                colony: "River View",
+                buildingType: "Residential",
+                buildingNo: "RV-08"
+            },
+            {
+                id: 4,
+                name: "Central Plaza",
+                colony: "Downtown",
+                buildingType: "Mixed Use",
+                buildingNo: "CT-01"
+            },
+            {
+                id: 5,
+                name: "Pine Grove Complex",
+                colony: "North Park",
+                buildingType: "Residential",
+                buildingNo: "PG-23"
+            }
+        ];
+        
+        // Get users from localStorage
+        function getUsers() {
+            return JSON.parse(localStorage.getItem('complaintCloudUsers')) || [];
+        }
+        
+        // Save users to localStorage
+        function saveUsers(users) {
+            localStorage.setItem('complaintCloudUsers', JSON.stringify(users));
+        }
+        
+        // Get complaints from localStorage
+        function getComplaints() {
+            return JSON.parse(localStorage.getItem('complaintCloudComplaints')) || [];
+        }
+        
+        // Save complaints to localStorage
+        function saveComplaints(complaints) {
+            localStorage.setItem('complaintCloudComplaints', JSON.stringify(complaints));
+        }
+        
+        // Add a new user
+        function addNewUser(user) {
+            const users = getUsers();
+            const newUser = {
+                id: Date.now(), // Generate unique ID
+                ...user
+            };
+            users.push(newUser);
+            saveUsers(users);
+            return newUser;
+        }
+        
+        // Add a new complaint
+        function addNewComplaint(complaint) {
+            const complaints = getComplaints();
+            const newComplaint = {
+                id: Date.now(), // Generate unique ID
+                ...complaint
+            };
+            complaints.push(newComplaint);
+            saveComplaints(complaints);
+            return newComplaint;
+        }
+        
+        // Update a complaint
+        function updateComplaint(complaintId, updates) {
+            const complaints = getComplaints();
+            const index = complaints.findIndex(c => c.id == complaintId);
+            if (index !== -1) {
+                complaints[index] = { ...complaints[index], ...updates };
+                saveComplaints(complaints);
+                return true;
+            }
+            return false;
+        }
+        
+        // Delete a complaint
+        function deleteComplaint(complaintId) {
+            const complaints = getComplaints();
+            const filtered = complaints.filter(c => c.id != complaintId);
+            saveComplaints(filtered);
+            return true;
+        }
+        
+        // Find user by phone number
+        function findUserByPhone(phone) {
+            const users = getUsers();
+            return users.find(user => user.phone === phone);
+        }
+        
+        // Generate address HTML
+        function generateAddressHTML(address) {
+            return `
+                <div class="user-address" data-address-id="${address.id}">
+                    <h4>${address.name}</h4>
+                    <p>${address.street}, ${address.colony}</p>
+                    <p>Building ${address.buildingNo}, ${address.apartmentNo} (${address.apartmentType})</p>
                 </div>
+            `;
+        }
+        
+        // Generate location table rows
+        function generateLocationRows(locations) {
+            return locations.map(location => `
+                <tr data-location-id="${location.id}">
+                    <td>${location.name}</td>
+                    <td>${location.colony}</td>
+                    <td>${location.buildingType}</td>
+                    <td>${location.buildingNo}</td>
+                </tr>
             `).join('');
         }
-
-        // Initialize complaints content
-        function initializeComplaintsContent() {
-            const complaintCardsContainer = document.getElementById('complaint-cards-container');
-            if (complaintCardsContainer) {
-                complaintCardsContainer.innerHTML = generateComplaintCards();
+        
+        // Generate complaints table rows
+        function generateComplaintsTableRows(complaints) {
+            return complaints.map(complaint => `
+                <tr data-complaint-id="${complaint.id}">
+                    <td>${complaint.id}</td>
+                    <td>${complaint.customerName}</td>
+                    <td>${complaint.phone}</td>
+                    <td>${complaint.category}</td>
+                    <td>${complaint.description}</td>
+                    <td class="editable-cell">
+                        <div class="static-value" data-field="skillman">${complaint.skillman}</div>
+                        <select class="editable-select" style="display:none;" data-field="skillman">
+                            <option value="John Davis (Electrician)" ${complaint.skillman === 'John Davis (Electrician)' ? 'selected' : ''}>John Davis (Electrician)</option>
+                            <option value="Mark Wilson (Plumber)" ${complaint.skillman === 'Mark Wilson (Plumber)' ? 'selected' : ''}>Mark Wilson (Plumber)</option>
+                            <option value="Lisa Thompson (Carpenter)" ${complaint.skillman === 'Lisa Thompson (Carpenter)' ? 'selected' : ''}>Lisa Thompson (Carpenter)</option>
+                            <option value="Mike Chen (AC Specialist)" ${complaint.skillman === 'Mike Chen (AC Specialist)' ? 'selected' : ''}>Mike Chen (AC Specialist)</option>
+                        </select>
+                    </td>
+                    <td class="editable-cell">
+                        <div class="static-value" data-field="status">${complaint.status}</div>
+                        <select class="editable-select" style="display:none;" data-field="status">
+                            <option value="Open" ${complaint.status === 'Open' ? 'selected' : ''}>Open</option>
+                            <option value="In Progress" ${complaint.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                            <option value="Resolved" ${complaint.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
+                            <option value="Closed" ${complaint.status === 'Closed' ? 'selected' : ''}>Closed</option>
+                        </select>
+                    </td>
+                    <td>${complaint.date}</td>
+                    <td class="action-cell">
+                        <button class="action-btn save-btn" style="display:none;">
+                            <i class="fas fa-save"></i>
+                        </button>
+                        <button class="action-btn edit-btn">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="action-btn delete-btn delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        // Load complaints into the table
+        function loadComplaintsTable() {
+            const complaints = getComplaints();
+            const tbody = document.getElementById('complaints-table-body');
+            if (tbody) {
+                tbody.innerHTML = generateComplaintsTableRows(complaints);
+                
+                // Add event listeners to edit buttons
+                document.querySelectorAll('.edit-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const row = this.closest('tr');
+                        // For each editable cell in the row
+                        row.querySelectorAll('.editable-cell').forEach(cell => {
+                            const staticValue = cell.querySelector('.static-value');
+                            const select = cell.querySelector('.editable-select');
+                            // Show the select and hide the static value
+                            staticValue.style.display = 'none';
+                            select.style.display = 'block';
+                        });
+                        // Hide edit button and show save button
+                        this.style.display = 'none';
+                        row.querySelector('.save-btn').style.display = 'block';
+                    });
+                });
+                
+                // Add event listeners to save buttons
+                document.querySelectorAll('.save-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const row = this.closest('tr');
+                        const complaintId = row.dataset.complaintId;
+                        // For each editable cell, get the value from the select
+                        let updates = {};
+                        row.querySelectorAll('.editable-cell').forEach(cell => {
+                            const field = cell.querySelector('.static-value').dataset.field;
+                            const select = cell.querySelector('.editable-select');
+                            updates[field] = select.value;
+                        });
+                        
+                        // Update complaint in localStorage
+                        updateComplaint(complaintId, updates);
+                        
+                        // Update the static values in the row
+                        row.querySelectorAll('.editable-cell').forEach(cell => {
+                            const staticValue = cell.querySelector('.static-value');
+                            const select = cell.querySelector('.editable-select');
+                            staticValue.textContent = select.value;
+                            // Show static value and hide select
+                            staticValue.style.display = 'block';
+                            select.style.display = 'none';
+                        });
+                        
+                        // Hide save button and show edit button
+                        this.style.display = 'none';
+                        row.querySelector('.edit-btn').style.display = 'block';
+                        
+                        alert('Complaint updated successfully!');
+                    });
+                });
+                
+                // Add event listeners to delete buttons
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const row = this.closest('tr');
+                        const complaintId = row.dataset.complaintId;
+                        if (confirm('Are you sure you want to delete this complaint?')) {
+                            deleteComplaint(complaintId);
+                            row.remove();
+                            alert('Complaint deleted successfully!');
+                        }
+                    });
+                });
             }
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize complaints content
-            initializeComplaintsContent();
+            // Initialize localStorage
+            initializeLocalStorage();
             
-            // Logout button functionality
-            document.querySelector('.logout-btn').addEventListener('click', function() {
-                alert('Logging out... Redirecting to login page.');
+            // Populate locations table
+            const locationsTableBody = document.getElementById('locations-table-body');
+            if (locationsTableBody) {
+                locationsTableBody.innerHTML = generateLocationRows(dummyLocations);
+            }
+            
+            // Load complaints table initially
+            loadComplaintsTable();
+            
+            // Toggle new building form
+            document.getElementById('new-building-checkbox').addEventListener('change', function() {
+                const isChecked = this.checked;
+                document.getElementById('new-building-form').style.display = 
+                    isChecked ? 'block' : 'none';
+                document.getElementById('existing-locations-section').style.display = 
+                    isChecked ? 'none' : 'block';
             });
             
-            // Navigation functionality
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.addEventListener('click', function() {
-                    const page = this.textContent.trim().toLowerCase();
-                    if (page === 'dashboard') window.location.href = 'dashboard.html';
-                    if (page === 'users') window.location.href = 'users.html';
-                    if (page === 'store') window.location.href = 'store.html';
-                    if (page === 'reporting') window.location.href = 'reporting.html';
-                    
-                    // Update active state
-                    document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-                    this.classList.add('active');
-                });
-            });
-            
-            // Complaints sidebar navigation
-            const complaintsOptions = document.querySelectorAll('.complaints-option');
-            const complaintsPanels = document.querySelectorAll('.complaints-panel');
-            
-            complaintsOptions.forEach(option => {
-                option.addEventListener('click', function() {
-                    // Remove active class from all options and panels
-                    complaintsOptions.forEach(opt => opt.classList.remove('active'));
-                    complaintsPanels.forEach(panel => panel.classList.remove('active'));
-                    
-                    // Add active class to clicked option
-                    this.classList.add('active');
-                    
-                    // Show corresponding panel
-                    const panelId = this.getAttribute('data-panel');
-                    document.getElementById(panelId).classList.add('active');
-                });
+            // Select location from table
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('#locations-table-body tr')) {
+                    const row = e.target.closest('tr');
+                    // Remove selection from all rows
+                    document.querySelectorAll('#locations-table-body tr').forEach(r => {
+                        r.classList.remove('selected');
+                    });
+                    // Add selection to clicked row
+                    row.classList.add('selected');
+                }
             });
             
             // Find user by phone number
             document.getElementById('find-user-btn').addEventListener('click', function() {
                 const phone = document.getElementById('find-phone').value;
                 if (phone) {
-                    // Simulate finding user
-                    document.getElementById('user-addresses').classList.add('active');
-                    document.getElementById('complaint-form').style.display = 'block';
+                    const user = findUserByPhone(phone);
+                    if (user) {
+                        // User found - display details
+                        document.getElementById('user-found-details').classList.add('active');
+                        document.getElementById('found-user-name').textContent = user.name;
+                        document.getElementById('found-user-phone').textContent = user.phone;
+                        
+                        // Show user addresses
+                        const userAddresses = document.getElementById('user-addresses');
+                        userAddresses.classList.add('active');
+                        userAddresses.innerHTML = '<h3>Select an Address</h3>';
+                        
+                        // Add each address to the section
+                        user.addresses.forEach(address => {
+                            userAddresses.innerHTML += generateAddressHTML(address);
+                        });
+                        
+                        // Add event listeners to addresses
+                        document.querySelectorAll('.user-address').forEach(address => {
+                            address.addEventListener('click', function() {
+                                document.querySelectorAll('.user-address').forEach(a => {
+                                    a.classList.remove('selected');
+                                });
+                                this.classList.add('selected');
+                            });
+                        });
+                        
+                        // Show complaint form
+                        document.getElementById('complaint-form').style.display = 'block';
+                    } else {
+                        // User not found - show modal to add new user
+                        document.getElementById('add-user-modal').classList.add('active');
+                        document.getElementById('customer-phone').value = phone;
+                    }
                 } else {
                     alert('Please enter a phone number');
-                }
-            });
-            
-            // Show modal for new user
-            document.getElementById('find-phone').addEventListener('input', function() {
-                if (this.value === '1234567890') {
-                    // Simulate user not found
-                    document.getElementById('add-user-modal').classList.add('active');
                 }
             });
             
@@ -1465,22 +1771,6 @@
                 document.getElementById('add-user-modal').classList.remove('active');
             });
             
-            // New building toggle
-            document.getElementById('new-building-checkbox').addEventListener('change', function() {
-                document.getElementById('new-building-form').style.display = 
-                    this.checked ? 'block' : 'none';
-            });
-            
-            // Select address
-            document.querySelectorAll('.user-address').forEach(address => {
-                address.addEventListener('click', function() {
-                    document.querySelectorAll('.user-address').forEach(a => 
-                        a.classList.remove('selected')
-                    );
-                    this.classList.add('selected');
-                });
-            });
-            
             // Save new user
             document.getElementById('save-new-user').addEventListener('click', function() {
                 const name = document.getElementById('customer-name').value;
@@ -1491,19 +1781,121 @@
                     return;
                 }
                 
-                // In a real app, this would save to database
-                alert('User added successfully!');
+                // Build address object
+                let address = null;
+                const isNewBuilding = document.getElementById('new-building-checkbox').checked;
+                
+                if (isNewBuilding) {
+                    // Get new building details
+                    const colonySelect = document.getElementById('colony-select');
+                    const colony = colonySelect.options[colonySelect.selectedIndex].text;
+                    const buildingTypeSelect = document.getElementById('building-type');
+                    const buildingType = buildingTypeSelect.options[buildingTypeSelect.selectedIndex].text;
+                    const buildingNo = document.getElementById('building-no').value;
+                    const apartmentNo = document.getElementById('apartment-no').value || '';
+                    const apartmentTypeSelect = document.getElementById('apartment-type');
+                    const apartmentType = apartmentTypeSelect.value ? 
+                        apartmentTypeSelect.options[apartmentTypeSelect.selectedIndex].text : '';
+                    
+                    address = {
+                        id: Date.now(),
+                        name: "Primary Address",
+                        street: "New Building",
+                        colony: colony,
+                        buildingType: buildingType,
+                        buildingNo: buildingNo,
+                        apartmentNo: apartmentNo,
+                        apartmentType: apartmentType
+                    };
+                } else {
+                    // Get selected location
+                    const selectedRow = document.querySelector('#locations-table-body tr.selected');
+                    if (!selectedRow) {
+                        alert('Please select a location from the table');
+                        return;
+                    }
+                    const locationId = parseInt(selectedRow.dataset.locationId);
+                    const location = dummyLocations.find(loc => loc.id === locationId);
+                    
+                    address = {
+                        id: Date.now(),
+                        name: location.name,
+                        street: location.name,
+                        colony: location.colony,
+                        buildingType: location.buildingType,
+                        buildingNo: location.buildingNo,
+                        apartmentNo: "",
+                        apartmentType: ""
+                    };
+                }
+                
+                // Create new user object
+                const newUser = {
+                    name,
+                    phone,
+                    addresses: [address]
+                };
+                
+                // Save to localStorage
+                const addedUser = addNewUser(newUser);
+                
+                // Close modal
                 document.getElementById('add-user-modal').classList.remove('active');
                 
-                // Show addresses and complaint form
-                document.getElementById('user-addresses').classList.add('active');
+                // Display the new user in the complaints page
+                document.getElementById('user-found-details').classList.add('active');
+                document.getElementById('found-user-name').textContent = addedUser.name;
+                document.getElementById('found-user-phone').textContent = addedUser.phone;
+                
+                // Show addresses
+                const userAddresses = document.getElementById('user-addresses');
+                userAddresses.classList.add('active');
+                userAddresses.innerHTML = '<h3>Select an Address</h3>';
+                userAddresses.innerHTML += generateAddressHTML(addedUser.addresses[0]);
+                
+                // Add event listener to address
+                document.querySelectorAll('.user-address').forEach(address => {
+                    address.addEventListener('click', function() {
+                        document.querySelectorAll('.user-address').forEach(a => {
+                            a.classList.remove('selected');
+                        });
+                        this.classList.add('selected');
+                    });
+                });
+                
+                // Show complaint form
                 document.getElementById('complaint-form').style.display = 'block';
             });
             
             // Launch complaint
             document.getElementById('launch-complaint-btn').addEventListener('click', function() {
-                const category = document.getElementById('category-select').value;
-                const skillman = document.getElementById('skillman-select').value;
+                const phone = document.getElementById('find-phone').value;
+                const user = findUserByPhone(phone);
+                
+                if (!user) {
+                    alert('User not found');
+                    return;
+                }
+                
+                const selectedAddress = document.querySelector('.user-address.selected');
+                if (!selectedAddress) {
+                    alert('Please select an address');
+                    return;
+                }
+                
+                const addressId = selectedAddress.dataset.addressId;
+                const address = user.addresses.find(addr => addr.id == addressId);
+                
+                // Format the address string
+                const addressString = `${address.street}, ${address.colony}, Building ${address.buildingNo}, ${address.apartmentNo} (${address.apartmentType})`;
+                
+                const categorySelect = document.getElementById('category-select');
+                const category = categorySelect.options[categorySelect.selectedIndex].text;
+                
+                const skillmanSelect = document.getElementById('skillman-select');
+                const skillman = skillmanSelect.options[skillmanSelect.selectedIndex].text;
+                
+                const description = document.getElementById('category-description').value;
                 const poc = document.getElementById('poc').value;
                 
                 if (!category || !skillman || !poc) {
@@ -1511,14 +1903,33 @@
                     return;
                 }
                 
-                alert('Complaint launched successfully!');
+                // Create complaint object
+                const complaint = {
+                    customerName: user.name,
+                    phone: user.phone,
+                    address: addressString,
+                    category: category,
+                    description: description,
+                    skillman: skillman,
+                    status: 'Open',
+                    date: new Date().toLocaleDateString()
+                };
+                
+                // Save complaint
+                const newComplaint = addNewComplaint(complaint);
+                
+                // Refresh complaints table if we're on that panel
+                if (document.getElementById('all-complaints').classList.contains('active')) {
+                    loadComplaintsTable();
+                }
+                
+                alert(`Complaint #${newComplaint.id} launched successfully!`);
                 
                 // Reset form
                 document.getElementById('find-phone').value = '';
+                document.getElementById('user-found-details').classList.remove('active');
                 document.getElementById('user-addresses').classList.remove('active');
-                document.querySelectorAll('.user-address').forEach(a => 
-                    a.classList.remove('selected')
-                );
+                document.getElementById('user-addresses').innerHTML = '';
                 document.getElementById('complaint-form').style.display = 'none';
                 document.getElementById('category-select').value = '';
                 document.getElementById('category-description').value = '';
@@ -1526,33 +1937,69 @@
                 document.getElementById('poc').value = '';
             });
             
-            // Nature type management
-            document.querySelectorAll('.remove-type').forEach(button => {
-                button.addEventListener('click', function() {
-                    this.parentElement.remove();
-                });
+            // Building search
+            document.getElementById('find-building-btn').addEventListener('click', function() {
+                const searchTerm = document.getElementById('building-search').value.toLowerCase();
+                if (!searchTerm) {
+                    locationsTableBody.innerHTML = generateLocationRows(dummyLocations);
+                    return;
+                }
+                
+                const filteredLocations = dummyLocations.filter(location => 
+                    location.name.toLowerCase().includes(searchTerm) ||
+                    location.colony.toLowerCase().includes(searchTerm) ||
+                    location.buildingType.toLowerCase().includes(searchTerm) ||
+                    location.buildingNo.toLowerCase().includes(searchTerm)
+                );
+                
+                locationsTableBody.innerHTML = generateLocationRows(filteredLocations);
             });
             
-            document.querySelectorAll('.add-type-form button').forEach(button => {
-                button.addEventListener('click', function() {
-                    const input = this.previousElementSibling;
-                    const type = input.value.trim();
+            // Complaints search
+            document.getElementById('search-complaints-btn').addEventListener('click', function() {
+                const searchTerm = document.getElementById('complaint-search').value.toLowerCase();
+                const complaints = getComplaints();
+                
+                if (!searchTerm) {
+                    loadComplaintsTable();
+                    return;
+                }
+                
+                const filteredComplaints = complaints.filter(complaint => 
+                    complaint.id.toString().includes(searchTerm) ||
+                    complaint.customerName.toLowerCase().includes(searchTerm) ||
+                    complaint.category.toLowerCase().includes(searchTerm)
+                );
+                
+                const tbody = document.getElementById('complaints-table-body');
+                if (tbody) {
+                    tbody.innerHTML = generateComplaintsTableRows(filteredComplaints);
+                }
+            });
+            
+            // Panel switching
+            document.querySelectorAll('.complaints-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    // Remove active class from all options
+                    document.querySelectorAll('.complaints-option').forEach(opt => {
+                        opt.classList.remove('active');
+                    });
                     
-                    if (type) {
-                        const typeElement = document.createElement('div');
-                        typeElement.className = 'nature-type';
-                        typeElement.innerHTML = `
-                            ${type}
-                            <button class="remove-type">&times;</button>
-                        `;
-                        
-                        const removeBtn = typeElement.querySelector('.remove-type');
-                        removeBtn.addEventListener('click', function() {
-                            typeElement.remove();
-                        });
-                        
-                        this.parentElement.previousElementSibling.appendChild(typeElement);
-                        input.value = '';
+                    // Add active class to clicked option
+                    this.classList.add('active');
+                    
+                    // Hide all panels
+                    document.querySelectorAll('.complaints-panel').forEach(panel => {
+                        panel.classList.remove('active');
+                    });
+                    
+                    // Show the selected panel
+                    const panelId = this.dataset.panel;
+                    document.getElementById(panelId).classList.add('active');
+                    
+                    // If switching to all-complaints, load the table
+                    if (panelId === 'all-complaints') {
+                        loadComplaintsTable();
                     }
                 });
             });
