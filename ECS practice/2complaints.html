@@ -1875,20 +1875,30 @@
                     });
                 });
                 
-                // Add event listeners to save edit buttons
+                // Add event listeners to save edit buttons - FIXED HERE
                 document.querySelectorAll('.save-edit-btn').forEach(btn => {
-                    btn.addEventListener('click', function() {
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
                         const row = this.closest('tr');
                         const natureId = row.dataset.natureId;
-                        const nature = row.querySelector('[data-field="nature"]').value;
-                        const category = row.querySelector('[data-field="category"]').value;
+                        const natureInput = row.querySelector('[data-field="nature"]');
+                        const categoryInput = row.querySelector('[data-field="category"]');
+                        
+                        if (!natureInput || !categoryInput) return;
+                        
+                        const nature = natureInput.value;
+                        const category = categoryInput.value;
                         
                         // Update nature in localStorage
                         updateNature(natureId, { nature, category });
                         
-                        // Update static fields
-                        row.querySelector('.static-field[data-field="nature"]').textContent = nature;
-                        row.querySelector('.static-field[data-field="category"]').textContent = category;
+                        // Update the static fields
+                        const natureStatic = row.querySelector('.static-field[data-field="nature"]');
+                        const categoryStatic = row.querySelector('.static-field[data-field="category"]');
+                        if (natureStatic && categoryStatic) {
+                            natureStatic.textContent = nature;
+                            categoryStatic.textContent = category;
+                        }
                         
                         // Exit edit mode
                         row.classList.remove('edit-mode');
@@ -1901,6 +1911,20 @@
                 document.querySelectorAll('.cancel-edit-btn').forEach(btn => {
                     btn.addEventListener('click', function() {
                         const row = this.closest('tr');
+                        // Reset input fields to original values
+                        const natureStatic = row.querySelector('.static-field[data-field="nature"]');
+                        const categoryStatic = row.querySelector('.static-field[data-field="category"]');
+                        const natureInput = row.querySelector('[data-field="nature"]');
+                        const categoryInput = row.querySelector('[data-field="category"]');
+                        
+                        if (natureStatic && natureInput) {
+                            natureInput.value = natureStatic.textContent;
+                        }
+                        if (categoryStatic && categoryInput) {
+                            categoryInput.value = categoryStatic.textContent;
+                        }
+                        
+                        // Exit edit mode
                         row.classList.remove('edit-mode');
                     });
                 });
@@ -2432,7 +2456,7 @@
                 });
             });
             
-            // Nature type management (new from Code 2)
+            // Nature type management
             document.querySelectorAll('.remove-type').forEach(button => {
                 button.addEventListener('click', function() {
                     this.parentElement.remove();
