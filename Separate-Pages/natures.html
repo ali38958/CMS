@@ -1,1108 +1,905 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Complaint Cloud - Natures</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SCMS - Natures</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
 
-        :root {
-            --primary: #6e8efb;
-            --secondary: #a777e3;
-            --accent: #4caf50;
-            --warning: #ff9800;
-            --danger: #f44336;
-            --light: #f8f9fa;
-            --dark: #212529;
-            --gray: #6c757d;
-            --card-bg: rgba(255, 255, 255, 0.95);
-            --cloud-color: rgba(255, 255, 255, 0.98);
-            --nav-bg: rgba(255, 255, 255, 0.85);
-            --nav-active: rgba(110, 142, 251, 0.15);
-            --nav-hover: rgba(110, 142, 251, 0.08);
-            --success: #4caf50;
-        }
+    body {
+      background-color: #eef2f5;
+      padding-bottom: 40px;
+    }
 
-        body {
-            background: linear-gradient(135deg, #a0c0ff, #c3b5ff, #b8e0ff);
-            min-height: 100vh;
-            overflow-x: hidden;
-            position: relative;
-        }
+    /* Header Styles from Code 1 */
+    header {
+      width: 100vw;
+      height: 60px;
+      background-color: rgb(136, 28, 28);
+      margin-top: 36px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 25px;
+      margin-bottom: 30px;
+      position: relative;
+      z-index: 10;
+    }
 
-        .cloud {
-            position: absolute;
-            background: var(--cloud-color);
-            border-radius: 50%;
-            animation: float 25s infinite ease-in-out;
-            z-index: -1;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.12);
-            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.1));
-        }
+    .nav-bar {
+      width: 100vw;
+      background-color: rgb(136, 28, 28);
+      display: flex;
+      justify-content: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      position: relative;
+      z-index: 1;
+      margin-top: 40px;
+    }
 
-        .cloud:nth-child(1) {
-            width: 180px;
-            height: 180px;
-            top: 10%;
-            left: 5%;
-            animation-delay: 0s;
-        }
+    .nav-container {
+      width: 100%;
+      max-width: 1500px;
+      display: flex;
+      margin-left: 90px;
+    }
 
-        .cloud:nth-child(2) {
-            width: 240px;
-            height: 240px;
-            top: 25%;
-            right: 10%;
-            animation-delay: 3s;
-        }
+    .nav-item {
+      padding: 15px 25px;
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      position: relative;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
 
-        .cloud:nth-child(3) {
-            width: 150px;
-            height: 150px;
-            bottom: 20%;
-            left: 15%;
-            animation-delay: 6s;
-        }
+    .nav-item:hover {
+      background-color: rgba(0,0,0,0.1);
+    }
 
-        .cloud:nth-child(4) {
-            width: 210px;
-            height: 210px;
-            bottom: 15%;
-            right: 20%;
-            animation-delay: 9s;
-        }
+    .nav-item.active {
+      background-color: rgba(0,0,0,0.2);
+    }
 
-        .cloud:nth-child(5) {
-            width: 130px;
-            height: 130px;
-            top: 40%;
-            left: 25%;
-            animation-delay: 12s;
-        }
-        
-        .cloud:nth-child(6) {
-            width: 190px;
-            height: 190px;
-            top: 60%;
-            left: 40%;
-            animation-delay: 15s;
-        }
-        
-        .cloud:nth-child(7) {
-            width: 160px;
-            height: 160px;
-            top: 30%;
-            left: 70%;
-            animation-delay: 18s;
-        }
+    .nav-item.active::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60%;
+      height: 3px;
+      background-color: white;
+    }
 
-        @keyframes float {
-            0% {
-                transform: translateY(0) translateX(0);
-            }
-            25% {
-                transform: translateY(-40px) translateX(30px);
-            }
-            50% {
-                transform: translateY(15px) translateX(60px);
-            }
-            75% {
-                transform: translateY(25px) translateX(30px);
-            }
-            100% {
-                transform: translateY(0) translateX(0);
-            }
-        }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 2;
+    }
 
-        .dashboard-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-        }
+    .logo .logo-image {
+      width: 130px;
+      height: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 5px;
+      background-color: #f4f4f4;
+      border-radius: 50%;
+    }
 
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 0;
-            margin-bottom: 10px;
-            border-bottom: 1px solid rgba(0,0,0,0.08);
-        }
+    .logo .logo-image img {
+      border-radius: 50%;
+      width: 100%;
+      height: auto;
+    }
 
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
+    .logo h2 {
+      color: white;
+      font-size: 20px;
+      white-space: nowrap;
+    }
 
-        .brand h1 {
-            font-size: 32px;
-            color: var(--primary);
-            background: linear-gradient(to right, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: 0.5px;
-        }
+    .user {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      color: white;
+    }
 
-        .logo-container {
-            width: 70px;
-            height: 70px;
-            border-radius: 20px;
-            background: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-            overflow: hidden;
-            transition: all 0.4s ease;
-        }
+    .user h2 {
+      font-size: 16px;
+      white-space: nowrap;
+    }
 
-        .logo-container:hover {
-            transform: rotate(5deg) scale(1.08);
-            box-shadow: 0 12px 25px rgba(0,0,0,0.18);
-        }
+    .logout-btn {
+      background-color: white;
+      color: rgb(136, 28, 28);
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s;
+      border: 1px solid white;
+    }
 
-        .custom-logo {
-            width: 80%;
-            height: 80%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
+    .logout-btn:hover {
+      background-color: #ddd;
+    }
 
-        .logo-cloud {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.6);
-        }
+    .logout-btn:active {
+      border: 1px solid white;
+      background-color: rgb(136, 28, 28);
+      color: white;
+    }
 
-        .logo-cloud::before,
-        .logo-cloud::after {
-            content: '';
-            position: absolute;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border-radius: 50%;
-        }
+    .content {
+      width: 100%;
+      max-width: 1800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      margin-top: 20px;
+    }
+    
+    /* Variables from Code 1 - Adapted to Theme */
+    :root {
+      --primary: rgb(136, 28, 28);
+      --secondary: #8c2f2f;
+      --accent: #4caf50;
+      --warning: #ff9800;
+      --danger: #f44336;
+      --light: #f8f9fa;
+      --dark: #212529;
+      --gray: #6c757d;
+      --card-bg: rgba(255, 255, 255, 0.95);
+      --nav-bg: rgba(255, 255, 255, 0.85);
+      --nav-active: rgba(136, 28, 28, 0.15);
+      --nav-hover: rgba(136, 28, 28, 0.08);
+      --success: #4caf50;
+    }
 
-        .logo-cloud::before {
-            width: 60%;
-            height: 60%;
-            top: -25%;
-            left: -15%;
-        }
+    /* Complaints Section from Code 1 - Theme Adjusted */
+    .complaints-section-container {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      gap: 30px;
+      min-height: 600px;
+    }
+    
+    .complaints-sidebar {
+      background: var(--card-bg);
+      border-radius: 18px;
+      padding: 25px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+    
+    .complaints-option {
+      padding: 18px 20px;
+      margin-bottom: 15px;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(248, 249, 250, 0.7);
+    }
+    
+    .complaints-option:hover {
+      background: var(--nav-hover);
+    }
+    
+    .complaints-option.active {
+      background: var(--nav-active);
+      color: var(--primary);
+      box-shadow: 0 5px 15px rgba(136, 28, 28, 0.1);
+    }
+    
+    .complaints-option i {
+      font-size: 20px;
+    }
+    
+    .complaints-content {
+      background: var(--card-bg);
+      border-radius: 18px;
+      padding: 30px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .complaints-panel {
+      display: none;
+    }
+    
+    .complaints-panel.active {
+      display: block;
+      animation: fadeIn 0.4s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .panel-header {
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .panel-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: var(--dark);
+    }
+    
+    .required:after {
+      content: " *";
+      color: var(--danger);
+    }
+    
+    .form-control {
+      width: 100%;
+      padding: 14px 18px;
+      border-radius: 12px;
+      border: 1px solid rgba(0,0,0,0.1);
+      background: rgba(248, 249, 250, 0.5);
+      font-size: 16px;
+      transition: all 0.3s;
+    }
+    
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(136, 28, 28, 0.2);
+    }
+    
+    .btn {
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 6px 18px rgba(136, 28, 28, 0.2);
+    }
+    
+    .btn-primary:hover {
+      background: #a33a3a;
+      transform: translateY(-3px);
+      box-shadow: 0 8px 22px rgba(136, 28, 28, 0.3);
+    }
+    
+    .btn-secondary {
+      background: var(--gray);
+      color: white;
+      box-shadow: 0 6px 18px rgba(108, 117, 125, 0.3);
+    }
+    
+    .btn-secondary:hover {
+      background: #5a6268;
+      transform: translateY(-3px);
+      box-shadow: 0 8px 22px rgba(108, 117, 125, 0.4);
+    }
+    
+    /* Natures table styles from Code 2 - Adapted to Code 1 theme */
+    .nature-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    
+    .nature-table th {
+      background: rgba(136, 28, 28, 0.1);
+      color: var(--primary);
+      font-weight: 700;
+      padding: 16px;
+      text-align: left;
+    }
+    
+    .nature-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .nature-table tr:hover {
+      background: rgba(136, 28, 28, 0.05);
+    }
+    
+    .nature-types {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    
+    .nature-type {
+      background: rgba(136, 28, 28, 0.1);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .remove-type {
+      background: none;
+      border: none;
+      color: var(--danger);
+      cursor: pointer;
+      margin-left: 8px;
+      font-weight: bold;
+    }
+    
+    .add-type-form {
+      display: flex;
+      margin-top: 10px;
+    }
+    
+    .add-type-form input {
+      flex: 1;
+      padding: 10px 15px;
+      border-radius: 20px 0 0 20px;
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+    
+    .add-type-form button {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 0 20px;
+      border-radius: 0 20px 20px 0;
+      cursor: pointer;
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .action-btn-nature {
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 15px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .action-btn-nature:hover {
+      opacity: 0.9;
+    }
+    
+    .action-btn-nature.delete {
+      background: var(--danger);
+    }
+    
+    .new-nature-form {
+      background: rgba(248, 249, 250, 0.7);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      display: none;
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+    
+    .new-nature-form.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+    
+    .edit-mode .static-field {
+      display: none;
+    }
+    
+    .edit-mode .edit-field {
+      display: block;
+    }
+    
+    .edit-field {
+      display: none;
+      width: 100%;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+    
+    .edit-field:focus {
+      border-color: var(--primary);
+      outline: none;
+    }
+    
+    .edit-controls {
+      display: none;
+      margin-top: 10px;
+    }
+    
+    .edit-mode .edit-controls {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .nature-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
 
-        .logo-cloud::after {
-            width: 50%;
-            height: 50%;
-            top: -20%;
-            right: -15%;
-        }
+    #launch-complaints, #all-complaints {
+        text-decoration: none;
+        color: inherit;
+    }
 
-        .logo-text {
-            position: absolute;
-            font-size: 28px;
-            font-weight: 800;
-            color: white;
-            z-index: 2;
-            text-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            letter-spacing: 1px;
-        }
+    @media (max-width: 992px) {
+      .complaints-section-container {
+        grid-template-columns: 1fr;
+      }
+      
+      .complaints-sidebar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      
+      .complaints-option {
+        margin-bottom: 0;
+        flex: 1;
+        min-width: 150px;
+      }
+    }
 
-        .user-area {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .user-info {
-            text-align: right;
-        }
-
-        .user-info .name {
-            font-weight: 700;
-            font-size: 18px;
-            letter-spacing: 0.5px;
-        }
-
-        .user-info .role {
-            color: var(--gray);
-            font-size: 14px;
-            margin-top: 3px;
-        }
-
-        .avatar {
-            width: 55px;
-            height: 55px;
-            border-radius: 50%;
-            background: linear-gradient(to right, var(--primary), var(--secondary));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 22px;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.15);
-            transition: transform 0.3s ease;
-        }
-
-        .avatar:hover {
-            transform: scale(1.05);
-        }
-
-        .logout-btn {
-            background: var(--danger);
-            color: white;
-            border: none;
-            padding: 10px 22px;
-            border-radius: 30px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-weight: 600;
-            box-shadow: 0 6px 18px rgba(244, 67, 54, 0.3);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .logout-btn:hover {
-            background: #d32f2f;
-            transform: translateY(-3px);
-            box-shadow: 0 8px 22px rgba(244, 67, 54, 0.4);
-        }
-
-        .nav-container {
-            margin: 20px 0 30px;
-            background: var(--nav-bg);
-            border-radius: 15px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.7);
-        }
-
-        .nav-bar {
-            display: flex;
-            padding: 0 20px;
-        }
-
-        .nav-item {
-            padding: 18px 25px;
-            font-size: 17px;
-            font-weight: 600;
-            color: var(--dark);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            text-decoration: none;
-        }
-
-        .nav-item:hover {
-            background: var(--nav-hover);
-        }
-
-        .nav-item.active {
-            color: var(--primary);
-            background: var(--nav-active);
-        }
-
-        .nav-item.active::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: linear-gradient(to right, var(--primary), var(--secondary));
-            border-radius: 0 0 4px 4px;
-        }
-
-        .nav-item i {
-            font-size: 20px;
-        }
-
-        .complaints-section-container {
-            display: grid;
-            grid-template-columns: 250px 1fr;
-            gap: 30px;
-            min-height: 600px;
-        }
-        
-        .complaints-sidebar {
-            background: var(--card-bg);
-            border-radius: 18px;
-            padding: 25px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-        }
-        
-        .complaints-option {
-            padding: 18px 20px;
-            margin-bottom: 15px;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: rgba(248, 249, 250, 0.7);
-        }
-        
-        .complaints-option:hover {
-            background: var(--nav-hover);
-        }
-        
-        .complaints-option.active {
-            background: var(--nav-active);
-            color: var(--primary);
-            box-shadow: 0 5px 15px rgba(110, 142, 251, 0.2);
-        }
-        
-        .complaints-option i {
-            font-size: 20px;
-        }
-        
-        .complaints-content {
-            background: var(--card-bg);
-            border-radius: 18px;
-            padding: 30px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .complaints-panel {
-            display: none;
-        }
-        
-        .complaints-panel.active {
-            display: block;
-            animation: fadeIn 0.4s ease;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .panel-header {
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid rgba(0,0,0,0.08);
-        }
-        
-        .panel-title {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--primary);
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--dark);
-        }
-        
-        .required:after {
-            content: " *";
-            color: var(--danger);
-        }
-        
-        .form-control {
-            width: 100%;
-            padding: 14px 18px;
-            border-radius: 12px;
-            border: 1px solid rgba(0,0,0,0.1);
-            background: rgba(248, 249, 250, 0.5);
-            font-size: 16px;
-            transition: all 0.3s;
-        }
-        
-        .form-control:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(110, 142, 251, 0.2);
-        }
-        
-        .btn {
-            padding: 14px 28px;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 16px;
-            cursor: pointer;
-            border: none;
-            transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-            box-shadow: 0 6px 18px rgba(110, 142, 251, 0.4);
-        }
-        
-        .btn-primary:hover {
-            background: #5d7df9;
-            transform: translateY(-3px);
-            box-shadow: 0 8px 22px rgba(110, 142, 251, 0.5);
-        }
-        
-        .btn-secondary {
-            background: var(--gray);
-            color: white;
-            box-shadow: 0 6px 18px rgba(108, 117, 125, 0.3);
-        }
-        
-        .btn-secondary:hover {
-            background: #5a6268;
-            transform: translateY(-3px);
-            box-shadow: 0 8px 22px rgba(108, 117, 125, 0.4);
-        }
-        
-        .nature-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            border-radius: 12px;
-            overflow: hidden;
-        }
-        
-        .nature-table th {
-            background: rgba(110, 142, 251, 0.1);
-            color: var(--primary);
-            font-weight: 700;
-            padding: 16px;
-            text-align: left;
-        }
-        
-        .nature-table td {
-            padding: 14px 16px;
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-        }
-        
-        .nature-table tr:hover {
-            background: rgba(110, 142, 251, 0.05);
-        }
-        
-        .nature-types {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        
-        .nature-type {
-            background: rgba(110, 142, 251, 0.1);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-        }
-        
-        .remove-type {
-            background: none;
-            border: none;
-            color: var(--danger);
-            cursor: pointer;
-            margin-left: 8px;
-            font-weight: bold;
-        }
-        
-        .add-type-form {
-            display: flex;
-            margin-top: 10px;
-        }
-        
-        .add-type-form input {
-            flex: 1;
-            padding: 10px 15px;
-            border-radius: 20px 0 0 20px;
-            border: 1px solid rgba(0,0,0,0.1);
-        }
-        
-        .add-type-form button {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 0 20px;
-            border-radius: 0 20px 20px 0;
-            cursor: pointer;
-        }
-        
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .action-btn-nature {
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 8px 15px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .action-btn-nature:hover {
-            opacity: 0.9;
-        }
-        
-        .action-btn-nature.delete {
-            background: var(--danger);
-        }
-        
-        .new-nature-form {
-            background: rgba(248, 249, 250, 0.7);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            display: none;
-            border: 1px solid rgba(0,0,0,0.1);
-        }
-        
-        .new-nature-form.active {
-            display: block;
-            animation: fadeIn 0.3s ease;
-        }
-        
-        .edit-mode .static-field {
-            display: none;
-        }
-        
-        .edit-mode .edit-field {
-            display: block;
-        }
-        
-        .edit-field {
-            display: none;
-            width: 100%;
-            padding: 8px;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-        }
-        
-        .edit-field:focus {
-            border-color: var(--primary);
-            outline: none;
-        }
-        
-        .edit-controls {
-            display: none;
-            margin-top: 10px;
-        }
-        
-        .edit-mode .edit-controls {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .nature-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        @media (max-width: 992px) {
-            .complaints-section-container {
-                grid-template-columns: 1fr;
-            }
-            
-            .complaints-sidebar {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 10px;
-            }
-            
-            .complaints-option {
-                margin-bottom: 0;
-                flex: 1;
-                min-width: 150px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .nav-bar {
-                flex-wrap: wrap;
-                justify-content: center;
-            }
-            
-            .nav-item {
-                padding: 15px;
-                font-size: 15px;
-            }
-            
-            header {
-                flex-direction: column;
-                text-align: center;
-                gap: 20px;
-            }
-            
-            .brand {
-                flex-direction: column;
-                text-align: center;
-            }
-            
-            .user-area {
-                margin-top: 10px;
-                flex-direction: column;
-            }
-            
-            .user-info {
-                text-align: center;
-                margin: 10px 0;
-            }
-            
-            .logout-btn {
-                margin-top: 10px;
-            }
-            
-            .complaints-option {
-                padding: 12px 15px;
-                font-size: 14px;
-            }
-            
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-            
-            .form-actions {
-                flex-direction: column;
-            }
-            
-            .user-detail-row {
-                flex-direction: column;
-            }
-            
-            .user-detail-label {
-                width: 100%;
-                margin-bottom: 5px;
-            }
-            
-            .nature-header {
-                flex-direction: column;
-                gap: 15px;
-                align-items: flex-start;
-            }
-        }
-    </style>
+    @media (max-width: 768px) {
+      .nav-bar {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      
+      .nav-item {
+        padding: 15px;
+        font-size: 15px;
+      }
+      
+      .complaints-option {
+        padding: 12px 15px;
+        font-size: 14px;
+      }
+      
+      .nature-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="cloud"></div>
-    <div class="cloud"></div>
-    <div class="cloud"></div>
-    <div class="cloud"></div>
-    <div class="cloud"></div>
-    <div class="cloud"></div>
-    <div class="cloud"></div>
-    
-    <div class="dashboard-container">
-        <header>
-            <div class="brand">
-                <div class="logo-container">
-                    <div class="custom-logo">
-                        <div class="logo-cloud">
-                            <div class="logo-text">CC</div>
-                        </div>
-                    </div>
-                </div>
-                <h1>Complaint Cloud</h1>
-            </div>
-            
-            <div class="user-area">
-                <div class="user-info">
-                    <div class="name">Alex Johnson</div>
-                    <div class="role">Support Manager</div>
-                </div>
-                <div class="avatar">AJ</div>
-                <button class="logout-btn">
-                    <i class="fas fa-sign-out-alt"></i>
-                    Logout
-                </button>
-            </div>
-        </header>
-        
-        <div class="nav-container">
-            <div class="nav-bar">
-                <a href="complaints.html" class="nav-item">
-                    <i class="fas fa-chart-line"></i>
-                    Dashboard
-                </a>
-                <a href="complaints.html" class="nav-item active">
-                    <i class="fas fa-ticket-alt"></i>
-                    Complaints
-                </a>
-                <a href="users.html" class="nav-item">
-                    <i class="fas fa-users"></i>
-                    Users
-                </a>
-                <a href="store.html" class="nav-item">
-                    <i class="fas fa-store"></i>
-                    Store
-                </a>
-                <a href="reporting.html" class="nav-item">
-                    <i class="fas fa-file-alt"></i>
-                    Reporting
-                </a>
-            </div>
-        </div>
-        
-        <div class="complaints-section-container">
-            <div class="complaints-sidebar">
-                <div class="complaints-option active" data-panel="natures">
-                    <i class="fas fa-chart-pie"></i>
-                    Natures
-                </div>
-            </div>
-            
-            <div class="complaints-content">
-                <div id="natures" class="complaints-panel active">
-                    <div class="panel-header">
-                        <h2 class="panel-title">Complaint Natures</h2>
-                    </div>
-                    
-                    <div class="nature-header">
-                        <div></div>
-                        <button class="btn btn-primary" id="toggle-nature-form-btn">
-                            <i class="fas fa-plus"></i>
-                            Add New Nature
-                        </button>
-                    </div>
-                    
-                    <div class="new-nature-form" id="new-nature-form">
-                        <h3><i class="fas fa-plus-circle"></i> Add New Nature</h3>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="new-nature-name" class="required">Nature Name</label>
-                                <input type="text" id="new-nature-name" class="form-control" placeholder="Enter nature name" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="new-nature-category" class="required">Category</label>
-                                <input type="text" id="new-nature-category" class="form-control" placeholder="Enter category" required>
-                            </div>
-                        </div>
-                        <div class="form-actions">
-                            <button class="btn btn-secondary" id="cancel-new-nature">
-                                <i class="fas fa-times"></i>
-                                Cancel
-                            </button>
-                            <button class="btn btn-primary" id="save-new-nature">
-                                <i class="fas fa-save"></i>
-                                Save Nature
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <table class="nature-table">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Nature</th>
-                                <th>Category</th>
-                                <th>Nature Types</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="natures-table-body">
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+  <header>
+    <div class="logo">
+      <div class="logo-image">
+        <img src="logo.jpg" alt="logo image">
+      </div>
+      <h2>Secured CMS</h2>
     </div>
-    
-    <script>
-        function initializeLocalStorage() {
-            if (!localStorage.getItem('complaintCloudNatures')) {
-                const initialNatures = [
-                    {
-                        id: 1,
-                        nature: "Air Conditioner",
-                        category: "E & M - II",
-                        types: ["Circuit Breaker 3 Pin Shoe Damage", "Capacitor Damage", "Candanser Fan Motor Damage"]
-                    },
-                    {
-                        id: 2,
-                        nature: "Aluminium",
-                        category: "B & R - I, B & R - II, B & R - III",
-                        types: ["Glass Replacement", "Lock Repair"]
-                    },
-                    {
-                        id: 3,
-                        nature: "Cooking Range/Hub Stove",
-                        category: "E & M - II",
-                        types: ["Burner Repair", "Ignition Failure"]
-                    }
-                ];
-                localStorage.setItem('complaintCloudNatures', JSON.stringify(initialNatures));
-            }
-        }
-        
-        function getNatures() {
-            return JSON.parse(localStorage.getItem('complaintCloudNatures')) || [];
-        }
-        
-        function saveNatures(natures) {
-            localStorage.setItem('complaintCloudNatures', JSON.stringify(natures));
-        }
-        
-        function addNewNature(nature) {
-            const natures = getNatures();
-            const newNature = {
-                id: Date.now(),
-                ...nature
-            };
-            natures.push(newNature);
-            saveNatures(natures);
-            return newNature;
-        }
-        
-        function updateNature(natureId, updates) {
-            const natures = getNatures();
-            const index = natures.findIndex(n => n.id == natureId);
-            if (index !== -1) {
-                natures[index] = { ...natures[index], ...updates };
-                saveNatures(natures);
-                return true;
-            }
-            return false;
-        }
-        
-        function deleteNature(natureId) {
-            const natures = getNatures();
-            const filtered = natures.filter(n => n.id != natureId);
-            saveNatures(filtered);
-            return true;
-        }
-        
-        function generateNaturesTableRows(natures) {
-            return natures.map((nature, index) => `
-                <tr data-nature-id="${nature.id}">
-                    <td>${index + 1}</td>
-                    <td>
-                        <div class="static-field">${nature.nature}</div>
-                        <input type="text" class="edit-field" value="${nature.nature}" data-field="nature">
-                    </td>
-                    <td>
-                        <div class="static-field">${nature.category}</div>
-                        <input type="text" class="edit-field" value="${nature.category}" data-field="category">
-                    </td>
-                    <td>
-                        <div class="nature-types">
-                            ${nature.types.map(type => `
-                                <div class="nature-type">
-                                    ${type}
-                                    <button class="remove-type" data-type="${type}">&times;</button>
-                                </div>
-                            `).join('')}
-                        </div>
-                        <div class="add-type-form">
-                            <input type="text" placeholder="Add new type">
-                            <button class="add-type-btn"><i class="fas fa-plus"></i></button>
-                        </div>
-                    </td>
-                    <td class="action-buttons">
-                        <div class="edit-controls">
-                            <button class="action-btn-nature save-edit-btn">
-                                <i class="fas fa-save"></i>
-                            </button>
-                            <button class="action-btn-nature cancel-edit-btn">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                        <div class="static-controls">
-                            <button class="action-btn-nature edit-btn">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="action-btn-nature delete-btn delete">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
-        }
-        
-        function loadNaturesTable() {
-            const natures = getNatures();
-            const tbody = document.getElementById('natures-table-body');
-            if (tbody) {
-                tbody.innerHTML = generateNaturesTableRows(natures);
-                
-                document.querySelectorAll('.edit-btn').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        const row = this.closest('tr');
-                        row.classList.add('edit-mode');
-                    });
-                });
-                
-                document.querySelectorAll('.save-edit-btn').forEach(btn => {
-                    btn.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        const row = this.closest('tr');
-                        const natureId = row.dataset.natureId;
-                        const natureInput = row.querySelector('[data-field="nature"]');
-                        const categoryInput = row.querySelector('[data-field="category"]');
-                        
-                        if (!natureInput || !categoryInput) return;
-                        
-                        const nature = natureInput.value;
-                        const category = categoryInput.value;
-                        
-                        updateNature(natureId, { nature, category });
-                        loadNaturesTable();
-                    });
-                });
-                
-                document.querySelectorAll('.cancel-edit-btn').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        const row = this.closest('tr');
-                        const natureStatic = row.querySelector('.static-field[data-field="nature"]');
-                        const categoryStatic = row.querySelector('.static-field[data-field="category"]');
-                        const natureInput = row.querySelector('[data-field="nature"]');
-                        const categoryInput = row.querySelector('[data-field="category"]');
-                        
-                        if (natureStatic && natureInput) {
-                            natureInput.value = natureStatic.textContent;
-                        }
-                        if (categoryStatic && categoryInput) {
-                            categoryInput.value = categoryStatic.textContent;
-                        }
-                        
-                        row.classList.remove('edit-mode');
-                    });
-                });
-                
-                document.querySelectorAll('.delete-btn').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        const row = this.closest('tr');
-                        const natureId = row.dataset.natureId;
-                        if (confirm('Are you sure you want to delete this nature?')) {
-                            deleteNature(natureId);
-                            row.remove();
-                        }
-                    });
-                });
-                
-                document.querySelectorAll('.remove-type').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        const type = this.dataset.type;
-                        const row = this.closest('tr');
-                        const natureId = row.dataset.natureId;
-                        
-                        const natures = getNatures();
-                        const nature = natures.find(n => n.id == natureId);
-                        if (nature) {
-                            nature.types = nature.types.filter(t => t !== type);
-                            saveNatures(natures);
-                            this.parentElement.remove();
-                        }
-                    });
-                });
-                
-                document.querySelectorAll('.add-type-btn').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        const input = this.previousElementSibling;
-                        const type = input.value.trim();
-                        
-                        if (type) {
-                            const row = this.closest('tr');
-                            const natureId = row.dataset.natureId;
-                            
-                            const natures = getNatures();
-                            const nature = natures.find(n => n.id == natureId);
-                            if (nature) {
-                                nature.types.push(type);
-                                saveNatures(natures);
-                                
-                                const typeElement = document.createElement('div');
-                                typeElement.className = 'nature-type';
-                                typeElement.innerHTML = `
-                                    ${type}
-                                    <button class="remove-type" data-type="${type}">&times;</button>
-                                `;
-                                
-                                const removeBtn = typeElement.querySelector('.remove-type');
-                                removeBtn.addEventListener('click', function() {
-                                    const type = this.dataset.type;
-                                    nature.types = nature.types.filter(t => t !== type);
-                                    saveNatures(natures);
-                                    typeElement.remove();
-                                });
-                                
-                                this.parentElement.previousElementSibling.appendChild(typeElement);
-                                input.value = '';
-                            }
-                        }
-                    });
-                });
-            }
-        }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeLocalStorage();
-            loadNaturesTable();
-            
-            document.getElementById('toggle-nature-form-btn').addEventListener('click', function() {
-                const form = document.getElementById('new-nature-form');
-                if (form.classList.contains('active')) {
-                    form.classList.remove('active');
-                } else {
-                    form.classList.add('active');
-                }
-            });
-            
-            document.getElementById('cancel-new-nature').addEventListener('click', function() {
-                document.getElementById('new-nature-form').classList.remove('active');
-            });
-            
-            document.getElementById('save-new-nature').addEventListener('click', function() {
-                const name = document.getElementById('new-nature-name').value;
-                const category = document.getElementById('new-nature-category').value;
-                
-                if (!name || !category) {
-                    alert('Please fill in all required fields');
-                    return;
-                }
-                
-                const newNature = {
-                    nature: name,
-                    category: category,
-                    types: []
-                };
-                
-                addNewNature(newNature);
-                loadNaturesTable();
-                
-                document.getElementById('new-nature-name').value = '';
-                document.getElementById('new-nature-category').value = '';
-                document.getElementById('new-nature-form').classList.remove('active');
-            });
+    <div class="user">
+      <h2>CH HAND</h2>
+      <button class="logout-btn">Logout</button>
+    </div>
+  </header>
+
+  <div class="nav-bar">
+    <div class="nav-container">
+      <a href="#" class="nav-item">
+        <i class="fas fa-chart-line"></i>
+        Dashboard
+      </a>
+      <a href="#" class="nav-item active">
+        <i class="fas fa-ticket-alt"></i>
+        Complaints
+      </a>
+      <a href="#" class="nav-item">
+        <i class="fas fa-users"></i>
+        Users
+      </a>
+      <a href="#" class="nav-item">
+        <i class="fas fa-store"></i>
+        Store
+      </a>
+      <a href="#" class="nav-item">
+        <i class="fas fa-boxes"></i>
+        Stock
+      </a>
+      <a href="#" class="nav-item">
+        <i class="fas fa-file-alt"></i>
+        Reporting
+      </a>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="complaints-section-container">
+      <div class="complaints-sidebar">
+        <a href="launch-complaints.html" class="complaints-option" id="launch-complaints">
+          <i class="fas fa-rocket"></i>
+          Launch Complaints
+        </a>
+        <a href="all-complaints.html" class="complaints-option" id="all-complaints">
+          <i class="fas fa-list"></i>
+          All Complaints
+        </a>
+        <div class="complaints-option active" data-panel="natures">
+          <i class="fas fa-chart-pie"></i>
+          Natures
+        </div>
+      </div>
+      
+      <div class="complaints-content">
+        <div id="natures" class="complaints-panel active">
+          <div class="panel-header">
+            <h2 class="panel-title">Complaint Natures</h2>
+            <button class="btn btn-primary" id="toggle-nature-form-btn">
+              <i class="fas fa-plus"></i>
+              Add New Nature
+            </button>
+          </div>
+          
+          <div class="new-nature-form" id="new-nature-form">
+            <h3><i class="fas fa-plus-circle"></i> Add New Nature</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="new-nature-name" class="required">Nature Name</label>
+                <input type="text" id="new-nature-name" class="form-control" placeholder="Enter nature name" required>
+              </div>
+              <div class="form-group">
+                <label for="new-nature-category" class="required">Category</label>
+                <input type="text" id="new-nature-category" class="form-control" placeholder="Enter category" required>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-secondary" id="cancel-new-nature">
+                <i class="fas fa-times"></i>
+                Cancel
+              </button>
+              <button class="btn btn-primary" id="save-new-nature">
+                <i class="fas fa-save"></i>
+                Save Nature
+              </button>
+            </div>
+          </div>
+          
+          <table class="nature-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Nature</th>
+                <th>Category</th>
+                <th>Nature Types</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="natures-table-body">
+              <!-- Natures will be dynamically added here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function initializeLocalStorage() {
+      if (!localStorage.getItem('complaintCloudNatures')) {
+        const initialNatures = [
+          {
+            id: 1,
+            nature: "Air Conditioner",
+            category: "E & M - II",
+            types: ["Circuit Breaker 3 Pin Shoe Damage", "Capacitor Damage", "Candanser Fan Motor Damage"]
+          },
+          {
+            id: 2,
+            nature: "Aluminium",
+            category: "B & R - I, B & R - II, B & R - III",
+            types: ["Glass Replacement", "Lock Repair"]
+          },
+          {
+            id: 3,
+            nature: "Cooking Range/Hub Stove",
+            category: "E & M - II",
+            types: ["Burner Repair", "Ignition Failure"]
+          }
+        ];
+        localStorage.setItem('complaintCloudNatures', JSON.stringify(initialNatures));
+      }
+    }
+    
+    function getNatures() {
+      return JSON.parse(localStorage.getItem('complaintCloudNatures')) || [];
+    }
+    
+    function saveNatures(natures) {
+      localStorage.setItem('complaintCloudNatures', JSON.stringify(natures));
+    }
+    
+    function addNewNature(nature) {
+      const natures = getNatures();
+      const newNature = {
+        id: Date.now(),
+        ...nature
+      };
+      natures.push(newNature);
+      saveNatures(natures);
+      return newNature;
+    }
+    
+    function updateNature(natureId, updates) {
+      const natures = getNatures();
+      const index = natures.findIndex(n => n.id == natureId);
+      if (index !== -1) {
+        natures[index] = { ...natures[index], ...updates };
+        saveNatures(natures);
+        return true;
+      }
+      return false;
+    }
+    
+    function deleteNature(natureId) {
+      const natures = getNatures();
+      const filtered = natures.filter(n => n.id != natureId);
+      saveNatures(filtered);
+      return true;
+    }
+    
+    function generateNaturesTableRows(natures) {
+      return natures.map((nature, index) => `
+        <tr data-nature-id="${nature.id}">
+          <td>${index + 1}</td>
+          <td>
+            <div class="static-field">${nature.nature}</div>
+            <input type="text" class="edit-field" value="${nature.nature}" data-field="nature">
+          </td>
+          <td>
+            <div class="static-field">${nature.category}</div>
+            <input type="text" class="edit-field" value="${nature.category}" data-field="category">
+          </td>
+          <td>
+            <div class="nature-types">
+              ${nature.types.map(type => `
+                <div class="nature-type">
+                  ${type}
+                  <button class="remove-type" data-type="${type}">&times;</button>
+                </div>
+              `).join('')}
+            </div>
+            <div class="add-type-form">
+              <input type="text" placeholder="Add new type">
+              <button class="add-type-btn"><i class="fas fa-plus"></i></button>
+            </div>
+          </td>
+          <td class="action-buttons">
+            <div class="edit-controls">
+              <button class="action-btn-nature save-edit-btn">
+                <i class="fas fa-save"></i>
+              </button>
+              <button class="action-btn-nature cancel-edit-btn">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            <div class="static-controls">
+              <button class="action-btn-nature edit-btn">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="action-btn-nature delete-btn delete">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+    
+    function loadNaturesTable() {
+      const natures = getNatures();
+      const tbody = document.getElementById('natures-table-body');
+      if (tbody) {
+        tbody.innerHTML = generateNaturesTableRows(natures);
+        
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const row = this.closest('tr');
+            row.classList.add('edit-mode');
+          });
         });
-    </script>
+        
+        document.querySelectorAll('.save-edit-btn').forEach(btn => {
+          btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const row = this.closest('tr');
+            const natureId = row.dataset.natureId;
+            const natureInput = row.querySelector('[data-field="nature"]');
+            const categoryInput = row.querySelector('[data-field="category"]');
+            
+            if (!natureInput || !categoryInput) return;
+            
+            const nature = natureInput.value;
+            const category = categoryInput.value;
+            
+            updateNature(natureId, { nature, category });
+            loadNaturesTable();
+          });
+        });
+        
+        document.querySelectorAll('.cancel-edit-btn').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const row = this.closest('tr');
+            const natureStatic = row.querySelector('.static-field[data-field="nature"]');
+            const categoryStatic = row.querySelector('.static-field[data-field="category"]');
+            const natureInput = row.querySelector('[data-field="nature"]');
+            const categoryInput = row.querySelector('[data-field="category"]');
+            
+            if (natureStatic && natureInput) {
+              natureInput.value = natureStatic.textContent;
+            }
+            if (categoryStatic && categoryInput) {
+              categoryInput.value = categoryStatic.textContent;
+            }
+            
+            row.classList.remove('edit-mode');
+          });
+        });
+        
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const row = this.closest('tr');
+            const natureId = row.dataset.natureId;
+            if (confirm('Are you sure you want to delete this nature?')) {
+              deleteNature(natureId);
+              row.remove();
+            }
+          });
+        });
+        
+        document.querySelectorAll('.remove-type').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const type = this.dataset.type;
+            const row = this.closest('tr');
+            const natureId = row.dataset.natureId;
+            
+            const natures = getNatures();
+            const nature = natures.find(n => n.id == natureId);
+            if (nature) {
+              nature.types = nature.types.filter(t => t !== type);
+              saveNatures(natures);
+              this.parentElement.remove();
+            }
+          });
+        });
+        
+        document.querySelectorAll('.add-type-btn').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const input = this.previousElementSibling;
+            const type = input.value.trim();
+            
+            if (type) {
+              const row = this.closest('tr');
+              const natureId = row.dataset.natureId;
+              
+              const natures = getNatures();
+              const nature = natures.find(n => n.id == natureId);
+              if (nature) {
+                nature.types.push(type);
+                saveNatures(natures);
+                
+                const typeElement = document.createElement('div');
+                typeElement.className = 'nature-type';
+                typeElement.innerHTML = `
+                  ${type}
+                  <button class="remove-type" data-type="${type}">&times;</button>
+                `;
+                
+                const removeBtn = typeElement.querySelector('.remove-type');
+                removeBtn.addEventListener('click', function() {
+                  const type = this.dataset.type;
+                  nature.types = nature.types.filter(t => t !== type);
+                  saveNatures(natures);
+                  typeElement.remove();
+                });
+                
+                this.parentElement.previousElementSibling.appendChild(typeElement);
+                input.value = '';
+              }
+            }
+          });
+        });
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      initializeLocalStorage();
+      loadNaturesTable();
+      
+      document.getElementById('toggle-nature-form-btn').addEventListener('click', function() {
+        const form = document.getElementById('new-nature-form');
+        if (form.classList.contains('active')) {
+          form.classList.remove('active');
+        } else {
+          form.classList.add('active');
+        }
+      });
+      
+      document.getElementById('cancel-new-nature').addEventListener('click', function() {
+        document.getElementById('new-nature-form').classList.remove('active');
+      });
+      
+      document.getElementById('save-new-nature').addEventListener('click', function() {
+        const name = document.getElementById('new-nature-name').value;
+        const category = document.getElementById('new-nature-category').value;
+        
+        if (!name || !category) {
+          alert('Please fill in all required fields');
+          return;
+        }
+        
+        const newNature = {
+          nature: name,
+          category: category,
+          types: []
+        };
+        
+        addNewNature(newNature);
+        loadNaturesTable();
+        
+        document.getElementById('new-nature-name').value = '';
+        document.getElementById('new-nature-category').value = '';
+        document.getElementById('new-nature-form').classList.remove('active');
+      });
+    });
+  </script>
 </body>
 </html>
