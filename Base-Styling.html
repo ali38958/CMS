@@ -25,10 +25,9 @@
       justify-content: space-between;
       align-items: center;
       padding: 0 25px;
-      margin-bottom: 30px; /* CHANGED FROM 15px TO 30px */
+      margin-bottom: 30px;
     }
 
-    /* [ALL OTHER STYLES REMAIN EXACTLY THE SAME] */
     .nav-bar {
       width: 100vw;
       background-color: rgb(136, 28, 28);
@@ -44,6 +43,7 @@
       width: 100%;
       max-width: 1500px;
       display: flex;
+      margin-left: 90px;
     }
 
     .nav-item {
@@ -60,7 +60,7 @@
       background-color: rgba(0,0,0,0.1);
     }
 
-    .nav-item.active {
+    #active {
       background-color: rgba(0,0,0,0.2);
     }
 
@@ -69,7 +69,7 @@
       position: absolute;
       bottom: 0;
       left: 50%;
-      transform: translateX(-50%);
+      transform: translateX(120%);
       width: 60%;
       height: 3px;
       background-color: white;
@@ -126,73 +126,28 @@
       cursor: pointer;
       font-weight: bold;
       transition: background-color 0.3s;
+      border: 1px solid white;
     }
 
     .logout-btn:hover {
       background-color: #ddd;
     }
 
-    .tab-wrapper {
-      margin: 20px auto 0;
-      max-width: 1200px;
-      background: #ffffff;
-      border-radius: 16px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
-      overflow: hidden;
-    }
-
-    .tab-header {
-      display: flex;
-      background-color: #f8f9fc;
-      border-bottom: 1px solid #ddd;
-    }
-
-    .tab-header .tab {
-      flex: 1;
-      text-align: center;
-      padding: 18px 10px;
-      font-weight: bold;
-      color: #444;
-      cursor: pointer;
-      position: relative;
-      transition: all 0.3s ease;
-    }
-
-    .tab-header .tab:hover {
-      background-color: #eaeaea;
-    }
-
-    .tab-header .tab.active {
-      background-color: white;
-      color: rgb(136, 28, 28);
-    }
-
-    .tab-header .tab.active::after {
-      content: "";
-      position: absolute;
-      bottom: -1px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 40%;
-      height: 4px;
+    .logout-btn:active {
+      border: 1px solid white;
       background-color: rgb(136, 28, 28);
-      border-radius: 2px;
+      color: white;
     }
 
-    .tab-content {
-      padding: 30px 40px;
+    .content {
+      width: 100%;
+      max-width: 1800px;
+      margin: 0 auto;
+      padding: 20px;
       background-color: white;
-      min-height: 250px;
-    }
-
-    .tab-content h3 {
-      margin-bottom: 10px;
-      color: #222;
-    }
-
-    .tab-content p {
-      color: #555;
-      font-size: 16px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      margin-top: 20px;
     }
   </style>
 </head>
@@ -214,7 +169,7 @@
   <div class="nav-bar">
     <div class="nav-container">
       <a href="#" class="nav-item active" onclick="showNavTab('dashboard')">Dashboard</a>
-      <a href="#" class="nav-item" onclick="showNavTab('complaints')">Complaints</a>
+      <a href="#" class="nav-item"  id="active">Complaints</a>
       <a href="#" class="nav-item" onclick="showNavTab('users')">Users</a>
       <a href="#" class="nav-item" onclick="showNavTab('store')">Store</a>
       <a href="#" class="nav-item" onclick="showNavTab('stock')">Stock</a>
@@ -222,57 +177,12 @@
     </div>
   </div>
 
-  <div class="tab-wrapper">
-    <div class="tab-header">
-      <div class="tab active" onclick="showTab(0)">Dashboard</div>
-      <div class="tab" onclick="showTab(1)">Complaints</div>
-      <div class="tab" onclick="showTab(2)">Users</div>
-      <div class="tab" onclick="showTab(3)">Stock</div>
-      <div class="tab" onclick="showTab(4)">Reports</div>
-    </div>
-
-    <div class="tab-content" id="tab-content">
-      <h3>Dashboard</h3>
-      <p>This is your dashboard overview. Use the tabs to navigate your CMS.</p>
-    </div>
+  <div class="content">
   </div>
 
   <footer></footer>
 
   <script>
-    const tabs = document.querySelectorAll('.tab');
-    const content = document.getElementById('tab-content');
-    const navItems = document.querySelectorAll('.nav-item');
-
-    const tabData = [
-      { title: 'Dashboard', text: 'This is your dashboard overview. Use the tabs to navigate your CMS.' },
-      { title: 'Complaints', text: 'Manage all complaints and related records here.' },
-      { title: 'Users', text: 'Administer users, permissions, and access controls.' },
-      { title: 'Stock', text: 'Monitor and manage stock levels, reorder alerts, and usage.' },
-      { title: 'Reports', text: 'Access analytical reports and export data for performance review.' },
-    ];
-
-    function showTab(index) {
-      tabs.forEach((tab, i) => {
-        tab.classList.toggle('active', i === index);
-      });
-
-      content.innerHTML = `
-        <h3>${tabData[index].title}</h3>
-        <p>${tabData[index].text}</p>
-      `;
-    }
-
-    function showNavTab(tabName) {
-      navItems.forEach(item => {
-        item.classList.toggle('active', item.textContent.toLowerCase() === tabName);
-      });
-      
-      content.innerHTML = `
-        <h3>${tabName.charAt(0).toUpperCase() + tabName.slice(1)}</h3>
-        <p>This is the ${tabName} section content.</p>
-      `;
-    }
   </script>
 </body>
 </html>
