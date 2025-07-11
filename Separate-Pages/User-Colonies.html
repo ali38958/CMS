@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Secured CMS - Users</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #eef2f5;
+    }
+
+    header {
+      width: 100vw;
+      height: 60px;
+      background-color: rgb(136, 28, 28);
+      margin-top: 36px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 25px;
+      margin-bottom: 30px;
+    }
+
+    .nav-bar {
+      width: 100vw;
+      background-color: rgb(136, 28, 28);
+      display: flex;
+      justify-content: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      position: relative;
+      z-index: 1;
+      margin-top: 40px;
+    }
+
+    .nav-container {
+      width: 100%;
+      max-width: 1500px;
+      display: flex;
+      margin-left: 90px;
+    }
+
+    .nav-item {
+      padding: 15px 25px;
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .nav-item:hover {
+      background-color: rgba(0,0,0,0.1);
+    }
+
+    .nav-item.active {
+      background-color: rgba(0,0,0,0.2);
+    }
+
+    .nav-item.active::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background-color: white;
+      border-radius: 0 0 3px 3px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 2;
+    }
+
+    .logo .logo-image {
+      width: 130px;
+      height: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 5px;
+      background-color: #f4f4f4;
+      border-radius: 50%;
+    }
+
+    .logo .logo-image img {
+      border-radius: 50%;
+      width: 100%;
+      height: auto;
+    }
+
+    .logo h2 {
+      color: white;
+      font-size: 20px;
+      white-space: nowrap;
+    }
+
+    .user {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      color: white;
+    }
+
+    .user h2 {
+      font-size: 16px;
+      white-space: nowrap;
+    }
+
+    .logout-btn {
+      background-color: white;
+      color: rgb(136, 28, 28);
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s;
+      border: 1px solid white;
+    }
+
+    .logout-btn:hover {
+      background-color: #ddd;
+    }
+
+    .logout-btn:active {
+      border: 1px solid white;
+      background-color: rgb(136, 28, 28);
+      color: white;
+    }
+
+    .content {
+      width: 100%;
+      max-width: 1800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      margin-top: 20px;
+    }
+
+    /* Additional styles from the second code to maintain functionality */
+    .users-section-container {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      gap: 30px;
+      min-height: 600px;
+    }
+    
+    .users-sidebar {
+      background: white;
+      border-radius: 8px;
+      padding: 25px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .users-option {
+      padding: 18px 20px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #f8f9fa;
+    }
+    
+    .users-option:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    
+    .users-option.active {
+      background: rgba(0,0,0,0.1);
+      color: rgb(136, 28, 28);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .users-option i {
+      font-size: 20px;
+    }
+    
+    .users-content {
+      background: white;
+      border-radius: 8px;
+      padding: 30px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .users-panel {
+      display: none;
+    }
+    
+    .users-panel.active {
+      display: block;
+      animation: fadeIn 0.4s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
+    
+    .panel-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: rgb(136, 28, 28);
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #212529;
+    }
+    
+    .form-control {
+      width: 100%;
+      padding: 14px 18px;
+      border-radius: 8px;
+      border: 1px solid rgba(0,0,0,0.1);
+      background: #f8f9fa;
+      font-size: 16px;
+      transition: all 0.3s;
+    }
+    
+    .form-control:focus {
+      outline: none;
+      border-color: rgb(136, 28, 28);
+      box-shadow: 0 0 0 3px rgba(136, 28, 28, 0.2);
+    }
+    
+    .btn {
+      padding: 14px 28px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .btn-primary {
+      background: rgb(136, 28, 28);
+      color: white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .btn-primary:hover {
+      background: #a52a2a;
+      transform: translateY(-3px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    
+    .btn-danger {
+      background: #f44336;
+      color: white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .btn-danger:hover {
+      background: #d32f2f;
+      transform: translateY(-3px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    
+    .search-box {
+      display: flex;
+      margin-bottom: 30px;
+    }
+    
+    .search-box input {
+      flex: 1;
+      border-radius: 8px 0 0 8px;
+    }
+    
+    .search-box button {
+      border-radius: 0 8px 8px 0;
+    }
+    
+    .action-btn {
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgb(136, 28, 28);
+      color: white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .action-btn:hover {
+      background: #a52a2a;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    
+    .users-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    
+    .users-table th {
+      background: rgba(136, 28, 28, 0.1);
+      color: rgb(136, 28, 28);
+      font-weight: 700;
+      padding: 16px;
+      text-align: left;
+    }
+    
+    .users-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .users-table tr:hover {
+      background: rgba(136, 28, 28, 0.05);
+    }
+    
+    .edit-btn {
+      padding: 8px 15px;
+      border-radius: 8px;
+      background: rgba(136, 28, 28, 0.1);
+      color: rgb(136, 28, 28);
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-weight: 600;
+    }
+    
+    .edit-btn:hover {
+      background: rgb(136, 28, 28);
+      color: white;
+    }
+    
+    .delete-btn {
+      padding: 8px 15px;
+      border-radius: 8px;
+      background: rgba(244, 67, 54, 0.1);
+      color: #f44336;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+    
+    .delete-btn:hover {
+      background: #f44336;
+      color: white;
+    }
+    
+    .add-form {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 25px;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      display: none;
+    }
+    
+    .add-form.active {
+      display: block;
+      animation: fadeIn 0.4s ease;
+    }
+    
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .form-actions {
+      display: flex;
+      gap: 15px;
+      margin-top: 20px;
+    }
+    
+    .edit-form-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .edit-form-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: rgb(136, 28, 28);
+    }
+    
+    .close-edit-form {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #6c757d;
+      transition: color 0.3s;
+    }
+    
+    .close-edit-form:hover {
+      color: #f44336;
+    }
+    
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 25px;
+      border-radius: 8px;
+      color: white;
+      font-weight: 600;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transform: translateX(110%);
+      transition: transform 0.3s ease;
+    }
+    
+    .notification.show {
+      transform: translateX(0);
+    }
+    
+    .notification.success {
+      background: #4caf50;
+    }
+    
+    .notification.error {
+      background: #f44336;
+    }
+    
+    .notification.warning {
+      background: #ff9800;
+    }
+    
+    .notification i {
+      font-size: 20px;
+    }
+    
+    .no-data {
+      text-align: center;
+      padding: 40px;
+      color: #6c757d;
+      font-size: 18px;
+    }
+    
+    .no-data i {
+      font-size: 48px;
+      margin-bottom: 15px;
+      color: #ced4da;
+    }
+    
+    @media (max-width: 992px) {
+      .users-section-container {
+        grid-template-columns: 1fr;
+      }
+      
+      .users-sidebar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      
+      .users-option {
+        margin-bottom: 0;
+        flex: 1;
+        min-width: 150px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .nav-bar {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      
+      .nav-item {
+        padding: 15px;
+        font-size: 15px;
+      }
+      
+      header {
+        flex-direction: column;
+        text-align: center;
+        gap: 20px;
+      }
+      
+      .brand {
+        flex-direction: column;
+        text-align: center;
+      }
+      
+      .user-area {
+        margin-top: 10px;
+        flex-direction: column;
+      }
+      
+      .user-info {
+        text-align: center;
+        margin: 10px 0;
+      }
+      
+      .logout-btn {
+        margin-top: 10px;
+      }
+      
+      .users-option {
+        padding: 12px 15px;
+        font-size: 14px;
+      }
+      
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Notification -->
+  <div class="notification" id="notification">
+      <i class="fas fa-check-circle"></i>
+      <span id="notification-text">Operation completed successfully</span>
+  </div>
+  
+  <header>
+    <div class="logo">
+      <div class="logo-image">
+        <img src="C:/Users/agent/OneDrive/Documents/HIT .jpg" alt="logo image">
+      </div>
+      <h2>Secured CMS</h2>
+    </div>
+
+    <div class="user">
+      <h2>CH HAND</h2>
+      <button class="logout-btn">Logout</button>
+    </div>
+  </header>
+
+  <div class="nav-bar">
+    <div class="nav-container">
+      <a href="#" class="nav-item" onclick="showNavTab('dashboard')">
+        <i class="fas fa-chart-line"></i>
+        Dashboard
+      </a>
+      <a href="#" class="nav-item" onclick="showNavTab('complaints')">
+        <i class="fas fa-ticket-alt"></i>
+        Complaints
+      </a>
+      <a href="#" class="nav-item active" id="active">
+        <i class="fas fa-users"></i>
+        Users
+      </a>
+      <a href="#" class="nav-item" onclick="showNavTab('store')">
+        <i class="fas fa-store"></i>
+        Store
+      </a>
+      <a href="#" class="nav-item" onclick="showNavTab('reporting')">
+        <i class="fas fa-file-alt"></i>
+        Reporting
+      </a>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- Users Section -->
+    <div class="users-section-container">
+      <div class="users-sidebar">
+        <div class="users-option" data-panel="all-users-panel">
+          <i class="fas fa-users"></i>
+          All Users
+        </div>
+        <div class="users-option active" data-panel="colonies-panel">
+          <i class="fas fa-building"></i>
+          Colonies
+        </div>
+        <div class="users-option" data-panel="skillman-panel">
+          <i class="fas fa-tools"></i>
+          Skill Man
+        </div>
+      </div>
+      
+      <div class="users-content">
+        <!-- Colonies Panel -->
+        <div id="colonies-panel" class="users-panel active">
+          <div class="panel-header">
+            <h2 class="panel-title">Colonies</h2>
+            <button class="action-btn" id="show-colony-form-btn">
+              <i class="fas fa-plus"></i>
+              Add Colony
+            </button>
+          </div>
+          
+          <!-- Add Colony Form -->
+          <div class="add-form" id="add-colony-form">
+            <h3>Add New Colony</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="colony-name">Colony Name</label>
+                <input type="text" id="colony-name" class="form-control" placeholder="Enter colony name" required>
+              </div>
+              <div class="form-group">
+                <label for="colony-id">Colony ID</label>
+                <input type="text" id="colony-id" class="form-control" placeholder="Enter colony ID" required>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="colony-phone">Phone Number</label>
+                <input type="tel" id="colony-phone" class="form-control" placeholder="Enter phone number" required>
+              </div>
+              <div class="form-group">
+                <label for="colony-email">Email</label>
+                <input type="email" id="colony-email" class="form-control" placeholder="Enter email" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="colony-buildings">Total Buildings</label>
+              <input type="number" id="colony-buildings" class="form-control" placeholder="Enter number of buildings" required>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-primary" id="add-colony-btn">
+                <i class="fas fa-building"></i>
+                Add Colony
+              </button>
+              <button type="button" class="btn btn-danger" id="cancel-add-colony">
+                <i class="fas fa-times"></i>
+                Cancel
+              </button>
+            </div>
+          </div>
+          
+          <!-- Edit Colony Form -->
+          <div class="add-form" id="edit-colony-form">
+            <div class="edit-form-header">
+              <h3 class="edit-form-title">Edit Colony</h3>
+              <button class="close-edit-form" id="close-edit-colony-form">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            <input type="hidden" id="edit-colony-id">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="edit-colony-name">Colony Name</label>
+                <input type="text" id="edit-colony-name" class="form-control" required>
+              </div>
+              <div class="form-group">
+                <label for="edit-colony-id">Colony ID</label>
+                <input type="text" id="edit-colony-id" class="form-control" required>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="edit-colony-phone">Phone Number</label>
+                <input type="tel" id="edit-colony-phone" class="form-control" required>
+              </div>
+              <div class="form-group">
+                <label for="edit-colony-email">Email</label>
+                <input type="email" id="edit-colony-email" class="form-control" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="edit-colony-buildings">Total Buildings</label>
+              <input type="number" id="edit-colony-buildings" class="form-control" required>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-primary" id="update-colony-btn">
+                <i class="fas fa-save"></i>
+                Update Colony
+              </button>
+              <button class="btn btn-danger" id="delete-colony-btn">
+                <i class="fas fa-trash"></i>
+                Delete Colony
+              </button>
+            </div>
+          </div>
+          
+          <!-- Search Box -->
+          <div class="search-box">
+            <input type="text" id="colony-search" class="form-control" placeholder="Search by name or ID">
+            <button class="btn btn-primary" id="search-colonies-btn">
+              <i class="fas fa-search"></i>
+              Search
+            </button>
+          </div>
+          
+          <!-- Colonies Table -->
+          <div class="table-container">
+            <table class="users-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Colony Name</th>
+                  <th>Phone</th>
+                  <th>Email</th>
+                  <th>Total Buildings</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="colonies-table-body">
+                <!-- Colonies will be generated here -->
+              </tbody>
+            </table>
+          </div>
+          <div id="colonies-no-data" class="no-data" style="display: none;">
+            <i class="fas fa-building"></i>
+            <p>No colonies found</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Notification system
+    function showNotification(message, type) {
+      const notification = document.getElementById('notification');
+      const text = document.getElementById('notification-text');
+      
+      text.textContent = message;
+      notification.className = 'notification ' + type;
+      notification.classList.add('show');
+      
+      setTimeout(() => {
+        notification.classList.remove('show');
+      }, 3000);
+    }
+
+    // Users data management with localStorage
+    function getUsersData() {
+      const storedData = localStorage.getItem('complaintCloudData');
+      return storedData ? JSON.parse(storedData) : {
+        allUsers: [
+          {
+            id: 1,
+            name: "Sarah Williams",
+            email: "sarah@example.com",
+            phone: "+1 234 567 890",
+            address: "123 Main St, New York"
+          },
+          {
+            id: 2,
+            name: "Michael Brown",
+            email: "michael@example.com",
+            phone: "+1 345 678 901",
+            address: "456 Park Ave, Chicago"
+          },
+          {
+            id: 3,
+            name: "Robert Chen",
+            email: "robert@example.com",
+            phone: "+1 456 789 012",
+            address: "789 Oak St, San Francisco"
+          },
+          {
+            id: 4,
+            name: "Emily Parker",
+            email: "emily@example.com",
+            phone: "+1 567 890 123",
+            address: "101 Pine St, Boston"
+          }
+        ],
+        colonies: [
+          {
+            id: "COL-001",
+            name: "Green Valley",
+            phone: "+1 111 222 333",
+            email: "greenvalley@example.com",
+            buildings: 24
+          },
+          {
+            id: "COL-002",
+            name: "Sunset Hills",
+            phone: "+1 222 333 444",
+            email: "sunsethills@example.com",
+            buildings: 18
+          },
+          {
+            id: "COL-003",
+            name: "River View",
+            phone: "+1 333 444 555",
+            email: "riverview@example.com",
+            buildings: 32
+          }
+        ],
+        skillmen: [
+          {
+            id: 1,
+            name: "John Davis",
+            email: "john@example.com",
+            phone: "+1 444 555 666",
+            designation: "Electrician"
+          },
+          {
+            id: 2,
+            name: "Mark Wilson",
+            email: "mark@example.com",
+            phone: "+1 555 666 777",
+            designation: "Plumber"
+          },
+          {
+            id: 3,
+            name: "Lisa Thompson",
+            email: "lisa@example.com",
+            phone: "+1 666 777 888",
+            designation: "Carpenter"
+          }
+        ]
+      };
+    }
+
+    function saveUsersData(data) {
+      localStorage.setItem('complaintCloudData', JSON.stringify(data));
+    }
+
+    // Function to generate colonies table rows
+    function generateColoniesTable(colonies) {
+      if (colonies.length === 0) {
+        document.getElementById('colonies-no-data').style.display = 'block';
+        return '';
+      }
+      
+      document.getElementById('colonies-no-data').style.display = 'none';
+      return colonies.map((colony, index) => `
+        <tr>
+          <td>${colony.id}</td>
+          <td>${colony.name}</td>
+          <td>${colony.phone}</td>
+          <td>${colony.email}</td>
+          <td>${colony.buildings}</td>
+          <td>
+            <button class="edit-btn" data-id="${colony.id}" data-type="colony" data-index="${index}">
+              <i class="fas fa-edit"></i>
+              Edit
+            </button>
+            <button class="delete-btn" data-id="${colony.id}" data-type="colony" data-index="${index}">
+              <i class="fas fa-trash"></i>
+              Delete
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // Initialize users content
+    function initializeUsersContent() {
+      const usersData = getUsersData();
+      
+      const coloniesTableBody = document.getElementById('colonies-table-body');
+      if (coloniesTableBody) {
+        coloniesTableBody.innerHTML = generateColoniesTable(usersData.colonies);
+      }
+    }
+
+    // Search functions
+    function searchColonies(term) {
+      const usersData = getUsersData();
+      term = term.toLowerCase();
+      
+      const filteredColonies = usersData.colonies.filter(colony => 
+        colony.name.toLowerCase().includes(term) ||
+        colony.id.toLowerCase().includes(term)
+      );
+      
+      document.getElementById('colonies-table-body').innerHTML = generateColoniesTable(filteredColonies);
+    }
+
+    // Navigation tab functionality
+    function showNavTab(tabName) {
+      // Remove active class from all nav items
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      
+      // Add active class to clicked nav item
+      const activeTab = document.querySelector(`.nav-item[onclick="showNavTab('${tabName}')"]`);
+      if (activeTab) {
+        activeTab.classList.add('active');
+      }
+      
+      // Show notification for demonstration
+      showNotification(`Redirecting to ${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`, 'success');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize users content
+      initializeUsersContent();
+      
+      // Logout button functionality
+      document.querySelector('.logout-btn').addEventListener('click', function() {
+        showNotification('Logging out... Redirecting to login page.', 'success');
+        setTimeout(() => {
+          // In a real app, this would redirect to the login page
+          alert('You have been logged out');
+        }, 1500);
+      });
+      
+      // Users sidebar navigation
+      const usersOptions = document.querySelectorAll('.users-option');
+      const usersPanels = document.querySelectorAll('.users-panel');
+      
+      usersOptions.forEach(option => {
+        option.addEventListener('click', function() {
+          // Remove active class from all options and panels
+          usersOptions.forEach(opt => opt.classList.remove('active'));
+          usersPanels.forEach(panel => panel.classList.remove('active'));
+          
+          // Add active class to clicked option
+          this.classList.add('active');
+          
+          // Show corresponding panel
+          const panelId = this.getAttribute('data-panel');
+          document.getElementById(panelId).classList.add('active');
+        });
+      });
+      
+      // Toggle forms for Colonies
+      document.getElementById('show-colony-form-btn').addEventListener('click', function() {
+        const form = document.getElementById('add-colony-form');
+        form.classList.toggle('active');
+        document.getElementById('edit-colony-form').classList.remove('active');
+        
+        // Reset form
+        document.getElementById('colony-name').value = '';
+        document.getElementById('colony-id').value = '';
+        document.getElementById('colony-phone').value = '';
+        document.getElementById('colony-email').value = '';
+        document.getElementById('colony-buildings').value = '';
+      });
+      
+      document.getElementById('cancel-add-colony').addEventListener('click', function() {
+        document.getElementById('add-colony-form').classList.remove('active');
+      });
+      
+      // Close edit forms
+      document.getElementById('close-edit-colony-form').addEventListener('click', function() {
+        document.getElementById('edit-colony-form').classList.remove('active');
+      });
+      
+      // Search functionality
+      document.getElementById('search-colonies-btn').addEventListener('click', function() {
+        const term = document.getElementById('colony-search').value;
+        searchColonies(term);
+      });
+      
+      // Add new colony
+      document.getElementById('add-colony-btn').addEventListener('click', function() {
+        const name = document.getElementById('colony-name').value;
+        const id = document.getElementById('colony-id').value;
+        const phone = document.getElementById('colony-phone').value;
+        const email = document.getElementById('colony-email').value;
+        const buildings = document.getElementById('colony-buildings').value;
+        
+        if (!name || !id || !phone || !email || !buildings) {
+          showNotification('Please fill all fields', 'error');
+          return;
+        }
+        
+        const usersData = getUsersData();
+        const newColony = {
+          id,
+          name,
+          phone,
+          email,
+          buildings: parseInt(buildings)
+        };
+        
+        usersData.colonies.push(newColony);
+        saveUsersData(usersData);
+        
+        document.getElementById('colonies-table-body').innerHTML = generateColoniesTable(usersData.colonies);
+        document.getElementById('add-colony-form').classList.remove('active');
+        showNotification('Colony added successfully!', 'success');
+      });
+      
+      // Edit button functionality
+      document.addEventListener('click', function(e) {
+        // Edit buttons
+        if (e.target.closest('.edit-btn')) {
+          const button = e.target.closest('.edit-btn');
+          const type = button.dataset.type;
+          const index = parseInt(button.dataset.index);
+          const usersData = getUsersData();
+          
+          if (type === 'colony') {
+            const colony = usersData.colonies[index];
+            document.getElementById('edit-colony-id').value = colony.id;
+            document.getElementById('edit-colony-name').value = colony.name;
+            document.getElementById('edit-colony-id').value = colony.id;
+            document.getElementById('edit-colony-phone').value = colony.phone;
+            document.getElementById('edit-colony-email').value = colony.email;
+            document.getElementById('edit-colony-buildings').value = colony.buildings;
+            document.getElementById('edit-colony-form').classList.add('active');
+            document.getElementById('add-colony-form').classList.remove('active');
+          }
+        }
+        
+        // Delete buttons
+        if (e.target.closest('.delete-btn')) {
+          const button = e.target.closest('.delete-btn');
+          const type = button.dataset.type;
+          const index = parseInt(button.dataset.index);
+          
+          if (confirm(`Are you sure you want to delete this ${type}?`)) {
+            const usersData = getUsersData();
+            
+            if (type === 'colony') {
+              usersData.colonies.splice(index, 1);
+              document.getElementById('colonies-table-body').innerHTML = generateColoniesTable(usersData.colonies);
+              showNotification('Colony deleted successfully', 'success');
+            }
+            
+            saveUsersData(usersData);
+          }
+        }
+      });
+      
+      // Update colony
+      document.getElementById('update-colony-btn').addEventListener('click', function() {
+        const id = document.getElementById('edit-colony-id').value;
+        const name = document.getElementById('edit-colony-name').value;
+        const phone = document.getElementById('edit-colony-phone').value;
+        const email = document.getElementById('edit-colony-email').value;
+        const buildings = document.getElementById('edit-colony-buildings').value;
+        
+        if (!name || !phone || !email || !buildings) {
+          showNotification('Please fill all fields', 'error');
+          return;
+        }
+        
+        const usersData = getUsersData();
+        const colonyIndex = usersData.colonies.findIndex(c => c.id === id);
+        
+        if (colonyIndex !== -1) {
+          usersData.colonies[colonyIndex] = {
+            id,
+            name,
+            phone,
+            email,
+            buildings: parseInt(buildings)
+          };
+          
+          saveUsersData(usersData);
+          document.getElementById('colonies-table-body').innerHTML = generateColoniesTable(usersData.colonies);
+          document.getElementById('edit-colony-form').classList.remove('active');
+          showNotification('Colony updated successfully!', 'success');
+        }
+      });
+      
+      // Delete colony
+      document.getElementById('delete-colony-btn').addEventListener('click', function() {
+        const id = document.getElementById('edit-colony-id').value;
+        
+        if (confirm('Are you sure you want to delete this colony?')) {
+          const usersData = getUsersData();
+          const colonyIndex = usersData.colonies.findIndex(c => c.id === id);
+          
+          if (colonyIndex !== -1) {
+            usersData.colonies.splice(colonyIndex, 1);
+            saveUsersData(usersData);
+            document.getElementById('colonies-table-body').innerHTML = generateColoniesTable(usersData.colonies);
+            document.getElementById('edit-colony-form').classList.remove('active');
+            showNotification('Colony deleted successfully!', 'success');
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html>
