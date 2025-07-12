@@ -499,6 +499,30 @@
       margin-bottom: 15px;
       color: #ced4da;
     }
+
+    #all-users-option, #colonies-option {
+      text-decoration: none;
+      color: inherit;
+    }
+    
+    .dual-buttons {
+      display: flex;
+      gap: 15px;
+    }
+    
+    .designation-form {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 25px;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      display: none;
+    }
+    
+    .designation-form.active {
+      display: block;
+      animation: fadeIn 0.4s ease;
+    }
     
     @media (max-width: 992px) {
       .users-section-container {
@@ -515,6 +539,11 @@
         margin-bottom: 0;
         flex: 1;
         min-width: 150px;
+      }
+      
+      .dual-buttons {
+        flex-direction: column;
+        gap: 10px;
       }
     }
 
@@ -575,7 +604,7 @@
   <header>
     <div class="logo">
       <div class="logo-image">
-        <img src="C:/Users/agent/OneDrive/Documents/HIT .jpg" alt="logo image">
+        <img src="logo.jpg" alt="logo image">
       </div>
       <h2>Secured CMS</h2>
     </div>
@@ -615,14 +644,14 @@
     <!-- Users Section -->
     <div class="users-section-container">
       <div class="users-sidebar">
-        <div class="users-option" data-panel="all-users-panel">
+        <a href="all-users.html" class="users-option" data-panel="all-users-panel" id="all-users-option">
           <i class="fas fa-users"></i>
           All Users
-        </div>
-        <div class="users-option" data-panel="colonies-panel">
+        </a>
+        <a href="colonies.html" class="users-option" data-panel="colonies-panel" id="colonies-option">
           <i class="fas fa-building"></i>
           Colonies
-        </div>
+        </a>
         <div class="users-option active" data-panel="skillman-panel">
           <i class="fas fa-tools"></i>
           Skill Man
@@ -634,10 +663,16 @@
         <div id="skillman-panel" class="users-panel active">
           <div class="panel-header">
             <h2 class="panel-title">Skill Man</h2>
-            <button class="action-btn" id="show-skillman-form-btn">
-              <i class="fas fa-plus"></i>
-              Add Skill Man
-            </button>
+            <div class="dual-buttons">
+              <button class="action-btn" id="show-skillman-form-btn">
+                <i class="fas fa-plus"></i>
+                Add Skill Man
+              </button>
+              <button class="action-btn" id="show-designation-form-btn">
+                <i class="fas fa-plus"></i>
+                Add Designation
+              </button>
+            </div>
           </div>
           
           <!-- Add Skill Man Form -->
@@ -660,7 +695,10 @@
               </div>
               <div class="form-group">
                 <label for="skillman-designation">Designation</label>
-                <input type="text" id="skillman-designation" class="form-control" placeholder="Enter designation" required>
+                <select id="skillman-designation" class="form-control" required>
+                  <option value="">Select Designation</option>
+                  <!-- Designation options will be added dynamically -->
+                </select>
               </div>
             </div>
             <div class="form-actions">
@@ -669,6 +707,25 @@
                 Add Skill Man
               </button>
               <button type="button" class="btn btn-danger" id="cancel-add-skillman">
+                <i class="fas fa-times"></i>
+                Cancel
+              </button>
+            </div>
+          </div>
+          
+          <!-- Add Designation Form -->
+          <div class="designation-form" id="add-designation-form">
+            <h3>Add New Designation</h3>
+            <div class="form-group">
+              <label for="designation-name">Designation Name</label>
+              <input type="text" id="designation-name" class="form-control" placeholder="Enter designation name" required>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-primary" id="add-designation-btn">
+                <i class="fas fa-tag"></i>
+                Add Designation
+              </button>
+              <button type="button" class="btn btn-danger" id="cancel-add-designation">
                 <i class="fas fa-times"></i>
                 Cancel
               </button>
@@ -701,7 +758,10 @@
               </div>
               <div class="form-group">
                 <label for="edit-skillman-designation">Designation</label>
-                <input type="text" id="edit-skillman-designation" class="form-control" required>
+                <select id="edit-skillman-designation" class="form-control" required>
+                  <option value="">Select Designation</option>
+                  <!-- Designation options will be added dynamically -->
+                </select>
               </div>
             </div>
             <div class="form-actions">
@@ -747,6 +807,11 @@
             <i class="fas fa-tools"></i>
             <p>No skillmen found</p>
           </div>
+        </div>
+        
+        <!-- Designations Panel -->
+        <div id="designations-panel" class="users-panel">
+          <!-- ... existing designations panel ... -->
         </div>
       </div>
     </div>
@@ -846,7 +911,8 @@
             phone: "+1 666 777 888",
             designation: "Carpenter"
           }
-        ]
+        ],
+        designations: ["Electrician", "Plumber", "Carpenter", "Painter", "Mason"]
       };
     }
 
@@ -882,6 +948,32 @@
         </tr>
       `).join('');
     }
+    
+    // Function to populate designation dropdowns
+    function populateDesignationDropdowns() {
+      const usersData = getUsersData();
+      const designations = usersData.designations || [];
+      
+      // Skillman add form
+      const addDesignationDropdown = document.getElementById('skillman-designation');
+      addDesignationDropdown.innerHTML = '<option value="">Select Designation</option>';
+      designations.forEach(designation => {
+        const option = document.createElement('option');
+        option.value = designation;
+        option.textContent = designation;
+        addDesignationDropdown.appendChild(option);
+      });
+      
+      // Skillman edit form
+      const editDesignationDropdown = document.getElementById('edit-skillman-designation');
+      editDesignationDropdown.innerHTML = '<option value="">Select Designation</option>';
+      designations.forEach(designation => {
+        const option = document.createElement('option');
+        option.value = designation;
+        option.textContent = designation;
+        editDesignationDropdown.appendChild(option);
+      });
+    }
 
     // Initialize users content
     function initializeUsersContent() {
@@ -891,6 +983,9 @@
       if (skillmanTableBody) {
         skillmanTableBody.innerHTML = generateSkillmenTable(usersData.skillmen);
       }
+      
+      // Populate designation dropdowns
+      populateDesignationDropdowns();
     }
 
     // Search functions
@@ -960,6 +1055,7 @@
       document.getElementById('show-skillman-form-btn').addEventListener('click', function() {
         const form = document.getElementById('add-skillman-form');
         form.classList.toggle('active');
+        document.getElementById('add-designation-form').classList.remove('active');
         document.getElementById('edit-skillman-form').classList.remove('active');
         
         // Reset form
@@ -971,6 +1067,21 @@
       
       document.getElementById('cancel-add-skillman').addEventListener('click', function() {
         document.getElementById('add-skillman-form').classList.remove('active');
+      });
+      
+      // Toggle forms for Designations in Skillman panel
+      document.getElementById('show-designation-form-btn').addEventListener('click', function() {
+        const form = document.getElementById('add-designation-form');
+        form.classList.toggle('active');
+        document.getElementById('add-skillman-form').classList.remove('active');
+        document.getElementById('edit-skillman-form').classList.remove('active');
+        
+        // Reset form
+        document.getElementById('designation-name').value = '';
+      });
+      
+      document.getElementById('cancel-add-designation').addEventListener('click', function() {
+        document.getElementById('add-designation-form').classList.remove('active');
       });
       
       // Close edit forms
@@ -1015,6 +1126,36 @@
         showNotification('Skill Man added successfully!', 'success');
       });
       
+      // Add new designation from Skillman panel
+      document.getElementById('add-designation-btn').addEventListener('click', function() {
+        const name = document.getElementById('designation-name').value;
+        
+        if (!name) {
+          showNotification('Please enter a designation name', 'error');
+          return;
+        }
+        
+        const usersData = getUsersData();
+        if (!usersData.designations) {
+          usersData.designations = [];
+        }
+        
+        // Check if designation already exists
+        if (usersData.designations.includes(name)) {
+          showNotification('This designation already exists', 'error');
+          return;
+        }
+        
+        usersData.designations.push(name);
+        saveUsersData(usersData);
+        
+        document.getElementById('add-designation-form').classList.remove('active');
+        showNotification('Designation added successfully!', 'success');
+        
+        // Update designation dropdowns
+        populateDesignationDropdowns();
+      });
+      
       // Edit button functionality
       document.addEventListener('click', function(e) {
         // Edit buttons
@@ -1030,9 +1171,19 @@
             document.getElementById('edit-skillman-name').value = skillman.name;
             document.getElementById('edit-skillman-email').value = skillman.email;
             document.getElementById('edit-skillman-phone').value = skillman.phone;
-            document.getElementById('edit-skillman-designation').value = skillman.designation;
+            
+            // Set designation in dropdown
+            const designationSelect = document.getElementById('edit-skillman-designation');
+            for (let i = 0; i < designationSelect.options.length; i++) {
+              if (designationSelect.options[i].value === skillman.designation) {
+                designationSelect.selectedIndex = i;
+                break;
+              }
+            }
+            
             document.getElementById('edit-skillman-form').classList.add('active');
             document.getElementById('add-skillman-form').classList.remove('active');
+            document.getElementById('add-designation-form').classList.remove('active');
           }
         }
         
