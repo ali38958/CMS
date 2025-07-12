@@ -499,6 +499,11 @@
       margin-bottom: 15px;
       color: #ced4da;
     }
+
+    #colonies-option, #skillman-option {
+        text-decoration: none;
+        color: inherit;
+    }
     
     @media (max-width: 992px) {
       .users-section-container {
@@ -575,7 +580,7 @@
   <header>
     <div class="logo">
       <div class="logo-image">
-        <img src="C:/Users/agent/OneDrive/Documents/HIT .jpg" alt="logo image">
+        <img src="logo.jpg" alt="logo image">
       </div>
       <h2>Secured CMS</h2>
     </div>
@@ -619,14 +624,14 @@
           <i class="fas fa-users"></i>
           All Users
         </div>
-        <div class="users-option" data-panel="colonies-panel">
+        <a href="colonies.html" class="users-option" data-panel="colonies-panel" id="colonies-option">
           <i class="fas fa-building"></i>
           Colonies
-        </div>
-        <div class="users-option" data-panel="skillman-panel">
+        </a>
+        <a href="skillman.html" class="users-option" data-panel="skillman-panel" id="skillman-option">
           <i class="fas fa-tools"></i>
           Skill Man
-        </div>
+        </a>
       </div>
       
       <div class="users-content">
