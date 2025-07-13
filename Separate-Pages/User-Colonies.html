@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Secured CMS - Users</title>
+  <title>Secured CMS - Colonies</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     * {
@@ -153,7 +153,6 @@
       margin-top: 20px;
     }
 
-    /* Additional styles from the second code to maintain functionality */
     .users-section-container {
       display: grid;
       grid-template-columns: 250px 1fr;
@@ -377,26 +376,6 @@
       color: white;
     }
     
-    .delete-btn {
-      padding: 8px 15px;
-      border-radius: 8px;
-      background: rgba(244, 67, 54, 0.1);
-      color: #f44336;
-      border: none;
-      cursor: pointer;
-      transition: all 0.3s;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-weight: 600;
-      margin-left: 8px;
-    }
-    
-    .delete-btn:hover {
-      background: #f44336;
-      color: white;
-    }
-    
     .add-form {
       background: #f8f9fa;
       border-radius: 8px;
@@ -499,6 +478,16 @@
       margin-bottom: 15px;
       color: #ced4da;
     }
+
+    #all-users-option, #skillman-option {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    #add-new-colony {
+      margin-bottom: 20px;
+      color:rgb(136, 28, 28);
+    }
     
     @media (max-width: 992px) {
       .users-section-container {
@@ -575,7 +564,7 @@
   <header>
     <div class="logo">
       <div class="logo-image">
-        <img src="C:/Users/agent/OneDrive/Documents/HIT .jpg" alt="logo image">
+        <img src="logo.jpg" alt="logo image">
       </div>
       <h2>Secured CMS</h2>
     </div>
@@ -615,18 +604,18 @@
     <!-- Users Section -->
     <div class="users-section-container">
       <div class="users-sidebar">
-        <div class="users-option" data-panel="all-users-panel">
+        <a href="all-users.html" class="users-option" data-panel="all-users-panel" id="all-users-option">
           <i class="fas fa-users"></i>
           All Users
-        </div>
+        </a>
         <div class="users-option active" data-panel="colonies-panel">
           <i class="fas fa-building"></i>
           Colonies
         </div>
-        <div class="users-option" data-panel="skillman-panel">
+        <a href="skillman.html" class="users-option" data-panel="skillman-panel" id="skillman-option">
           <i class="fas fa-tools"></i>
           Skill Man
-        </div>
+        </a>
       </div>
       
       <div class="users-content">
@@ -642,30 +631,16 @@
           
           <!-- Add Colony Form -->
           <div class="add-form" id="add-colony-form">
-            <h3>Add New Colony</h3>
+            <h3 id="add-new-colony">Add New Colony</h3>
             <div class="form-row">
               <div class="form-group">
                 <label for="colony-name">Colony Name</label>
                 <input type="text" id="colony-name" class="form-control" placeholder="Enter colony name" required>
               </div>
               <div class="form-group">
-                <label for="colony-id">Colony ID</label>
-                <input type="text" id="colony-id" class="form-control" placeholder="Enter colony ID" required>
+                <label for="colony-id">Colony Number</label>
+                <input type="text" id="colony-id" class="form-control" placeholder="Enter colony number" required>
               </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label for="colony-phone">Phone Number</label>
-                <input type="tel" id="colony-phone" class="form-control" placeholder="Enter phone number" required>
-              </div>
-              <div class="form-group">
-                <label for="colony-email">Email</label>
-                <input type="email" id="colony-email" class="form-control" placeholder="Enter email" required>
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="colony-buildings">Total Buildings</label>
-              <input type="number" id="colony-buildings" class="form-control" placeholder="Enter number of buildings" required>
             </div>
             <div class="form-actions">
               <button class="btn btn-primary" id="add-colony-btn">
@@ -694,39 +669,21 @@
                 <input type="text" id="edit-colony-name" class="form-control" required>
               </div>
               <div class="form-group">
-                <label for="edit-colony-id">Colony ID</label>
-                <input type="text" id="edit-colony-id" class="form-control" required>
+                <label for="edit-colony-number">Colony Number</label>
+                <input type="text" id="edit-colony-number" class="form-control" required>
               </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label for="edit-colony-phone">Phone Number</label>
-                <input type="tel" id="edit-colony-phone" class="form-control" required>
-              </div>
-              <div class="form-group">
-                <label for="edit-colony-email">Email</label>
-                <input type="email" id="edit-colony-email" class="form-control" required>
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="edit-colony-buildings">Total Buildings</label>
-              <input type="number" id="edit-colony-buildings" class="form-control" required>
             </div>
             <div class="form-actions">
               <button class="btn btn-primary" id="update-colony-btn">
                 <i class="fas fa-save"></i>
                 Update Colony
               </button>
-              <button class="btn btn-danger" id="delete-colony-btn">
-                <i class="fas fa-trash"></i>
-                Delete Colony
-              </button>
             </div>
           </div>
           
           <!-- Search Box -->
           <div class="search-box">
-            <input type="text" id="colony-search" class="form-control" placeholder="Search by name or ID">
+            <input type="text" id="colony-search" class="form-control" placeholder="Search by name or number">
             <button class="btn btn-primary" id="search-colonies-btn">
               <i class="fas fa-search"></i>
               Search
@@ -739,10 +696,9 @@
               <thead>
                 <tr>
                   <th>#</th>
-                  <th>Colony Name</th>
-                  <th>Phone</th>
-                  <th>Email</th>
-                  <th>Total Buildings</th>
+                  <th>Name</th>
+                  <th>Colony Number</th>
+                  <th>Number of Buildings</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -775,91 +731,90 @@
       }, 3000);
     }
 
-    // Users data management with localStorage
-    function getUsersData() {
-      const storedData = localStorage.getItem('complaintCloudData');
-      return storedData ? JSON.parse(storedData) : {
-        allUsers: [
-          {
-            id: 1,
-            name: "Sarah Williams",
-            email: "sarah@example.com",
-            phone: "+1 234 567 890",
-            address: "123 Main St, New York"
-          },
-          {
-            id: 2,
-            name: "Michael Brown",
-            email: "michael@example.com",
-            phone: "+1 345 678 901",
-            address: "456 Park Ave, Chicago"
-          },
-          {
-            id: 3,
-            name: "Robert Chen",
-            email: "robert@example.com",
-            phone: "+1 456 789 012",
-            address: "789 Oak St, San Francisco"
-          },
-          {
-            id: 4,
-            name: "Emily Parker",
-            email: "emily@example.com",
-            phone: "+1 567 890 123",
-            address: "101 Pine St, Boston"
-          }
-        ],
-        colonies: [
-          {
-            id: "COL-001",
-            name: "Green Valley",
-            phone: "+1 111 222 333",
-            email: "greenvalley@example.com",
-            buildings: 24
-          },
-          {
-            id: "COL-002",
-            name: "Sunset Hills",
-            phone: "+1 222 333 444",
-            email: "sunsethills@example.com",
-            buildings: 18
-          },
-          {
-            id: "COL-003",
-            name: "River View",
-            phone: "+1 333 444 555",
-            email: "riverview@example.com",
-            buildings: 32
-          }
-        ],
-        skillmen: [
-          {
-            id: 1,
-            name: "John Davis",
-            email: "john@example.com",
-            phone: "+1 444 555 666",
-            designation: "Electrician"
-          },
-          {
-            id: 2,
-            name: "Mark Wilson",
-            email: "mark@example.com",
-            phone: "+1 555 666 777",
-            designation: "Plumber"
-          },
-          {
-            id: 3,
-            name: "Lisa Thompson",
-            email: "lisa@example.com",
-            phone: "+1 666 777 888",
-            designation: "Carpenter"
-          }
-        ]
-      };
+    // API base URL
+    const API_BASE_URL = 'http://localhost:3000';
+    
+    // Global variable to store colonies data
+    let coloniesData = [];
+
+    // Function to handle API errors
+    function handleApiError(error) {
+      console.error('API Error:', error);
+      if (error.message === 'Failed to fetch') {
+        showNotification('Server error: Could not connect to backend', 'error');
+      } else {
+        showNotification(error.message || 'An error occurred', 'error');
+      }
     }
 
-    function saveUsersData(data) {
-      localStorage.setItem('complaintCloudData', JSON.stringify(data));
+    // Load colonies from backend
+    async function loadColonies() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/getColonies`);
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to load colonies');
+        }
+        
+        const colonies = await response.json();
+        return colonies;
+      } catch (error) {
+        handleApiError(error);
+        return [];
+      }
+    }
+
+    // Add new colony
+    async function addColony(colonyData) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/addColony`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(colonyData)
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to add colony');
+        }
+        
+        const result = await response.json();
+        showNotification(result.message || 'Colony added successfully!', 'success');
+        return result;
+      } catch (error) {
+        handleApiError(error);
+        return null;
+      }
+    }
+
+    // Update colony
+    async function updateColony(previousData, newData) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/editColony`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            previous: previousData,
+            new: newData
+          })
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to update colony');
+        }
+        
+        const result = await response.json();
+        showNotification(result.message || 'Colony updated successfully!', 'success');
+        return result;
+      } catch (error) {
+        handleApiError(error);
+        return null;
+      }
     }
 
     // Function to generate colonies table rows
@@ -872,46 +827,37 @@
       document.getElementById('colonies-no-data').style.display = 'none';
       return colonies.map((colony, index) => `
         <tr>
-          <td>${colony.id}</td>
+          <td>${index + 1}</td>
           <td>${colony.name}</td>
-          <td>${colony.phone}</td>
-          <td>${colony.email}</td>
-          <td>${colony.buildings}</td>
+          <td>${colony.colonyNumber}</td>
+          <td>${colony.buildings || 0}</td>
           <td>
-            <button class="edit-btn" data-id="${colony.id}" data-type="colony" data-index="${index}">
+            <button class="edit-btn" data-id="${colony.colonyNumber}" data-name="${colony.name}">
               <i class="fas fa-edit"></i>
               Edit
-            </button>
-            <button class="delete-btn" data-id="${colony.id}" data-type="colony" data-index="${index}">
-              <i class="fas fa-trash"></i>
-              Delete
             </button>
           </td>
         </tr>
       `).join('');
     }
 
-    // Initialize users content
-    function initializeUsersContent() {
-      const usersData = getUsersData();
-      
-      const coloniesTableBody = document.getElementById('colonies-table-body');
-      if (coloniesTableBody) {
-        coloniesTableBody.innerHTML = generateColoniesTable(usersData.colonies);
+    // Render colonies table
+    function renderColoniesTable(colonies) {
+      const tableBody = document.getElementById('colonies-table-body');
+      if (tableBody) {
+        tableBody.innerHTML = generateColoniesTable(colonies);
       }
     }
 
-    // Search functions
-    function searchColonies(term) {
-      const usersData = getUsersData();
-      term = term.toLowerCase();
-      
-      const filteredColonies = usersData.colonies.filter(colony => 
-        colony.name.toLowerCase().includes(term) ||
-        colony.id.toLowerCase().includes(term)
-      );
-      
-      document.getElementById('colonies-table-body').innerHTML = generateColoniesTable(filteredColonies);
+    // Load and display colonies
+    async function loadAndRenderColonies() {
+      try {
+        const colonies = await loadColonies();
+        coloniesData = colonies;
+        renderColoniesTable(colonies);
+      } catch (error) {
+        console.error('Failed to load colonies:', error);
+      }
     }
 
     // Navigation tab functionality
@@ -926,20 +872,16 @@
       if (activeTab) {
         activeTab.classList.add('active');
       }
-      
-      // Show notification for demonstration
-      showNotification(`Redirecting to ${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`, 'success');
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-      // Initialize users content
-      initializeUsersContent();
+      // Initialize colonies content
+      loadAndRenderColonies();
       
       // Logout button functionality
       document.querySelector('.logout-btn').addEventListener('click', function() {
         showNotification('Logging out... Redirecting to login page.', 'success');
         setTimeout(() => {
-          // In a real app, this would redirect to the login page
           alert('You have been logged out');
         }, 1500);
       });
@@ -972,9 +914,6 @@
         // Reset form
         document.getElementById('colony-name').value = '';
         document.getElementById('colony-id').value = '';
-        document.getElementById('colony-phone').value = '';
-        document.getElementById('colony-email').value = '';
-        document.getElementById('colony-buildings').value = '';
       });
       
       document.getElementById('cancel-add-colony').addEventListener('click', function() {
@@ -988,129 +927,80 @@
       
       // Search functionality
       document.getElementById('search-colonies-btn').addEventListener('click', function() {
-        const term = document.getElementById('colony-search').value;
-        searchColonies(term);
+        const term = document.getElementById('colony-search').value.toLowerCase();
+        const filteredColonies = coloniesData.filter(colony => 
+          colony.name.toLowerCase().includes(term) ||
+          colony.colonyNumber.toLowerCase().includes(term)
+        );
+        renderColoniesTable(filteredColonies);
       });
       
       // Add new colony
-      document.getElementById('add-colony-btn').addEventListener('click', function() {
+      document.getElementById('add-colony-btn').addEventListener('click', async function() {
         const name = document.getElementById('colony-name').value;
-        const id = document.getElementById('colony-id').value;
-        const phone = document.getElementById('colony-phone').value;
-        const email = document.getElementById('colony-email').value;
-        const buildings = document.getElementById('colony-buildings').value;
+        const colonyNumber = document.getElementById('colony-id').value;
         
-        if (!name || !id || !phone || !email || !buildings) {
+        if (!name || !colonyNumber) {
           showNotification('Please fill all fields', 'error');
           return;
         }
         
-        const usersData = getUsersData();
-        const newColony = {
-          id,
-          name,
-          phone,
-          email,
-          buildings: parseInt(buildings)
-        };
-        
-        usersData.colonies.push(newColony);
-        saveUsersData(usersData);
-        
-        document.getElementById('colonies-table-body').innerHTML = generateColoniesTable(usersData.colonies);
-        document.getElementById('add-colony-form').classList.remove('active');
-        showNotification('Colony added successfully!', 'success');
+        const colonyData = { name, colonyNumber };
+        const result = await addColony(colonyData);
+        if (result) {
+          // Reload colonies if successful
+          loadAndRenderColonies();
+          document.getElementById('add-colony-form').classList.remove('active');
+        }
       });
       
       // Edit button functionality
       document.addEventListener('click', function(e) {
-        // Edit buttons
         if (e.target.closest('.edit-btn')) {
           const button = e.target.closest('.edit-btn');
-          const type = button.dataset.type;
-          const index = parseInt(button.dataset.index);
-          const usersData = getUsersData();
+          const colonyNumber = button.dataset.id;
+          const colonyName = button.dataset.name;
           
-          if (type === 'colony') {
-            const colony = usersData.colonies[index];
-            document.getElementById('edit-colony-id').value = colony.id;
-            document.getElementById('edit-colony-name').value = colony.name;
-            document.getElementById('edit-colony-id').value = colony.id;
-            document.getElementById('edit-colony-phone').value = colony.phone;
-            document.getElementById('edit-colony-email').value = colony.email;
-            document.getElementById('edit-colony-buildings').value = colony.buildings;
+          // Find the colony in our data
+          const colony = coloniesData.find(c => c.colonyNumber === colonyNumber);
+          
+          if (colony) {
+            // Set form values
+            document.getElementById('edit-colony-id').value = colonyNumber;
+            document.getElementById('edit-colony-name').value = colonyName;
+            document.getElementById('edit-colony-number').value = colonyNumber;
+            
+            // Store previous data on the form
+            document.getElementById('edit-colony-form').dataset.previousName = colonyName;
+            document.getElementById('edit-colony-form').dataset.previousNumber = colonyNumber;
+            
+            // Show edit form
             document.getElementById('edit-colony-form').classList.add('active');
             document.getElementById('add-colony-form').classList.remove('active');
-          }
-        }
-        
-        // Delete buttons
-        if (e.target.closest('.delete-btn')) {
-          const button = e.target.closest('.delete-btn');
-          const type = button.dataset.type;
-          const index = parseInt(button.dataset.index);
-          
-          if (confirm(`Are you sure you want to delete this ${type}?`)) {
-            const usersData = getUsersData();
-            
-            if (type === 'colony') {
-              usersData.colonies.splice(index, 1);
-              document.getElementById('colonies-table-body').innerHTML = generateColoniesTable(usersData.colonies);
-              showNotification('Colony deleted successfully', 'success');
-            }
-            
-            saveUsersData(usersData);
           }
         }
       });
       
       // Update colony
-      document.getElementById('update-colony-btn').addEventListener('click', function() {
-        const id = document.getElementById('edit-colony-id').value;
-        const name = document.getElementById('edit-colony-name').value;
-        const phone = document.getElementById('edit-colony-phone').value;
-        const email = document.getElementById('edit-colony-email').value;
-        const buildings = document.getElementById('edit-colony-buildings').value;
+      document.getElementById('update-colony-btn').addEventListener('click', async function() {
+        const previousName = document.getElementById('edit-colony-form').dataset.previousName;
+        const previousNumber = document.getElementById('edit-colony-form').dataset.previousNumber;
+        const newName = document.getElementById('edit-colony-name').value;
+        const newNumber = document.getElementById('edit-colony-number').value;
         
-        if (!name || !phone || !email || !buildings) {
+        if (!newName || !newNumber) {
           showNotification('Please fill all fields', 'error');
           return;
         }
         
-        const usersData = getUsersData();
-        const colonyIndex = usersData.colonies.findIndex(c => c.id === id);
+        const previousData = { name: previousName, colonyNumber: previousNumber };
+        const newData = { name: newName, colonyNumber: newNumber };
         
-        if (colonyIndex !== -1) {
-          usersData.colonies[colonyIndex] = {
-            id,
-            name,
-            phone,
-            email,
-            buildings: parseInt(buildings)
-          };
-          
-          saveUsersData(usersData);
-          document.getElementById('colonies-table-body').innerHTML = generateColoniesTable(usersData.colonies);
+        const result = await updateColony(previousData, newData);
+        if (result) {
+          // Reload colonies if successful
+          loadAndRenderColonies();
           document.getElementById('edit-colony-form').classList.remove('active');
-          showNotification('Colony updated successfully!', 'success');
-        }
-      });
-      
-      // Delete colony
-      document.getElementById('delete-colony-btn').addEventListener('click', function() {
-        const id = document.getElementById('edit-colony-id').value;
-        
-        if (confirm('Are you sure you want to delete this colony?')) {
-          const usersData = getUsersData();
-          const colonyIndex = usersData.colonies.findIndex(c => c.id === id);
-          
-          if (colonyIndex !== -1) {
-            usersData.colonies.splice(colonyIndex, 1);
-            saveUsersData(usersData);
-            document.getElementById('colonies-table-body').innerHTML = generateColoniesTable(usersData.colonies);
-            document.getElementById('edit-colony-form').classList.remove('active');
-            showNotification('Colony deleted successfully!', 'success');
-          }
         }
       });
     });
