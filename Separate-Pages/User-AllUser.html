@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Secured CMS - Users</title>
+  <title>MES CMS - All Users</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
   <style>
     * {
       margin: 0;
@@ -14,8 +13,9 @@
     }
 
     body {
-      font-family: Arial, sans-serif;
-      background-color: #eef2f5;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f7fa;
+      color: #333;
     }
 
     header {
@@ -28,6 +28,7 @@
       align-items: center;
       padding: 0 25px;
       margin-bottom: 30px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
     }
 
     .nav-bar {
@@ -149,12 +150,11 @@
       margin: 0 auto;
       padding: 20px;
       background-color: white;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      border-radius: 8px;
+      box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+      border-radius: 10px;
       margin-top: 20px;
     }
 
-    /* Additional styles from the second code to maintain functionality */
     .users-section-container {
       display: grid;
       grid-template-columns: 250px 1fr;
@@ -166,7 +166,7 @@
       background: white;
       border-radius: 8px;
       padding: 25px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     }
     
     .users-option {
@@ -187,7 +187,7 @@
     }
     
     .users-option.active {
-      background: rgba(0,0,0,0.1);
+      background: rgba(136, 28, 28, 0.1);
       color: rgb(136, 28, 28);
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
@@ -200,23 +200,9 @@
       background: white;
       border-radius: 8px;
       padding: 30px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
       position: relative;
       overflow: hidden;
-    }
-    
-    .users-panel {
-      display: none;
-    }
-    
-    .users-panel.active {
-      display: block;
-      animation: fadeIn 0.4s ease;
-    }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
     }
     
     .panel-header {
@@ -234,70 +220,6 @@
       color: rgb(136, 28, 28);
     }
     
-    .form-group {
-      margin-bottom: 20px;
-    }
-    
-    .form-group label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: 600;
-      color: #212529;
-    }
-    
-    .form-control {
-      width: 100%;
-      padding: 14px 18px;
-      border-radius: 8px;
-      border: 1px solid rgba(0,0,0,0.1);
-      background: #f8f9fa;
-      font-size: 16px;
-      transition: all 0.3s;
-    }
-    
-    .form-control:focus {
-      outline: none;
-      border-color: rgb(136, 28, 28);
-      box-shadow: 0 0 0 3px rgba(136, 28, 28, 0.2);
-    }
-    
-    .btn {
-      padding: 14px 28px;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 16px;
-      cursor: pointer;
-      border: none;
-      transition: all 0.3s;
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-    }
-    
-    .btn-primary {
-      background: rgb(136, 28, 28);
-      color: white;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    
-    .btn-primary:hover {
-      background: #a52a2a;
-      transform: translateY(-3px);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-    }
-    
-    .btn-danger {
-      background: #f44336;
-      color: white;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    
-    .btn-danger:hover {
-      background: #d32f2f;
-      transform: translateY(-3px);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-    }
-    
     .search-box {
       display: flex;
       margin-bottom: 30px;
@@ -306,31 +228,38 @@
     .search-box input {
       flex: 1;
       border-radius: 8px 0 0 8px;
+      padding: 14px 18px;
+      border: 1px solid rgba(0,0,0,0.1);
+      background: #f8f9fa;
+      font-size: 16px;
+      transition: all 0.3s;
+    }
+    
+    .search-box input:focus {
+      outline: none;
+      border-color: rgb(136, 28, 28);
+      box-shadow: 0 0 0 3px rgba(136, 28, 28, 0.2);
     }
     
     .search-box button {
       border-radius: 0 8px 8px 0;
-    }
-    
-    .action-btn {
-      padding: 12px 20px;
-      border-radius: 8px;
+      padding: 14px 28px;
+      border-radius: 0 8px 8px 0;
       font-weight: 600;
+      font-size: 16px;
       cursor: pointer;
       border: none;
       transition: all 0.3s;
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       background: rgb(136, 28, 28);
       color: white;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
     
-    .action-btn:hover {
+    .search-box button:hover {
       background: #a52a2a;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
     }
     
     .users-table {
@@ -359,170 +288,52 @@
       background: rgba(136, 28, 28, 0.05);
     }
     
-    .edit-btn {
-      padding: 8px 15px;
-      border-radius: 8px;
-      background: rgba(136, 28, 28, 0.1);
-      color: rgb(136, 28, 28);
-      border: none;
-      cursor: pointer;
-      transition: all 0.3s;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-weight: 600;
-    }
-    
-    .edit-btn:hover {
-      background: rgb(136, 28, 28);
-      color: white;
-    }
-    
-    .delete-btn {
-      padding: 8px 15px;
-      border-radius: 8px;
-      background: rgba(244, 67, 54, 0.1);
-      color: #f44336;
-      border: none;
-      cursor: pointer;
-      transition: all 0.3s;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-weight: 600;
-      margin-left: 8px;
-    }
-    
-    .delete-btn:hover {
-      background: #f44336;
-      color: white;
-    }
-    
-    .add-form {
-      background: #f8f9fa;
-      border-radius: 8px;
-      padding: 25px;
-      margin-bottom: 30px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-      display: none;
-    }
-    
-    .add-form.active {
-      display: block;
-      animation: fadeIn 0.4s ease;
-    }
-    
-    .form-row {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 20px;
-      margin-bottom: 20px;
-    }
-    
-    .form-actions {
-      display: flex;
-      gap: 15px;
-      margin-top: 20px;
-    }
-    
-    .edit-form-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-    
-    .edit-form-title {
-      font-size: 20px;
-      font-weight: 700;
-      color: rgb(136, 28, 28);
-    }
-    
-    .close-edit-form {
-      background: none;
-      border: none;
-      font-size: 24px;
-      cursor: pointer;
-      color: #6c757d;
-      transition: color 0.3s;
-    }
-    
-    .close-edit-form:hover {
-      color: #f44336;
-    }
-    
-    .notification {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      padding: 15px 25px;
-      border-radius: 8px;
-      color: white;
-      font-weight: 600;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-      z-index: 1000;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      transform: translateX(110%);
-      transition: transform 0.3s ease;
-    }
-    
-    .notification.show {
-      transform: translateX(0);
-    }
-    
-    .notification.success {
-      background: #4caf50;
-    }
-    
-    .notification.error {
-      background: #f44336;
-    }
-    
-    .notification.warning {
-      background: #ff9800;
-    }
-    
-    .notification i {
-      font-size: 20px;
-    }
-    
     .no-data {
       text-align: center;
       padding: 40px;
       color: #6c757d;
       font-size: 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
     
     .no-data i {
-      font-size: 48px;
-      margin-bottom: 15px;
+      font-size: 72px;
+      margin-bottom: 20px;
       color: #ced4da;
     }
-
-    #all-users-option, #colonies-option {
-      text-decoration: none;
-      color: inherit;
+    
+    .no-data h3 {
+      font-size: 24px;
+      margin-bottom: 15px;
+      color: #495057;
     }
     
-    .dual-buttons {
-      display: flex;
-      gap: 15px;
+    .no-data p {
+      font-size: 16px;
+      max-width: 500px;
+      line-height: 1.6;
     }
     
-    .designation-form {
-      background: #f8f9fa;
-      border-radius: 8px;
-      padding: 25px;
-      margin-bottom: 30px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-      display: none;
+    .retry-btn {
+      margin-top: 20px;
+      padding: 10px 25px;
+      background: rgb(136, 28, 28);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
     }
     
-    .designation-form.active {
-      display: block;
-      animation: fadeIn 0.4s ease;
+    .retry-btn:hover {
+      background: #a52a2a;
+      transform: translateY(-2px);
     }
 
     /* Pagination Styles */
@@ -624,10 +435,61 @@
       border-color: rgb(136, 28, 28);
     }
 
-    #add-skillman, #add-designation {
-      margin-bottom: 20px;
+    /* Loading spinner */
+    .spinner {
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-left: 4px solid rgb(136, 28, 28);
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+      display: none;
     }
     
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Notification */
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 25px;
+      border-radius: 8px;
+      color: white;
+      font-weight: 600;
+      box-shadow: 0 2px 15px rgba(0,0,0,0.15);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transform: translateX(110%);
+      transition: transform 0.3s ease;
+    }
+    
+    .notification.show {
+      transform: translateX(0);
+    }
+    
+    .notification.success {
+      background: #4caf50;
+    }
+    
+    .notification.error {
+      background: #f44336;
+    }
+    
+    .notification.info {
+      background: #2196f3;
+    }
+    
+    .notification i {
+      font-size: 20px;
+    }
+
     @media (max-width: 992px) {
       .users-section-container {
         grid-template-columns: 1fr;
@@ -643,11 +505,6 @@
         margin-bottom: 0;
         flex: 1;
         min-width: 150px;
-      }
-      
-      .dual-buttons {
-        flex-direction: column;
-        gap: 10px;
       }
       
       .table-controls {
@@ -671,21 +528,18 @@
         flex-direction: column;
         text-align: center;
         gap: 20px;
+        height: auto;
+        padding: 15px;
       }
       
-      .brand {
+      .logo {
         flex-direction: column;
         text-align: center;
       }
       
-      .user-area {
+      .user {
         margin-top: 10px;
         flex-direction: column;
-      }
-      
-      .user-info {
-        text-align: center;
-        margin: 10px 0;
       }
       
       .logout-btn {
@@ -697,12 +551,14 @@
         font-size: 14px;
       }
       
-      .form-row {
-        grid-template-columns: 1fr;
-      }
-      
       .page-numbers {
         flex-wrap: wrap;
+      }
+      
+      .panel-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
       }
     }
   </style>
@@ -710,7 +566,7 @@
 <body>
   <!-- Notification -->
   <div class="notification" id="notification">
-      <i class="fas fa-check-circle"></i>
+      <i class="fas fa-info-circle"></i>
       <span id="notification-text">Operation completed successfully</span>
   </div>
   
@@ -719,7 +575,7 @@
       <div class="logo-image">
         <img src="logo.jpg" alt="logo image">
       </div>
-      <h2>Secured CMS</h2>
+      <h2>MES CMS</h2>
     </div>
 
     <div class="user">
@@ -757,146 +613,38 @@
     <!-- Users Section -->
     <div class="users-section-container">
       <div class="users-sidebar">
-        <a href="all-users.html" class="users-option" data-panel="all-users-panel" id="all-users-option">
+        <div class="users-option active" data-panel="all-users-panel" id="all-users-option">
           <i class="fas fa-users"></i>
           All Users
-        </a>
-        <a href="colonies.html" class="users-option" data-panel="colonies-panel" id="colonies-option">
+        </div>
+        <div class="users-option" data-panel="colonies-panel" id="colonies-option">
           <i class="fas fa-building"></i>
           Colonies
-        </a>
-        <div class="users-option active" data-panel="skillman-panel">
+        </div>
+        <div class="users-option" data-panel="skillman-panel">
           <i class="fas fa-tools"></i>
           Skill Man
         </div>
       </div>
       
       <div class="users-content">
-        <!-- Skill Man Panel -->
-        <div id="skillman-panel" class="users-panel active">
+        <!-- All Users Panel -->
+        <div id="all-users-panel" class="users-panel active">
           <div class="panel-header">
-            <h2 class="panel-title">Skill Man</h2>
-            <div class="dual-buttons">
-              <button class="action-btn" id="show-skillman-form-btn">
-                <i class="fas fa-plus"></i>
-                Add Skill Man
-              </button>
-              <button class="action-btn" id="show-designation-form-btn">
-                <i class="fas fa-plus"></i>
-                Add Designation
-              </button>
-            </div>
-          </div>
-          
-          <!-- Add Skill Man Form -->
-          <div class="add-form" id="add-skillman-form">
-            <h3 id="add-skillman">Add New Skill Man</h3>
-            <div class="form-row">
-              <div class="form-group">
-                <label for="skillman-name">Name</label>
-                <input type="text" id="skillman-name" class="form-control" placeholder="Enter full name" required>
-              </div>
-              <div class="form-group">
-                <label for="skillman-email">Email <span style="color:#888;font-weight:normal">(optional)</span></label>
-                <input type="email" id="skillman-email" class="form-control" placeholder="Enter email">
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label for="skillman-phone">Phone Number</label>
-                <input type="tel" id="skillman-phone" class="form-control" placeholder="Enter phone number" required>
-              </div>
-              <div class="form-group">
-                <label for="skillman-designation">Designation</label>
-                <select id="skillman-designation" class="form-control" required>
-                  <option value="">Select Designation</option>
-                  <!-- Designation options will be added dynamically -->
-                </select>
-              </div>
-            </div>
-            <div class="form-actions">
-              <button class="btn btn-primary" id="add-skillman-btn">
-                <i class="fas fa-user-tie"></i>
-                Add Skill Man
-              </button>
-              <button type="button" class="btn btn-danger" id="cancel-add-skillman">
-                <i class="fas fa-times"></i>
-                Cancel
-              </button>
-            </div>
-          </div>
-          
-          <!-- Add Designation Form -->
-          <div class="designation-form" id="add-designation-form">
-            <h3 id="add-designation">Add New Designation</h3>
-            <div class="form-group">
-              <label for="designation-name">Designation Name</label>
-              <input type="text" id="designation-name" class="form-control" placeholder="Enter designation name" required>
-            </div>
-            <div class="form-actions">
-              <button class="btn btn-primary" id="add-designation-btn">
-                <i class="fas fa-tag"></i>
-                Add Designation
-              </button>
-              <button type="button" class="btn btn-danger" id="cancel-add-designation">
-                <i class="fas fa-times"></i>
-                Cancel
-              </button>
-            </div>
-          </div>
-          
-          <!-- Edit Skill Man Form -->
-          <div class="add-form" id="edit-skillman-form">
-            <div class="edit-form-header">
-              <h3 class="edit-form-title">Edit Skill Man</h3>
-              <button class="close-edit-form" id="close-edit-skillman-form">
-                <i class="fas fa-times"></i>
-              </button>
-            </div>
-            <input type="hidden" id="edit-skillman-id">
-            <div class="form-row">
-              <div class="form-group">
-                <label for="edit-skillman-name">Name</label>
-                <input type="text" id="edit-skillman-name" class="form-control" required>
-              </div>
-              <div class="form-group">
-                <label for="edit-skillman-email">Email <span style="color:#888;font-weight:normal">(optional)</span></label>
-                <input type="email" id="edit-skillman-email" class="form-control">
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label for="edit-skillman-phone">Phone Number</label>
-                <input type="tel" id="edit-skillman-phone" class="form-control" required>
-              </div>
-              <div class="form-group">
-                <label for="edit-skillman-designation">Designation</label>
-                <select id="edit-skillman-designation" class="form-control" required>
-                  <option value="">Select Designation</option>
-                  <!-- Designation options will be added dynamically -->
-                </select>
-              </div>
-            </div>
-            <div class="form-actions">
-              <button class="btn btn-primary" id="update-skillman-btn">
-                <i class="fas fa-save"></i>
-                Update Skill Man
-              </button>
-              <button class="btn btn-danger" id="delete-skillman-btn">
-                <i class="fas fa-trash"></i>
-                Delete Skill Man
-              </button>
-            </div>
+            <h2 class="panel-title">All Users</h2>
           </div>
           
           <!-- Search Box -->
           <div class="search-box">
-            <input type="text" id="skillman-search" class="form-control" placeholder="Search by name, email, or designation">
-            <button class="btn btn-primary" id="search-skillman-btn">
+            <input type="text" id="users-search" class="form-control" placeholder="Search by name, email, or phone">
+            <button class="btn" id="search-users-btn">
               <i class="fas fa-search"></i>
               Search
             </button>
           </div>
+          
+          <!-- Loading Spinner -->
+          <div class="spinner" id="loading-spinner"></div>
           
           <!-- Table Controls -->
           <div class="table-controls">
@@ -904,7 +652,7 @@
               <span>Show</span>
               <select id="entries-per-page">
                 <option value="10">10</option>
-                <option value="30">30</option>
+                <option value="30" selected>30</option>
                 <option value="100">100</option>
               </select>
               <span>entries</span>
@@ -922,46 +670,36 @@
             </div>
           </div>
           
-          <!-- Skill Man Table -->
+          <!-- Users Table -->
           <div class="table-container">
-            <table class="users-table">
+            <table class="users-table" id="users-table">
               <thead>
                 <tr>
                   <th>#</th>
                   <th>Name</th>
-                  <th>Email</th>
                   <th>Phone</th>
-                  <th>Designation</th>
-                  <th>Actions</th>
+                  <th>Email</th>
                 </tr>
               </thead>
-              <tbody id="skillman-table-body">
-                <!-- Skillmen will be generated here -->
+              <tbody id="users-table-body">
+                <!-- Users will be generated here -->
               </tbody>
             </table>
           </div>
-          <div id="skillman-no-data" class="no-data" style="display: none;">
-            <i class="fas fa-tools"></i>
-            <p>No skillmen found</p>
+          
+          <!-- No Data Message -->
+          <div id="users-no-data" class="no-data" style="display: none;">
+            <i class="fas fa-users-slash"></i>
+            <h3>No User Data Available</h3>
+            <p>We couldn't retrieve any user data from the server. This could be due to a network issue or the backend service being unavailable.</p>
+            <p>Please check your connection and try again.</p>
           </div>
-        </div>
-        
-        <!-- Designations Panel -->
-        <div id="designations-panel" class="users-panel">
-          <!-- ... existing designations panel ... -->
         </div>
       </div>
     </div>
   </div>
 
   <script>
-    // Email validation regex
-    function isValidEmail(email) {
-      if (!email) return true; // Empty is acceptable
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      return emailRegex.test(email);
-    }
-
     // Notification system
     function showNotification(message, type) {
       const notification = document.getElementById('notification');
@@ -976,193 +714,29 @@
       }, 3000);
     }
 
-    // Users data management with localStorage
-    function getUsersData() {
-      const storedData = localStorage.getItem('complaintCloudData');
-      return storedData ? JSON.parse(storedData) : {
-        allUsers: [
-          {
-            id: 1,
-            name: "Sarah Williams",
-            email: "sarah@example.com",
-            phone: "+1 234 567 890",
-            address: "123 Main St, New York"
-          },
-          {
-            id: 2,
-            name: "Michael Brown",
-            email: "michael@example.com",
-            phone: "+1 345 678 901",
-            address: "456 Park Ave, Chicago"
-          },
-          {
-            id: 3,
-            name: "Robert Chen",
-            email: "robert@example.com",
-            phone: "+1 456 789 012",
-            address: "789 Oak St, San Francisco"
-          },
-          {
-            id: 4,
-            name: "Emily Parker",
-            email: "emily@example.com",
-            phone: "+1 567 890 123",
-            address: "101 Pine St, Boston"
-          }
-        ],
-        colonies: [
-          {
-            id: "COL-001",
-            name: "Green Valley",
-            phone: "+1 111 222 333",
-            email: "greenvalley@example.com",
-            buildings: 24
-          },
-          {
-            id: "COL-002",
-            name: "Sunset Hills",
-            phone: "+1 222 333 444",
-            email: "sunsethills@example.com",
-            buildings: 18
-          },
-          {
-            id: "COL-003",
-            name: "River View",
-            phone: "+1 333 444 555",
-            email: "riverview@example.com",
-            buildings: 32
-          }
-        ],
-        skillmen: [
-          {
-            id: 1,
-            name: "John Davis",
-            email: "john@example.com",
-            phone: "+1 444 555 666",
-            designation: "Electrician"
-          },
-          {
-            id: 2,
-            name: "Mark Wilson",
-            email: "mark@example.com",
-            phone: "+1 555 666 777",
-            designation: "Plumber"
-          },
-          {
-            id: 3,
-            name: "Lisa Thompson",
-            email: "lisa@example.com",
-            phone: "+1 666 777 888",
-            designation: "Carpenter"
-          },
-          {
-            id: 4,
-            name: "David Miller",
-            email: "david@example.com",
-            phone: "+1 777 888 999",
-            designation: "Painter"
-          },
-          {
-            id: 5,
-            name: "Sarah Johnson",
-            email: "sarah@example.com",
-            phone: "+1 888 999 000",
-            designation: "Mason"
-          },
-          {
-            id: 6,
-            name: "James Taylor",
-            email: "james@example.com",
-            phone: "+1 999 000 111",
-            designation: "Electrician"
-          },
-          {
-            id: 7,
-            name: "Jennifer Smith",
-            email: "jennifer@example.com",
-            phone: "+1 111 222 333",
-            designation: "Plumber"
-          },
-          {
-            id: 8,
-            name: "Robert Garcia",
-            email: "robert@example.com",
-            phone: "+1 222 333 444",
-            designation: "Carpenter"
-          },
-          {
-            id: 9,
-            name: "Linda Martinez",
-            email: "linda@example.com",
-            phone: "+1 333 444 555",
-            designation: "Painter"
-          },
-          {
-            id: 10,
-            name: "Thomas Wilson",
-            email: "thomas@example.com",
-            phone: "+1 444 555 666",
-            designation: "Mason"
-          },
-          {
-            id: 11,
-            name: "Patricia Brown",
-            email: "patricia@example.com",
-            phone: "+1 555 666 777",
-            designation: "Electrician"
-          },
-          {
-            id: 12,
-            name: "Christopher Davis",
-            email: "christopher@example.com",
-            phone: "+1 666 777 888",
-            designation: "Plumber"
-          }
-        ],
-        designations: ["Electrician", "Plumber", "Carpenter", "Painter", "Mason"]
-      };
-    }
-
-    function saveUsersData(data) {
-      localStorage.setItem('complaintCloudData', JSON.stringify(data));
-    }
-    
     // Pagination variables
     let currentPage = 1;
-    let entriesPerPage = 10;
-    let filteredSkillmen = [];
+    let entriesPerPage = 30;
+    let allUsers = [];
+    let filteredUsers = [];
     let searchTerm = '';
 
-    // Function to generate skillmen table rows
-    function generateSkillmenTable(skillmen) {
-      if (skillmen.length === 0) {
-        document.getElementById('skillman-no-data').style.display = 'block';
+    // Function to generate users table rows
+    function generateUsersTable(users) {
+      if (users.length === 0) {
         return '';
       }
       
-      document.getElementById('skillman-no-data').style.display = 'none';
-      
       // Calculate start index for current page
       const startIndex = (currentPage - 1) * entriesPerPage;
-      const paginatedSkillmen = skillmen.slice(startIndex, startIndex + entriesPerPage);
+      const paginatedUsers = users.slice(startIndex, startIndex + entriesPerPage);
       
-      return paginatedSkillmen.map((skillman, index) => `
+      return paginatedUsers.map((user, index) => `
         <tr>
-          <td>${skillman.id}</td>
-          <td>${skillman.name}</td>
-          <td>${skillman.email || 'N/A'}</td>
-          <td>${skillman.phone}</td>
-          <td>${skillman.designation}</td>
-          <td>
-            <button class="edit-btn" data-id="${skillman.id}" data-type="skillman" data-index="${index}">
-              <i class="fas fa-edit"></i>
-              Edit
-            </button>
-            <button class="delete-btn" data-id="${skillman.id}" data-type="skillman" data-index="${index}">
-              <i class="fas fa-trash"></i>
-              Delete
-            </button>
-          </td>
+          <td>${startIndex + index + 1}</td>
+          <td>${user.name}</td>
+          <td>${user.phone}</td>
+          <td>${user.email}</td>
         </tr>
       `).join('');
     }
@@ -1184,11 +758,13 @@
       pageNumbersContainer.innerHTML = '';
       
       // Always show first page
-      const firstPageBtn = document.createElement('button');
-      firstPageBtn.className = `page-btn ${currentPage === 1 ? 'active' : ''}`;
-      firstPageBtn.textContent = '1';
-      firstPageBtn.addEventListener('click', () => goToPage(1));
-      pageNumbersContainer.appendChild(firstPageBtn);
+      if (totalPages > 0) {
+        const firstPageBtn = document.createElement('button');
+        firstPageBtn.className = `page-btn ${currentPage === 1 ? 'active' : ''}`;
+        firstPageBtn.textContent = '1';
+        firstPageBtn.addEventListener('click', () => goToPage(1));
+        pageNumbersContainer.appendChild(firstPageBtn);
+      }
       
       // Calculate range of pages to display
       let startPage = Math.max(2, currentPage - 2);
@@ -1204,15 +780,17 @@
       
       // Add middle pages
       for (let i = startPage; i <= endPage; i++) {
-        const pageBtn = document.createElement('button');
-        pageBtn.className = `page-btn ${currentPage === i ? 'active' : ''}`;
-        pageBtn.textContent = i;
-        pageBtn.addEventListener('click', () => goToPage(i));
-        pageNumbersContainer.appendChild(pageBtn);
+        if (i > 1 && i < totalPages) {
+          const pageBtn = document.createElement('button');
+          pageBtn.className = `page-btn ${currentPage === i ? 'active' : ''}`;
+          pageBtn.textContent = i;
+          pageBtn.addEventListener('click', () => goToPage(i));
+          pageNumbersContainer.appendChild(pageBtn);
+        }
       }
       
       // Add ellipsis if needed
-      if (endPage < totalPages - 1) {
+      if (endPage < totalPages - 1 && totalPages > 3) {
         const ellipsis = document.createElement('span');
         ellipsis.textContent = '...';
         ellipsis.style.padding = '0 10px';
@@ -1232,76 +810,74 @@
     // Function to go to a specific page
     function goToPage(page) {
       currentPage = page;
-      renderSkillmenTable();
+      renderUsersTable();
     }
     
     // Function to render the table with pagination
-    function renderSkillmenTable() {
-      const usersData = getUsersData();
-      
+    function renderUsersTable() {
       // Apply search filter if there's a search term
       if (searchTerm) {
-        filteredSkillmen = usersData.skillmen.filter(skillman => 
-          skillman.name.toLowerCase().includes(searchTerm) ||
-          (skillman.email && skillman.email.toLowerCase().includes(searchTerm)) ||
-          skillman.designation.toLowerCase().includes(searchTerm)
+        filteredUsers = allUsers.filter(user => 
+          user.name.toLowerCase().includes(searchTerm) ||
+          user.phone.toLowerCase().includes(searchTerm) ||
+          user.email.toLowerCase().includes(searchTerm)
         );
       } else {
-        filteredSkillmen = [...usersData.skillmen];
+        filteredUsers = [...allUsers];
       }
       
       // Update table
-      document.getElementById('skillman-table-body').innerHTML = generateSkillmenTable(filteredSkillmen);
+      document.getElementById('users-table-body').innerHTML = generateUsersTable(filteredUsers);
       
       // Update pagination controls
-      updatePaginationControls(filteredSkillmen.length);
+      updatePaginationControls(filteredUsers.length);
+      
+      // Show/hide no data message
+      if (filteredUsers.length === 0) {
+        document.getElementById('users-no-data').style.display = 'flex';
+        document.getElementById('users-table').style.display = 'none';
+      } else {
+        document.getElementById('users-no-data').style.display = 'none';
+        document.getElementById('users-table').style.display = 'table';
+      }
     }
     
-    // Function to populate designation dropdowns
-    function populateDesignationDropdowns() {
-      const usersData = getUsersData();
-      const designations = usersData.designations || [];
+    // Function to fetch users from backend
+    function fetchUsers() {
+      const spinner = document.getElementById('loading-spinner');
+      spinner.style.display = 'block';
+      document.getElementById('users-no-data').style.display = 'none';
       
-      // Skillman add form
-      const addDesignationDropdown = document.getElementById('skillman-designation');
-      addDesignationDropdown.innerHTML = '<option value="">Select Designation</option>';
-      designations.forEach(designation => {
-        const option = document.createElement('option');
-        option.value = designation;
-        option.textContent = designation;
-        addDesignationDropdown.appendChild(option);
-      });
-      
-      // Skillman edit form
-      const editDesignationDropdown = document.getElementById('edit-skillman-designation');
-      editDesignationDropdown.innerHTML = '<option value="">Select Designation</option>';
-      designations.forEach(designation => {
-        const option = document.createElement('option');
-        option.value = designation;
-        option.textContent = designation;
-        editDesignationDropdown.appendChild(option);
-      });
-    }
-
-    // Initialize users content
-    function initializeUsersContent() {
-      const usersData = getUsersData();
-      
-      // Populate designation dropdowns
-      populateDesignationDropdowns();
-      
-      // Initialize table
-      renderSkillmenTable();
-      
-      // Set initial entries per page
-      document.getElementById('entries-per-page').value = entriesPerPage;
-    }
-
-    // Search functions
-    function searchSkillmen(term) {
-      searchTerm = term.toLowerCase();
-      currentPage = 1; // Reset to first page when searching
-      renderSkillmenTable();
+      // API call to backend at port 3000
+      fetch('http://localhost:3000/getUsers')
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`Server returned ${response.status} ${response.statusText}`);
+          }
+          return response.json();
+        })
+        .then(data => {
+          allUsers = data;
+          renderUsersTable();
+          spinner.style.display = 'none';
+          showNotification(`Fetched ${data.length} users from backend`, 'success');
+        })
+        .catch(error => {
+          console.error('Error fetching users:', error);
+          
+          // Clear existing data
+          allUsers = [];
+          filteredUsers = [];
+          
+          // Hide spinner
+          spinner.style.display = 'none';
+          
+          // Show error message
+          document.getElementById('users-no-data').style.display = 'flex';
+          document.getElementById('users-table').style.display = 'none';
+          
+          showNotification('Failed to connect to backend: ' + error.message, 'error');
+        });
     }
 
     // Navigation tab functionality
@@ -1318,16 +894,16 @@
       }
       
       // Show notification for demonstration
-      showNotification(`Redirecting to ${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`, 'success');
+      showNotification(`Redirecting to ${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`, 'info');
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-      // Initialize users content
-      initializeUsersContent();
+      // Fetch users on initial load
+      fetchUsers();
       
       // Logout button functionality
       document.querySelector('.logout-btn').addEventListener('click', function() {
-        showNotification('Logging out... Redirecting to login page.', 'success');
+        showNotification('Logging out... Redirecting to login page.', 'info');
         setTimeout(() => {
           // In a real app, this would redirect to the login page
           alert('You have been logged out');
@@ -1353,286 +929,52 @@
         });
       });
       
-      // Toggle forms for Skill Man
-      document.getElementById('show-skillman-form-btn').addEventListener('click', function() {
-        const form = document.getElementById('add-skillman-form');
-        form.classList.toggle('active');
-        document.getElementById('add-designation-form').classList.remove('active');
-        document.getElementById('edit-skillman-form').classList.remove('active');
-        
-        // Reset form
-        document.getElementById('skillman-name').value = '';
-        document.getElementById('skillman-email').value = '';
-        document.getElementById('skillman-phone').value = '';
-        document.getElementById('skillman-designation').value = '';
-      });
-      
-      document.getElementById('cancel-add-skillman').addEventListener('click', function() {
-        document.getElementById('add-skillman-form').classList.remove('active');
-      });
-      
-      // Toggle forms for Designations in Skillman panel
-      document.getElementById('show-designation-form-btn').addEventListener('click', function() {
-        const form = document.getElementById('add-designation-form');
-        form.classList.toggle('active');
-        document.getElementById('add-skillman-form').classList.remove('active');
-        document.getElementById('edit-skillman-form').classList.remove('active');
-        
-        // Reset form
-        document.getElementById('designation-name').value = '';
-      });
-      
-      document.getElementById('cancel-add-designation').addEventListener('click', function() {
-        document.getElementById('add-designation-form').classList.remove('active');
-      });
-      
-      // Close edit forms
-      document.getElementById('close-edit-skillman-form').addEventListener('click', function() {
-        document.getElementById('edit-skillman-form').classList.remove('active');
-      });
-      
       // Search functionality
-      document.getElementById('search-skillman-btn').addEventListener('click', function() {
-        const term = document.getElementById('skillman-search').value;
-        searchSkillmen(term);
+      document.getElementById('search-users-btn').addEventListener('click', function() {
+        searchTerm = document.getElementById('users-search').value.toLowerCase();
+        currentPage = 1;
+        renderUsersTable();
+      });
+      
+      // Enable search on pressing Enter
+      document.getElementById('users-search').addEventListener('keyup', function(event) {
+        if (event.key === 'Enter') {
+          searchTerm = this.value.toLowerCase();
+          currentPage = 1;
+          renderUsersTable();
+        }
       });
       
       // Entries per page change
       document.getElementById('entries-per-page').addEventListener('change', function() {
         entriesPerPage = parseInt(this.value);
         currentPage = 1; // Reset to first page when changing entries per page
-        renderSkillmenTable();
+        renderUsersTable();
       });
       
       // Previous page button
       document.getElementById('prev-page').addEventListener('click', function() {
         if (currentPage > 1) {
           currentPage--;
-          renderSkillmenTable();
+          renderUsersTable();
         }
       });
       
       // Next page button
       document.getElementById('next-page').addEventListener('click', function() {
-        const usersData = getUsersData();
-        const totalPages = Math.ceil(filteredSkillmen.length / entriesPerPage);
+        const totalPages = Math.ceil(filteredUsers.length / entriesPerPage);
         if (currentPage < totalPages) {
           currentPage++;
-          renderSkillmenTable();
+          renderUsersTable();
         }
       });
       
-      // Add new skillman
-      document.getElementById('add-skillman-btn').addEventListener('click', function() {
-        const name = document.getElementById('skillman-name').value.trim();
-        let email = document.getElementById('skillman-email').value.trim();
-        const phone = document.getElementById('skillman-phone').value.trim();
-        const designation = document.getElementById('skillman-designation').value;
-        
-        if (!name || !phone || !designation) {
-          showNotification('Please fill all required fields', 'error');
-          return;
-        }
-        
-        // Validate email format if provided
-        if (email && !isValidEmail(email)) {
-          showNotification('Please enter a valid email format (e.g. user@example.com) or leave it blank', 'error');
-          return;
-        }
-        
-        // Set to 'N/A' if empty
-        if (!email) {
-          email = 'N/A';
-        }
-        
-        const usersData = getUsersData();
-        const newSkillman = {
-          id: usersData.skillmen.length > 0 
-            ? Math.max(...usersData.skillmen.map(s => s.id)) + 1 
-            : 1,
-          name,
-          email,
-          phone,
-          designation
-        };
-        
-        usersData.skillmen.push(newSkillman);
-        saveUsersData(usersData);
-        
-        // Reset search
-        searchTerm = '';
-        document.getElementById('skillman-search').value = '';
-        
-        // Reset pagination
-        currentPage = 1;
-        
-        renderSkillmenTable();
-        document.getElementById('add-skillman-form').classList.remove('active');
-        showNotification('Skill Man added successfully!', 'success');
-      });
+      // Refresh button
+      document.getElementById('refresh-users-btn').addEventListener('click', fetchUsers);
       
-      // Add new designation from Skillman panel
-      document.getElementById('add-designation-btn').addEventListener('click', function() {
-        const name = document.getElementById('designation-name').value;
-        
-        if (!name) {
-          showNotification('Please enter a designation name', 'error');
-          return;
-        }
-        
-        const usersData = getUsersData();
-        if (!usersData.designations) {
-          usersData.designations = [];
-        }
-        
-        // Check if designation already exists
-        if (usersData.designations.includes(name)) {
-          showNotification('This designation already exists', 'error');
-          return;
-        }
-        
-        usersData.designations.push(name);
-        saveUsersData(usersData);
-        
-        document.getElementById('add-designation-form').classList.remove('active');
-        showNotification('Designation added successfully!', 'success');
-        
-        // Update designation dropdowns
-        populateDesignationDropdowns();
-      });
-      
-      // Edit button functionality
-      document.addEventListener('click', function(e) {
-        // Edit buttons
-        if (e.target.closest('.edit-btn')) {
-          const button = e.target.closest('.edit-btn');
-          const type = button.dataset.type;
-          const id = parseInt(button.dataset.id);
-          const usersData = getUsersData();
-          
-          if (type === 'skillman') {
-            const skillmanIndex = usersData.skillmen.findIndex(s => s.id === id);
-            if (skillmanIndex === -1) return;
-            
-            const skillman = usersData.skillmen[skillmanIndex];
-            document.getElementById('edit-skillman-id').value = skillman.id;
-            document.getElementById('edit-skillman-name').value = skillman.name;
-            document.getElementById('edit-skillman-email').value = skillman.email === 'N/A' ? '' : skillman.email;
-            document.getElementById('edit-skillman-phone').value = skillman.phone;
-            
-            // Set designation in dropdown
-            const designationSelect = document.getElementById('edit-skillman-designation');
-            for (let i = 0; i < designationSelect.options.length; i++) {
-              if (designationSelect.options[i].value === skillman.designation) {
-                designationSelect.selectedIndex = i;
-                break;
-              }
-            }
-            
-            document.getElementById('edit-skillman-form').classList.add('active');
-            document.getElementById('add-skillman-form').classList.remove('active');
-            document.getElementById('add-designation-form').classList.remove('active');
-          }
-        }
-        
-        // Delete buttons
-        if (e.target.closest('.delete-btn')) {
-          const button = e.target.closest('.delete-btn');
-          const type = button.dataset.type;
-          const id = parseInt(button.dataset.id);
-          
-          if (confirm(`Are you sure you want to delete this ${type}?`)) {
-            const usersData = getUsersData();
-            const skillmanIndex = usersData.skillmen.findIndex(s => s.id === id);
-            
-            if (skillmanIndex !== -1) {
-              usersData.skillmen.splice(skillmanIndex, 1);
-              saveUsersData(usersData);
-              
-              // Reset search
-              searchTerm = '';
-              document.getElementById('skillman-search').value = '';
-              
-              // Reset pagination
-              currentPage = 1;
-              
-              renderSkillmenTable();
-              showNotification('Skill Man deleted successfully', 'success');
-            }
-          }
-        }
-      });
-      
-      // Update skillman
-      document.getElementById('update-skillman-btn').addEventListener('click', function() {
-        const id = parseInt(document.getElementById('edit-skillman-id').value);
-        const name = document.getElementById('edit-skillman-name').value.trim();
-        let email = document.getElementById('edit-skillman-email').value.trim();
-        const phone = document.getElementById('edit-skillman-phone').value.trim();
-        const designation = document.getElementById('edit-skillman-designation').value;
-        
-        if (!name || !phone || !designation) {
-          showNotification('Please fill all required fields', 'error');
-          return;
-        }
-        
-        // Validate email format if provided
-        if (email && !isValidEmail(email)) {
-          showNotification('Please enter a valid email format (e.g. user@example.com) or leave it blank', 'error');
-          return;
-        }
-        
-        // Set to 'N/A' if empty
-        if (!email) {
-          email = 'N/A';
-        }
-        
-        const usersData = getUsersData();
-        const skillmanIndex = usersData.skillmen.findIndex(s => s.id === id);
-        
-        if (skillmanIndex !== -1) {
-          usersData.skillmen[skillmanIndex] = {
-            id,
-            name,
-            email,
-            phone,
-            designation
-          };
-          
-          saveUsersData(usersData);
-          renderSkillmenTable();
-          document.getElementById('edit-skillman-form').classList.remove('active');
-          showNotification('Skill Man updated successfully!', 'success');
-        }
-      });
-      
-      // Delete skillman
-      document.getElementById('delete-skillman-btn').addEventListener('click', function() {
-        const id = parseInt(document.getElementById('edit-skillman-id').value);
-        
-        if (confirm('Are you sure you want to delete this skillman?')) {
-          const usersData = getUsersData();
-          const skillmanIndex = usersData.skillmen.findIndex(s => s.id === id);
-          
-          if (skillmanIndex !== -1) {
-            usersData.skillmen.splice(skillmanIndex, 1);
-            saveUsersData(usersData);
-            
-            // Reset search
-            searchTerm = '';
-            document.getElementById('skillman-search').value = '';
-            
-            // Reset pagination
-            currentPage = 1;
-            
-            renderSkillmenTable();
-            document.getElementById('edit-skillman-form').classList.remove('active');
-            showNotification('Skill Man deleted successfully!', 'success');
-          }
-        }
-      });
+      // Retry button
+      document.getElementById('retry-btn').addEventListener('click', fetchUsers);
     });
   </script>
 </body>
 </html>
-
