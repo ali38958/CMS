@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SCMS - Daily Report</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background-color: #eef2f5;
+      color: #333;
+    }
+
+    header {
+      width: 100%;
+      height: 60px;
+      background-color: rgb(136, 28, 28);
+      margin-top: 36px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 25px;
+      margin-bottom: 30px;
+    }
+
+    .nav-bar {
+      width: 100%;
+      background-color: rgb(136, 28, 28);
+      display: flex;
+      justify-content: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      margin-top: 40px;
+    }
+
+    .nav-container {
+      width: 100%;
+      max-width: 1500px;
+      display: flex;
+      margin-left: 90px;
+    }
+
+    .nav-item {
+      padding: 15px 25px;
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-item:hover {
+      background-color: rgba(0,0,0,0.1);
+    }
+
+    .nav-item.active {
+      background-color: rgba(0,0,0,0.2);
+    }
+
+    .nav-item.active::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60%;
+      height: 3px;
+      background-color: white;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo .logo-image {
+      width: 130px;
+      height: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 5px;
+      background-color: #f4f4f4;
+      border-radius: 50%;
+    }
+
+    .logo .logo-image img {
+      border-radius: 50%;
+      width: 100%;
+      height: auto;
+    }
+
+    .logo h2 {
+      color: white;
+      font-size: 20px;
+      white-space: nowrap;
+    }
+
+    .user {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      color: white;
+    }
+
+    .user h2 {
+      font-size: 16px;
+      white-space: nowrap;
+    }
+
+    .logout-btn {
+      background-color: white;
+      color: rgb(136, 28, 28);
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s;
+      border: 1px solid white;
+    }
+
+    .logout-btn:hover {
+      background-color: #ddd;
+    }
+
+    .content {
+      width: calc(100% - 40px);
+      max-width: 1800px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .container {
+      width: 100%;
+      padding: 0;
+    }
+
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #ffffff;
+      padding: 10px 20px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+      width: 100%;
+    }
+
+    .title {
+      font-size: 20px;
+      font-weight: normal;
+      margin: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #datePicker {
+      padding: 6px 10px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      width: 180px;
+    }
+
+    .charts-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: space-between;
+      margin-bottom: 30px;
+      width: 100%;
+    }
+
+    .chart-box {
+      flex: 1 1 calc(33.333% - 20px);
+      min-width: 300px;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    }
+
+    .chart-box h3 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #34495e;
+      text-align: center;
+    }
+
+    .chart-container {
+      position: relative;
+      width: 100%;
+      min-height: 300px;
+    }
+
+    /* Tables styling */
+    .tables-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      width: 100%;
+    }
+
+    .table-wrapper {
+      flex: 1 1 calc(50% - 20px);
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .table-box {
+      background: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+    }
+
+    .table-box h3 {
+      margin-top: 0;
+      margin-bottom: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #34495e;
+      text-align: center;
+    }
+
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+      flex-grow: 1;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 600px;
+    }
+
+    .data-table th, 
+    .data-table td {
+      padding: 8px 12px;
+      text-align: center;
+      border: 1px solid #ddd;
+      font-size: 14px;
+    }
+
+    .data-table th {
+      background-color: #f2f2f2;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    .data-table tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    .data-table th:nth-child(1),
+    .data-table td:nth-child(1) {
+      text-align: left;
+      min-width: 150px;
+    }
+
+    /* Complaints sidebar styling */
+    .complaints-section-container {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      gap: 30px;
+      min-height: 600px;
+      width: 100%;
+    }
+    
+    .complaints-sidebar {
+      background: #fff;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+    
+    .complaints-option {
+      padding: 15px 20px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(248, 249, 250, 0.7);
+    }
+    
+    .complaints-option:hover {
+      background: rgba(136, 28, 28, 0.1);
+    }
+    
+    .complaints-option.active {
+      background: rgba(136, 28, 28, 0.2);
+      color: rgb(136, 28, 28);
+      box-shadow: 0 2px 10px rgba(136, 28, 28, 0.1);
+    }
+    
+    .complaints-option i {
+      font-size: 18px;
+    }
+    
+    #launch-complaints, #natures {
+      text-decoration: none;
+      color: rgb(136, 28, 28);
+    }
+
+    /* Responsive styles */
+    @media (max-width: 1200px) {
+      .chart-box {
+        flex: 1 1 calc(50% - 20px);
+      }
+      
+      .table-wrapper {
+        flex: 1 1 100%;
+      }
+    }
+
+    @media (max-width: 992px) {
+      .complaints-section-container {
+        grid-template-columns: 1fr;
+      }
+      
+      .complaints-sidebar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      
+      .complaints-option {
+        margin-bottom: 0;
+        flex: 1;
+        min-width: 150px;
+      }
+
+      .chart-box {
+        flex: 1 1 100%;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .nav-bar {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      
+      .nav-item {
+        padding: 12px 15px;
+        font-size: 14px;
+      }
+      
+      .complaints-option {
+        padding: 12px 15px;
+        font-size: 14px;
+      }
+      
+      .header-bar {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+      }
+
+      .data-table th, 
+      .data-table td {
+        padding: 6px 8px;
+        font-size: 13px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .content {
+        width: calc(100% - 20px);
+        padding: 15px;
+      }
+      
+      .header-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      
+      #datePicker {
+        width: 100%;
+      }
+      
+      .data-table {
+        min-width: 100%;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .data-table {
+        display: block;
+      }
+      
+      .data-table thead, 
+      .data-table tbody, 
+      .data-table tr, 
+      .data-table th, 
+      .data-table td {
+        display: block;
+        width: 100%;
+        text-align: right;
+      }
+      
+      .data-table tr {
+        margin-bottom: 10px;
+        border: 1px solid #ddd;
+      }
+      
+      .data-table td {
+        position: relative;
+        padding-left: 50%;
+        text-align: right;
+      }
+      
+      .data-table td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 10px;
+        width: 45%;
+        padding-right: 10px;
+        text-align: left;
+        font-weight: bold;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Your HTML content remains exactly the same as before -->
+  <!-- Only the CSS has been modified to fix the layout issues -->
+  
+  <header>
+    <div class="logo">
+      <div class="logo-image">
+        <img src="logo.jpg" alt="logo image">
+      </div>
+      <h2>Secured CMS</h2>
+    </div>
+
+    <div class="user">
+      <h2>CH HAND</h2>
+      <button class="logout-btn">Logout</button>
+    </div>
+  </header>
+
+  <div class="nav-bar">
+    <div class="nav-container">
+      <a href="#" class="nav-item">
+        <i class="fas fa-chart-line"></i>
+        Dashboard
+      </a>
+      <a href="#" class="nav-item">
+        <i class="fas fa-ticket-alt"></i>
+        Complaints
+      </a>
+      <a href="#" class="nav-item">
+        <i class="fas fa-users"></i>
+        Users
+      </a>
+      <a href="#" class="nav-item">
+        <i class="fas fa-store"></i>
+        Store
+      </a>
+      <a href="#" class="nav-item">
+        <i class="fas fa-boxes"></i>
+        Stock
+      </a>
+      <a href="#" class="nav-item active">
+        <i class="fas fa-file-alt"></i>
+        Reporting
+      </a>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="complaints-section-container">
+      <div class="complaints-sidebar">
+        <div class="complaints-option active" data-panel="all-complaints">
+          <i class="fas fa-calendar-day"></i>
+          Daily Report
+        </div>
+        <a href="complaints-report.html" class="complaints-option" id="launch-complaints">
+          <i class="fas fa-clipboard"></i>
+          Complaints Report
+        </a>
+        <a href="skillman-report.html" class="complaints-option" id="natures">
+          <i class="fas fa-users"></i>
+          Skillman Report
+        </a>
+        <a href="vacant-apartments.html" class="complaints-option" id="natures">
+          <i class="fas fa-building"></i>
+          Vacant Apartments
+        </a>
+        <a href="rating-report.html" class="complaints-option" id="natures">
+          <i class="fas fa-star"></i>
+          Rating Report
+        </a>
+      </div>
+      
+      <div class="container">
+        <div class="header-bar">
+          <h2 class="title">Complaints Statistics <span id="reportDate">(12-Jul-2025)</span></h2>
+          <input type="date" id="datePicker" />
+        </div>
+
+        <!-- Charts Row -->
+        <div class="charts-row">
+          <div class="chart-box">
+            <h3>Category Complaints Status</h3>
+            <div class="chart-container">
+              <canvas id="barChart"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-box">
+            <h3>Category Wise Complaints Ratio</h3>
+            <div class="chart-container">
+              <canvas id="pieChart"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-box">
+            <h3>Productivity wise Complaints Ratio</h3>
+            <div class="chart-container">
+              <canvas id="prodChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tables Container - Side by side with full content -->
+        <div class="tables-container">
+          <div class="table-wrapper">
+            <div class="table-box">
+              <h3>Complaints Status by Category</h3>
+              <div class="table-container">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Category / Sub Division</th>
+                      <th>Un Assigned</th>
+                      <th>In Progress</th>
+                      <th>Completed</th>
+                      <th>Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>E & M - I</td><td>0</td><td>28</td><td>48</td><td>76</td></tr>
+                    <tr><td>E & M - II</td><td>0</td><td>12</td><td>13</td><td>25</td></tr>
+                    <tr><td>B & R - I</td><td>0</td><td>8</td><td>8</td><td>16</td></tr>
+                    <tr><td>B & R - II</td><td>0</td><td>11</td><td>12</td><td>23</td></tr>
+                    <tr><td>B & R - III</td><td>0</td><td>12</td><td>9</td><td>21</td></tr>
+                    <tr><td>-</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+                    <tr><th>Total</th><th>0</th><th>71</th><th>90</th><th>161</th></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-wrapper">
+            <div class="table-box">
+              <h3>Complaints Priority by Category</h3>
+              <div class="table-container">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Category / Sub Division</th>
+                      <th>Immediate</th>
+                      <th>Urgent</th>
+                      <th>Routine</th>
+                      <th>Deferred</th>
+                      <th>Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>E & M - I</td><td>0</td><td>0</td><td>76</td><td>0</td><td>76</td></tr>
+                    <tr><td>E & M - II</td><td>0</td><td>0</td><td>25</td><td>0</td><td>25</td></tr>
+                    <tr><td>B & R - I</td><td>0</td><td>0</td><td>13</td><td>3</td><td>16</td></tr>
+                    <tr><td>B & R - II</td><td>0</td><td>0</td><td>23</td><td>0</td><td>23</td></tr>
+                    <tr><td>B & R - III</td><td>0</td><td>0</td><td>21</td><td>0</td><td>21</td></tr>
+                    <tr><td>-</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+                    <tr><th>Total</th><th>0</th><th>0</th><th>158</th><th>3</th><th>161</th></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Date Picker Functionality
+      const datePicker = document.getElementById('datePicker');
+      const reportDate = document.getElementById('reportDate');
+
+      const formatDate = (isoDate) => {
+        const d = new Date(isoDate);
+        return d.toLocaleDateString('en-GB', {
+          day: '2-digit', month: 'short', year: 'numeric'
+        }).replace(/ /g, '-');
+      };
+
+      datePicker.addEventListener('change', () => {
+        reportDate.textContent = `(${formatDate(datePicker.value)})`;
+      });
+
+      // Chart Initialization
+      Chart.register(ChartDataLabels);
+
+      const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: {
+              boxWidth: 12,
+              padding: 20,
+              font: {
+                size: 12
+              }
+            }
+          },
+          tooltip: {
+            enabled: true,
+            mode: 'index',
+            intersect: false
+          }
+        }
+      };
+
+      // 1. Bar Chart - Category Complaints Status
+      new Chart(document.getElementById("barChart"), {
+        type: "bar",
+        data: {
+          labels: ["E&M-I", "E&M-II", "B&R-I", "B&R-II", "B&R-III", "-"],
+          datasets: [
+            { 
+              label: "Pending", 
+              data: [0, 0, 0, 0, 0, 0], 
+              backgroundColor: "#e74c3c",
+              barPercentage: 0.6
+            },
+            { 
+              label: "Inprogress", 
+              data: [28, 12, 8, 11, 12, 0], 
+              backgroundColor: "#2ecc71",
+              barPercentage: 0.6
+            },
+            { 
+              label: "Completed", 
+              data: [48, 13, 8, 12, 9, 0], 
+              backgroundColor: "#3498db",
+              barPercentage: 0.6
+            }
+          ]
+        },
+        options: {
+          ...chartOptions,
+          scales: {
+            y: { 
+              beginAtZero: true, 
+              title: { 
+                display: true, 
+                text: "No. of Items",
+                font: {
+                  weight: 'bold'
+                }
+              },
+              grid: {
+                drawBorder: false
+              }
+            },
+            x: { 
+              title: { 
+                display: true, 
+                text: "Category",
+                font: {
+                  weight: 'bold'
+                }
+              },
+              grid: {
+                display: false
+              }
+            }
+          }
+        }
+      });
+
+      // 2. Pie Chart - Category Wise Complaints Ratio
+      new Chart(document.getElementById("pieChart"), {
+        type: "pie",
+        data: {
+          labels: ["E&M-I", "E&M-II", "B&R-I", "B&R-II", "B&R-III", "-"],
+          datasets: [{
+            data: [47.2, 8.1, 5.0, 7.5, 5.6, 0],
+            backgroundColor: ["#3498db", "#2ecc71", "#f39c12", "#e74c3c", "#9b59b6", "#bdc3c7"],
+            borderWidth: 1,
+            borderColor: '#fff'
+          }]
+        },
+        options: {
+          ...chartOptions,
+          plugins: {
+            ...chartOptions.plugins,
+            legend: {
+              position: 'bottom',
+              align: 'center',
+              labels: {
+                usePointStyle: true,
+                pointStyle: 'rect',
+                padding: 20,
+                font: {
+                  size: 12
+                }
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return `${context.label}: ${context.raw}%`;
+                }
+              }
+            },
+            datalabels: {
+              formatter: (value) => {
+                return value > 0 ? `${value}%` : '';
+              },
+              color: '#fff',
+              font: {
+                weight: 'bold'
+              },
+              anchor: 'end',
+              align: 'start',
+              offset: 10,
+              clip: false
+            }
+          },
+          cutout: '0%'
+        }
+      });
+
+      // 3. Bar Chart - Productivity wise Complaints Ratio
+      new Chart(document.getElementById("prodChart"), {
+        type: "bar",
+        data: {
+          labels: ["Immediate", "Urgent", "Routine", "Deferred"],
+          datasets: [
+            { 
+              label: "Inprogress", 
+              data: [0, 0, 158, 3], 
+              backgroundColor: "#2ecc71",
+              barPercentage: 0.5
+            },
+            { 
+              label: "Completed", 
+              data: [0, 0, 0, 0], 
+              backgroundColor: "#3498db",
+              barPercentage: 0.5
+            }
+          ]
+        },
+        options: {
+          ...chartOptions,
+          scales: {
+            y: { 
+              beginAtZero: true,
+              grid: {
+                drawBorder: false
+              }
+            },
+            x: {
+              grid: {
+                display: false
+              }
+            }
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html>
