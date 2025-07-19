@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SCMS - Natures</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MES CMS - Natures Management</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     * {
@@ -12,12 +12,31 @@
       box-sizing: border-box;
       font-family: Arial, sans-serif;
     }
-
+    /*////////////updated */
+    :root {
+      --primary: #881c1c;
+      --primary-dark: #6e1515;
+      --secondary: #8c2f2f;
+      --accent: #4caf50;
+      --warning: #ff9800;
+      --danger: #f44336;
+      --light: #f8f9fa;
+      --dark: #212529;
+      --gray: #6c757d;
+      --card-bg: rgba(255, 255, 255, 0.95);
+      --nav-bg: rgba(255, 255, 255, 0.85);
+      --nav-active: rgba(136, 28, 28, 0.15);
+      --nav-hover: rgba(136, 28, 28, 0.08);
+      --success: #4caf50;
+      --border-radius: 10px;
+      --box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    }
+    
     body {
       background-color: #eef2f5;
       padding-bottom: 40px;
     }
-
+    
     /* Header Styles from Code 1 */
     header {
       width: 100vw;
@@ -31,58 +50,9 @@
       margin-bottom: 30px;
       position: relative;
       z-index: 10;
+      margin-bottom: 30px;
     }
-
-    .nav-bar {
-      width: 100vw;
-      background-color: rgb(136, 28, 28);
-      display: flex;
-      justify-content: center;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      position: relative;
-      z-index: 1;
-      margin-top: 40px;
-    }
-
-    .nav-container {
-      width: 100%;
-      max-width: 1500px;
-      display: flex;
-      margin-left: 90px;
-    }
-
-    .nav-item {
-      padding: 15px 25px;
-      color: white;
-      text-decoration: none;
-      font-weight: bold;
-      transition: all 0.3s ease;
-      position: relative;
-      text-align: center;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .nav-item:hover {
-      background-color: rgba(0,0,0,0.1);
-    }
-
-    .nav-item.active {
-      background-color: rgba(0,0,0,0.2);
-    }
-
-    .nav-item.active::after {
-      content: "";
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 60%;
-      height: 3px;
-      background-color: white;
-    }
-
+    
     .logo {
       display: flex;
       align-items: center;
@@ -138,29 +108,626 @@
     }
 
     .logout-btn:hover {
-      background-color: #ddd;
+      background-color: rgba(0, 0, 0, 0.2);
     }
 
     .logout-btn:active {
-      border: 1px solid white;
-      background-color: rgb(136, 28, 28);
+      background-color: var(--primary);
       color: white;
     }
 
-    .content {
-      width: 100%;
-      max-width: 1800px;
-      margin: 0 auto;
-      padding: 20px;
-      background-color: white;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      border-radius: 8px;
-      margin-top: 20px;
+    .logo h1 {
+      color: white;
+      font-size: 1.5rem;
+      font-weight: 600;
     }
     
-    /* Variables from Code 1 - Adapted to Theme */
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      color: white;
+    }
+    
+    .user-info h3 {
+      font-weight: 500;
+    }
+    
+    .logout-btn {
+      background: white;
+      color: var(--primary);
+      border: none;
+      padding: 8px 15px;
+      border-radius: 5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      border: 1px solid white;
+    }
+    
+    .logout-btn:hover {
+      background: #f0f0f0;
+    }
+
+    .logout-btn:active {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .nav-container {
+      margin-top: 60px;
+      background-color: var(--primary);
+      padding: 0 30px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      border: 1px solid white;
+    }
+    
+    .nav-menu {
+      display: flex;
+      list-style: none;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .nav-item {
+      padding: 15px 20px;
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      position: relative;
+    }
+    
+    .nav-item:hover {
+      background-color: rgba(0,0,0,0.1);
+    }
+    
+    .nav-item.active {
+      background-color: rgba(0,0,0,0.2);
+    }
+    
+    .nav-item.active::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60%;
+      height: 3px;
+      background-color: white;
+    }
+    
+    .main-container {
+      max-width: 1800px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
+    
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+    }
+    
+    .dashboard-title {
+      font-size: 1.8rem;
+      color: var(--primary);
+      font-weight: 700;
+    }
+    
+    .dashboard-content {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      gap: 25px;
+    }
+    
+    .sidebar {
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      padding: 20px;
+      box-shadow: var(--box-shadow);
+    }
+    
+    .sidebar-option {
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(248, 249, 250, 0.7);
+    }
+    
+    .sidebar-option:hover {
+      background: var(--nav-hover);
+    }
+    
+    .sidebar-option.active {
+      background: var(--nav-active);
+      color: var(--primary);
+      box-shadow: 0 5px 15px rgba(136, 28, 28, 0.1);
+    }
+    
+    .content-panel {
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      padding: 25px;
+      box-shadow: var(--box-shadow);
+    }
+    
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
+    
+    .panel-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    
+    .btn {
+      padding: 12px 24px;
+      border-radius: var(--border-radius);
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      border: none;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 6px 18px rgba(136, 28, 28, 0.2);
+    }
+    
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 22px rgba(136, 28, 28, 0.3);
+    }
+    
+    .table-container {
+      overflow-x: auto;
+      border-radius: var(--border-radius);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    
+    .nature-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 800px;
+    }
+    
+    .nature-table th {
+      background: rgba(136, 28, 28, 0.1);
+      color: var(--primary);
+      font-weight: 600;
+      padding: 15px;
+      text-align: left;
+    }
+    
+    .nature-table td {
+      padding: 12px 15px;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .nature-table tr:hover {
+      background: rgba(136, 28, 28, 0.03);
+    }
+    
+    .tag-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    
+    .tag {
+      background: rgba(136, 28, 28, 0.1);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      display: inline-flex;
+      align-items: center;
+    }
+    
+    .tag .remove-btn {
+      background: none;
+      border: none;
+      color: var(--danger);
+      cursor: pointer;
+      margin-left: 8px;
+      font-weight: bold;
+      padding: 0;
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .action-btn {
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    .action-btn.add {
+      background: var(--accent);
+      color: white;
+    }
+    
+    .action-btn.edit {
+      background: var(--warning);
+      color: white;
+    }
+    
+    .action-btn.delete {
+      background: var(--danger);
+      color: white;
+    }
+    
+    .pagination-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 25px;
+      padding: 15px 0;
+      border-top: 1px solid rgba(0,0,0,0.08);
+    }
+    
+    .pagination-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .page-size select {
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+      background: white;
+    }
+    
+    .pagination-buttons {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .page-btn {
+      padding: 8px 15px;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+      background: white;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    .page-btn:hover {
+      background: rgba(136, 28, 28, 0.1);
+    }
+    
+    .page-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+    
+    .modal-content {
+      background: white;
+      border-radius: var(--border-radius);
+      padding: 30px;
+      width: 90%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+      transform: translateY(20px);
+      transition: transform 0.3s ease;
+    }
+    
+    .modal-overlay.active .modal-content {
+      transform: translateY(0);
+    }
+    
+    .modal-header {
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .modal-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    
+    .modal-close {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #777;
+      transition: color 0.2s;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+    }
+    
+    .modal-close:hover {
+      background: #f5f5f5;
+      color: var(--danger);
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: var(--dark);
+    }
+    
+    .required::after {
+      content: " *";
+      color: var(--danger);
+    }
+    
+    .form-control {
+      width: 100%;
+      padding: 12px 15px;
+      border-radius: var(--border-radius);
+      border: 1px solid rgba(0,0,0,0.1);
+      background: rgba(248, 249, 250, 0.5);
+      font-size: 1rem;
+      transition: all 0.3s;
+    }
+    
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(136, 28, 28, 0.2);
+    }
+    
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 15px;
+      margin-top: 25px;
+      padding-top: 15px;
+      border-top: 1px solid rgba(0,0,0,0.08);
+    }
+    
+    .btn-secondary {
+      background: var(--gray);
+      color: white;
+      box-shadow: 0 6px 18px rgba(108, 117, 125, 0.3);
+    }
+    
+    .btn-secondary:hover {
+      background: #5a6268;
+    }
+    
+    .categories-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 10px 0;
+    }
+    
+    .category-tag {
+      background: rgba(136, 28, 28, 0.1);
+      padding: 8px 15px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .remove-category {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--danger);
+      font-weight: bold;
+    }
+    
+    .notification-area {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1100;
+      max-width: 350px;
+      width: 100%;
+    }
+    
+    .notification {
+      padding: 15px 20px;
+      border-radius: var(--border-radius);
+      margin-bottom: 15px;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+      animation: slideIn 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .notification::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 4px;
+      width: 100%;
+      background: rgba(255,255,255,0.5);
+      animation: progress 3s linear;
+    }
+
+    .sidebar-option {
+      color: inherit;
+      text-decoration: none;
+    }
+    
+    @keyframes progress {
+      from { width: 100%; }
+      to { width: 0%; }
+    }
+    
+    .notification.success {
+      background: var(--success);
+    }
+    
+    .notification.error {
+      background: var(--danger);
+    }
+    
+    .notification.warning {
+      background: var(--warning);
+    }
+    
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    
+    .no-data-container {
+      text-align: center;
+      padding: 50px 20px;
+      color: var(--gray);
+    }
+    
+    .no-data-icon {
+      font-size: 3.5rem;
+      margin-bottom: 20px;
+      color: #e0e0e0;
+    }
+    
+    .no-data-message {
+      font-size: 1.2rem;
+      font-weight: 500;
+      margin-bottom: 20px;
+    }
+    
+    @media (max-width: 992px) {
+      .dashboard-content {
+        grid-template-columns: 1fr;
+      }
+      
+      .sidebar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      
+      .sidebar-option {
+        margin-bottom: 0;
+        flex: 1;
+        min-width: 150px;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .nav-menu {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      
+      .nav-item {
+        padding: 12px 15px;
+        font-size: 0.9rem;
+      }
+      
+      .panel-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+      }
+      
+      .pagination-controls {
+        flex-direction: column;
+        gap: 15px;
+      }
+      
+      .pagination-info, .pagination-buttons {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
+  
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+    
     :root {
-      --primary: rgb(136, 28, 28);
+      --primary: #881c1c;
+      --primary-dark: #6e1515;
       --secondary: #8c2f2f;
       --accent: #4caf50;
       --warning: #ff9800;
@@ -173,24 +740,158 @@
       --nav-active: rgba(136, 28, 28, 0.15);
       --nav-hover: rgba(136, 28, 28, 0.08);
       --success: #4caf50;
+      --border-radius: 12px;
+      --box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+    
+    body {
+      background-color: #eef2f5;
+      padding-bottom: 40px;
+    }
+    
+    /* Updated Header Styles */
+    header {
+      width: 100vw;
+      height: 60px;
+      background-color: var(--primary);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 25px;
+      position: relative;
+      z-index: 10;
+      margin-top: 36px;
+      margin-bottom: 0;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 2;
     }
 
-    /* Complaints Section from Code 1 - Theme Adjusted */
-    .complaints-section-container {
+    .logo .logo-image {
+      width: 130px;
+      height: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 5px;
+      background-color: #f4f4f4;
+      border-radius: 50%;
+    }
+
+    .logo .logo-image img {
+      border-radius: 50%;
+      width: 100%;
+      height: auto;
+    }
+
+    .logo h1 {
+      color: white;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+    
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      color: white;
+    }
+    
+    .user-info h3 {
+      font-weight: 500;
+    }
+    
+    
+    /* Updated Navigation */
+    .nav-container {
+      background-color: var(--primary);
+      padding: 0;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      position: relative;
+      z-index: 1;
+      margin-top: 40px;
+    }
+    
+    .nav-menu {
+      display: flex;
+      list-style: none;
+      max-width: 1500px;
+      margin: 0 auto;
+      padding-left: 90px;
+    }
+    
+    .nav-item {
+      padding: 15px 25px;
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      position: relative;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .nav-item:hover {
+      background-color: rgba(0,0,0,0.1);
+    }
+    
+    .nav-item.active {
+      background-color: rgba(0,0,0,0.2);
+    }
+    
+    .nav-item.active::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60%;
+      height: 3px;
+      background-color: white;
+    }
+    
+    .main-container {
+      max-width: 1800px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
+    
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+    }
+    
+    .dashboard-title {
+      font-size: 24px;
+      color: var(--primary);
+      font-weight: 700;
+    }
+    
+    /* Updated Dashboard Content */
+    .dashboard-content {
       display: grid;
       grid-template-columns: 250px 1fr;
       gap: 30px;
       min-height: 600px;
     }
     
-    .complaints-sidebar {
+    .sidebar {
       background: var(--card-bg);
-      border-radius: 18px;
+      border-radius: var(--border-radius);
       padding: 25px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+      box-shadow: var(--box-shadow);
     }
     
-    .complaints-option {
+    .sidebar-option {
       padding: 18px 20px;
       margin-bottom: 15px;
       border-radius: 12px;
@@ -203,41 +904,24 @@
       background: rgba(248, 249, 250, 0.7);
     }
     
-    .complaints-option:hover {
+    .sidebar-option:hover {
       background: var(--nav-hover);
     }
     
-    .complaints-option.active {
+    .sidebar-option.active {
       background: var(--nav-active);
       color: var(--primary);
       box-shadow: 0 5px 15px rgba(136, 28, 28, 0.1);
     }
     
-    .complaints-option i {
-      font-size: 20px;
-    }
-    
-    .complaints-content {
+    /* Updated Content Panel */
+    .content-panel {
       background: var(--card-bg);
-      border-radius: 18px;
+      border-radius: var(--border-radius);
       padding: 30px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+      box-shadow: var(--box-shadow);
       position: relative;
       overflow: hidden;
-    }
-    
-    .complaints-panel {
-      display: none;
-    }
-    
-    .complaints-panel.active {
-      display: block;
-      animation: fadeIn 0.4s ease;
-    }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
     }
     
     .panel-header {
@@ -255,38 +939,7 @@
       color: var(--primary);
     }
     
-    .form-group {
-      margin-bottom: 20px;
-    }
-    
-    .form-group label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: 600;
-      color: var(--dark);
-    }
-    
-    .required:after {
-      content: " *";
-      color: var(--danger);
-    }
-    
-    .form-control {
-      width: 100%;
-      padding: 14px 18px;
-      border-radius: 12px;
-      border: 1px solid rgba(0,0,0,0.1);
-      background: rgba(248, 249, 250, 0.5);
-      font-size: 16px;
-      transition: all 0.3s;
-    }
-    
-    .form-control:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(136, 28, 28, 0.2);
-    }
-    
+    /* Updated Buttons */
     .btn {
       padding: 14px 28px;
       border-radius: 12px;
@@ -324,10 +977,17 @@
       box-shadow: 0 8px 22px rgba(108, 117, 125, 0.4);
     }
     
-    /* Natures table styles from Code 2 - Adapted to Code 1 theme */
+    /* Updated Table */
+    .table-container {
+      overflow-x: auto;
+      border-radius: var(--border-radius);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    
     .nature-table {
       width: 100%;
       border-collapse: collapse;
+      min-width: 800px;
       margin-top: 20px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.05);
       border-radius: 12px;
@@ -351,153 +1011,342 @@
       background: rgba(136, 28, 28, 0.05);
     }
     
-    .nature-types {
+    .tag-container {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
     }
     
-    .nature-type {
+    .tag {
       background: rgba(136, 28, 28, 0.1);
       padding: 6px 12px;
       border-radius: 20px;
       font-size: 14px;
-      display: flex;
+      display: inline-flex;
       align-items: center;
     }
     
-    .remove-type {
+    .tag .remove-btn {
       background: none;
       border: none;
       color: var(--danger);
       cursor: pointer;
       margin-left: 8px;
       font-weight: bold;
+      padding: 0;
     }
     
-    .add-type-form {
-      display: flex;
-      margin-top: 10px;
-    }
-    
-    .add-type-form input {
-      flex: 1;
-      padding: 10px 15px;
-      border-radius: 20px 0 0 20px;
-      border: 1px solid rgba(0,0,0,0.1);
-    }
-    
-    .add-type-form button {
-      background: var(--accent);
-      color: white;
-      border: none;
-      padding: 0 20px;
-      border-radius: 0 20px 20px 0;
-      cursor: pointer;
-    }
-    
+    /* Updated Action Buttons */
     .action-buttons {
       display: flex;
       gap: 10px;
     }
     
-    .action-btn-nature {
-      background: var(--primary);
-      color: white;
-      border: none;
-      border-radius: 8px;
+    .action-btn {
       padding: 8px 15px;
+      border-radius: 8px;
+      font-weight: 500;
       cursor: pointer;
+      border: none;
       transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
     }
     
-    .action-btn-nature:hover {
-      opacity: 0.9;
+    .action-btn.add {
+      background: var(--accent);
+      color: white;
     }
     
-    .action-btn-nature.delete {
+    .action-btn.edit {
+      background: var(--warning);
+      color: white;
+    }
+    
+    .action-btn.delete {
       background: var(--danger);
+      color: white;
     }
     
-    .new-nature-form {
-      background: rgba(248, 249, 250, 0.7);
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 20px;
-      display: none;
-      border: 1px solid rgba(0,0,0,0.1);
+    /* Updated Pagination */
+    .pagination-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
+      padding: 10px 0;
     }
     
-    .new-nature-form.active {
-      display: block;
-      animation: fadeIn 0.3s ease;
+    .pagination-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
     }
     
-    .edit-mode .static-field {
-      display: none;
-    }
-    
-    .edit-mode .edit-field {
-      display: block;
-    }
-    
-    .edit-field {
-      display: none;
-      width: 100%;
-      padding: 8px;
+    .page-size select {
+      padding: 8px 12px;
       border-radius: 8px;
       border: 1px solid #ddd;
     }
     
-    .edit-field:focus {
-      border-color: var(--primary);
-      outline: none;
-    }
-    
-    .edit-controls {
-      display: none;
-      margin-top: 10px;
-    }
-    
-    .edit-mode .edit-controls {
+    .pagination-buttons {
       display: flex;
       gap: 10px;
     }
     
-    .nature-header {
+    .page-btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      background: white;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .page-btn:hover {
+      background: rgba(136, 28, 28, 0.1);
+    }
+    
+    .page-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .current-page {
+      padding: 8px 16px;
+    }
+    
+    /* Updated Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+    
+    .modal-content {
+      background: white;
+      border-radius: 12px;
+      padding: 25px;
+      width: 90%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      transform: translateY(20px);
+      transition: transform 0.3s ease;
+    }
+    
+    .modal-overlay.active .modal-content {
+      transform: translateY(0);
+    }
+    
+    .modal-header {
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .modal-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    
+    .modal-close {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #777;
+      transition: color 0.2s;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+    }
+    
+    .modal-close:hover {
+      background: #f5f5f5;
+      color: var(--danger);
+    }
+    
+    .form-group {
       margin-bottom: 20px;
     }
-
-    #launch-complaints, #all-complaints {
-        text-decoration: none;
-        color: inherit;
+    
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: var(--dark);
+    }
+    
+    .required::after {
+      content: " *";
+      color: var(--danger);
+    }
+    
+    .form-control {
+      width: 100%;
+      padding: 14px 18px;
+      border-radius: 12px;
+      border: 1px solid rgba(0,0,0,0.1);
+      background: rgba(248, 249, 250, 0.5);
+      font-size: 16px;
+      transition: all 0.3s;
+    }
+    
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(136, 28, 28, 0.2);
+    }
+    
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 15px;
+      margin-top: 25px;
+      padding-top: 15px;
+      border-top: 1px solid rgba(0,0,0,0.08);
+    }
+    
+    /* Notification Area */
+    .notification-area {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1100;
+      max-width: 350px;
+      width: 100%;
+    }
+    
+    .notification {
+      padding: 15px 20px;
+      border-radius: var(--border-radius);
+      margin-bottom: 15px;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+      animation: slideIn 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .notification::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 4px;
+      width: 100%;
+      background: rgba(255,255,255,0.5);
+      animation: progress 3s linear;
     }
 
+    .sidebar-option {
+      color: inherit;
+      text-decoration: none;
+    }
+    
+    @keyframes progress {
+      from { width: 100%; }
+      to { width: 0%; }
+    }
+    
+    .notification.success {
+      background: var(--success);
+    }
+    
+    .notification.error {
+      background: var(--danger);
+    }
+    
+    .notification.warning {
+      background: var(--warning);
+    }
+    
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    
+    /* No Data Container */
+    .no-data-container {
+      text-align: center;
+      padding: 50px 20px;
+      color: var(--gray);
+    }
+    
+    .no-data-icon {
+      font-size: 3.5rem;
+      margin-bottom: 20px;
+      color: #e0e0e0;
+    }
+    
+    .no-data-message {
+      font-size: 1.2rem;
+      font-weight: 500;
+      margin-bottom: 20px;
+    }
+    
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Media Queries */
     @media (max-width: 992px) {
-      .complaints-section-container {
+      .dashboard-content {
         grid-template-columns: 1fr;
       }
       
-      .complaints-sidebar {
+      .sidebar {
         display: flex;
         flex-wrap: wrap;
         gap: 10px;
       }
       
-      .complaints-option {
+      .sidebar-option {
         margin-bottom: 0;
         flex: 1;
         min-width: 150px;
       }
     }
-
+    
     @media (max-width: 768px) {
-      .nav-bar {
+      .nav-menu {
         flex-wrap: wrap;
         justify-content: center;
+        padding-left: 0;
       }
       
       .nav-item {
@@ -505,36 +1354,52 @@
         font-size: 15px;
       }
       
-      .complaints-option {
-        padding: 12px 15px;
-        font-size: 14px;
-      }
-      
-      .nature-header {
+      .panel-header {
         flex-direction: column;
         gap: 15px;
         align-items: flex-start;
+      }
+      
+      .pagination-controls {
+        flex-direction: column;
+        gap: 15px;
+      }
+      
+      .pagination-info, .pagination-buttons {
+        width: 100%;
+        justify-content: center;
+      }
+      
+      .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
       }
     }
   </style>
 </head>
 <body>
+  <!-- Header Section -->
   <header>
     <div class="logo">
       <div class="logo-image">
-        <img src="logo.jpg" alt="logo image">
+        <img src="logo.jpg" alt="MES CMS Logo">
       </div>
-      <h2>Secured CMS</h2>
+      <h1>MES CMS</h1>
     </div>
-
-    <div class="user">
-      <h2>CH HAND</h2>
-      <button class="logout-btn">Logout</button>
+    
+    <div class="user-info">
+      <h3>CH HAND</h3>
+      <button class="logout-btn">
+        <i class="fas fa-sign-out-alt"></i>
+        Logout
+      </button>
     </div>
   </header>
-
-  <div class="nav-bar">
-    <div class="nav-container">
+  
+  <!-- Navigation -->
+  <div class="nav-container">
+    <ul class="nav-menu">
       <a href="#" class="nav-item">
         <i class="fas fa-chart-line"></i>
         Dashboard
@@ -543,7 +1408,7 @@
         <i class="fas fa-ticket-alt"></i>
         Complaints
       </a>
-      <a href="#" class="nav-item">
+      <a href="all-users.html" class="nav-item">
         <i class="fas fa-users"></i>
         Users
       </a>
@@ -559,346 +1424,673 @@
         <i class="fas fa-file-alt"></i>
         Reporting
       </a>
-    </div>
+    </ul>
   </div>
-
-  <div class="content">
-    <div class="complaints-section-container">
-      <div class="complaints-sidebar">
-        <a href="launch-complaints.html" class="complaints-option" id="launch-complaints">
+  
+  <!-- Main Content -->
+  <div class="main-container">
+    
+    <div class="dashboard-content">
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <a href="launch-complaints.html" class="sidebar-option">
           <i class="fas fa-rocket"></i>
           Launch Complaints
         </a>
-        <a href="all-complaints.html" class="complaints-option" id="all-complaints">
+        <a href="all-complaints.html" class="sidebar-option">
           <i class="fas fa-list"></i>
           All Complaints
         </a>
-        <div class="complaints-option active" data-panel="natures">
+        <div class="sidebar-option active">
           <i class="fas fa-chart-pie"></i>
           Natures
         </div>
       </div>
       
-      <div class="complaints-content">
-        <div id="natures" class="complaints-panel active">
-          <div class="panel-header">
-            <h2 class="panel-title">Complaint Natures</h2>
-            <button class="btn btn-primary" id="toggle-nature-form-btn">
-              <i class="fas fa-plus"></i>
-              Add New Nature
-            </button>
-          </div>
-          
-          <div class="new-nature-form" id="new-nature-form">
-            <h3><i class="fas fa-plus-circle"></i> Add New Nature</h3>
-            <div class="form-row">
-              <div class="form-group">
-                <label for="new-nature-name" class="required">Nature Name</label>
-                <input type="text" id="new-nature-name" class="form-control" placeholder="Enter nature name" required>
-              </div>
-              <div class="form-group">
-                <label for="new-nature-category" class="required">Category</label>
-                <input type="text" id="new-nature-category" class="form-control" placeholder="Enter category" required>
-              </div>
-            </div>
-            <div class="form-actions">
-              <button class="btn btn-secondary" id="cancel-new-nature">
-                <i class="fas fa-times"></i>
-                Cancel
-              </button>
-              <button class="btn btn-primary" id="save-new-nature">
-                <i class="fas fa-save"></i>
-                Save Nature
-              </button>
-            </div>
-          </div>
-          
-          <table class="nature-table">
+      <!-- Content Panel -->
+      <div class="content-panel">
+        <div class="panel-header">
+          <h3 class="panel-title">Complaint Natures</h3>
+          <button class="btn btn-primary" id="add-nature-btn">
+            <i class="fas fa-plus"></i>
+            Add New Nature
+          </button>
+        </div>
+        
+        <!-- Notification Area -->
+        <div class="notification-area" id="notification-area"></div>
+        
+        <!-- Table Container -->
+        <div class="table-container">
+          <table class="nature-table" id="natures-table">
             <thead>
               <tr>
                 <th>#</th>
-                <th>Nature</th>
+                <th>Name</th>
                 <th>Category</th>
-                <th>Nature Types</th>
-                <th>Action</th>
+                <th>Nature Type</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody id="natures-table-body">
-              <!-- Natures will be dynamically added here -->
+              <!-- Data will be populated by JavaScript -->
             </tbody>
           </table>
+        </div>
+        
+        <!-- No Data Message -->
+        <div class="no-data-container" id="no-data-container" style="display: none;">
+          <div class="no-data-icon">
+            <i class="fas fa-inbox"></i>
+          </div>
+          <div class="no-data-message">
+            No natures data available
+          </div>
+          <button class="btn btn-primary" id="add-first-nature">
+            <i class="fas fa-plus"></i>
+            Add Your First Nature
+          </button>
+        </div>
+        
+        <!-- Pagination Controls -->
+        <div class="pagination-controls">
+          <div class="pagination-info">
+            <div class="page-size">
+              <span>Items per page: </span>
+              <select id="items-per-page">
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="pagination-buttons">
+            <button class="page-btn" id="prev-page">
+              <i class="fas fa-chevron-left"></i> Prev
+            </button>
+            <span class="current-page" id="current-page">Page 1 of 1</span>
+            <button class="page-btn" id="next-page">
+              Next <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
         </div>
       </div>
     </div>
   </div>
-
+  
+  <!-- Modals -->
+  <!-- Add Nature Modal -->
+  <div class="modal-overlay" id="add-nature-modal">
+    <div class="modal-content">
+      <button class="modal-close">&times;</button>
+      <div class="modal-header">
+        <i class="fas fa-plus-circle"></i>
+        <h3 class="modal-title">Add New Nature</h3>
+      </div>
+      
+      <div class="form-group">
+        <label for="nature-name" class="form-label required">Nature Name</label>
+        <input type="text" id="nature-name" class="form-control" placeholder="Enter nature name" required>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="cancel-add-nature">
+          <i class="fas fa-times"></i>
+          Cancel
+        </button>
+        <button class="btn btn-primary" id="save-nature">
+          <i class="fas fa-save"></i>
+          Save Nature
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Add Type Modal -->
+  <div class="modal-overlay" id="add-type-modal">
+    <div class="modal-content">
+      <button class="modal-close">&times;</button>
+      <div class="modal-header">
+        <i class="fas fa-plus-circle"></i>
+        <h3 class="modal-title">Add New Type</h3>
+      </div>
+      
+      <div class="form-group">
+        <label for="type-name" class="form-label required">Type Name</label>
+        <input type="text" id="type-name" class="form-control" placeholder="Enter type name" required>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="cancel-add-type">
+          <i class="fas fa-times"></i>
+          Cancel
+        </button>
+        <button class="btn btn-primary" id="save-type">
+          <i class="fas fa-plus"></i>
+          Add Type
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Edit Nature Modal -->
+  <div class="modal-overlay" id="edit-nature-modal">
+    <div class="modal-content">
+      <button class="modal-close">&times;</button>
+      <div class="modal-header">
+        <i class="fas fa-edit"></i>
+        <h3 class="modal-title">Edit Nature</h3>
+      </div>
+      
+      <div class="form-group">
+        <label for="edit-name" class="form-label required">Nature Name</label>
+        <input type="text" id="edit-name" class="form-control" required>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Categories</label>
+        <div class="categories-container" id="current-categories">
+          <!-- Categories will be added here -->
+        </div>
+        
+        <div class="add-category">
+          <select id="category-dropdown" class="form-control">
+            <option value="B&R-I">B&R-I</option>
+            <option value="B&R-II">B&R-II</option>
+            <option value="B&R-III">B&R-III</option>
+            <option value="E&M-I">E&M-I</option>
+            <option value="E&M-II">E&M-II</option>
+          </select>
+          <button id="add-category-btn" class="btn btn-primary" style="margin-top: 10px;">
+            <i class="fas fa-plus"></i>
+            Add Category
+          </button>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="cancel-edit-nature">
+          <i class="fas fa-times"></i>
+          Cancel
+        </button>
+        <button class="btn btn-danger" id="delete-nature">
+          <i class="fas fa-trash"></i>
+          Delete
+        </button>
+        <button class="btn btn-primary" id="save-edit">
+          <i class="fas fa-save"></i>
+          Save Changes
+        </button>
+      </div>
+    </div>
+  </div>
+  
   <script>
-    function initializeLocalStorage() {
-      if (!localStorage.getItem('complaintCloudNatures')) {
-        const initialNatures = [
-          {
-            id: 1,
-            nature: "Air Conditioner",
-            category: "E & M - II",
-            types: ["Circuit Breaker 3 Pin Shoe Damage", "Capacitor Damage", "Candanser Fan Motor Damage"]
-          },
-          {
-            id: 2,
-            nature: "Aluminium",
-            category: "B & R - I, B & R - II, B & R - III",
-            types: ["Glass Replacement", "Lock Repair"]
-          },
-          {
-            id: 3,
-            nature: "Cooking Range/Hub Stove",
-            category: "E & M - II",
-            types: ["Burner Repair", "Ignition Failure"]
+    // API Configuration
+    const API_BASE_URL = 'http://localhost:3000';
+    
+    // State Management
+    let natures = [];
+    let filteredNatures = [];
+    let currentPage = 1;
+    let itemsPerPage = 10;
+    let currentNatureId = null;
+    
+    // DOM Elements
+    const naturesTableBody = document.getElementById('natures-table-body');
+    const naturesTable = document.getElementById('natures-table');
+    const noDataContainer = document.getElementById('no-data-container');
+    const notificationArea = document.getElementById('notification-area');
+    
+    // Utility Functions
+    function showNotification(message, type = 'success') {
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      notification.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+        ${message}
+      `;
+      notificationArea.appendChild(notification);
+      
+      // Auto remove after 5 seconds
+      setTimeout(() => {
+        notification.style.opacity = '0';
+        setTimeout(() => notification.remove(), 300);
+      }, 5000);
+    }
+    
+    // Data Fetching
+    async function fetchNatures() {
+      try {
+        showNotification('Loading natures data...', 'warning');
+        const response = await fetch(`${API_BASE_URL}/natures`);
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch natures: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        natures = data;
+        filteredNatures = [...natures];
+        loadNaturesTable();
+        showNotification('Natures data loaded successfully');
+      } catch (error) {
+        console.error('Error fetching natures:', error);
+        showNotification(`Error: ${error.message}`, 'error');
+      }
+    }
+    
+    // Create New Nature
+    async function createNature(name) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/createNewNatures`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name })
+        });
+        
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to create nature');
+        }
+        
+        const result = await response.json();
+        showNotification(result.message || 'Nature created successfully');
+        await fetchNatures();
+        return result;
+      } catch (error) {
+        console.error('Error creating nature:', error);
+        showNotification(`Error: ${error.message}`, 'error');
+        throw error;
+      }
+    }
+    //update here 21314124
+    // Update Existing Nature
+    async function updateNature(natureId, updatedData) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/natures/${encodeURIComponent(natureId)}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedData)
+        });
+        
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to update nature');
+        }
+        
+        const result = await response.json();
+        showNotification(result.message || 'Nature updated successfully');
+        await fetchNatures();
+        return result;
+      } catch (error) {
+        console.error('Error updating nature:', error);
+        showNotification(`Error: ${error.message}`, 'error');
+        throw error;
+      }
+    }
+    
+    // Delete Nature
+    async function deleteNature(natureId) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/natures/${encodeURIComponent(natureId)}`, {
+          method: 'DELETE'
+        });
+        
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to delete nature');
+        }
+        
+        const result = await response.json();
+        showNotification(result.message || 'Nature deleted successfully');
+        await fetchNatures();
+        return result;
+      } catch (error) {
+        console.error('Error deleting nature:', error);
+        showNotification(`Error: ${error.message}`, 'error');
+        throw error;
+      }
+    }
+    
+    // Add Type to Nature
+    async function addTypeToNature(natureId, typeName) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/natures/${encodeURIComponent(natureId)}/types`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: typeName })
+        });
+        
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to add type');
+        }
+        
+        const result = await response.json();
+        showNotification(result.message || 'Type added successfully');
+        await fetchNatures();
+        return result;
+      } catch (error) {
+        console.error('Error adding type:', error);
+        showNotification(`Error: ${error.message}`, 'error');
+        throw error;
+      }
+    }
+    
+    // Remove Type from Nature
+    async function removeTypeFromNature(natureId, typeName) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/natures/${encodeURIComponent(natureId)}/types/${encodeURIComponent(typeName)}`, {
+          method: 'DELETE'
+        });
+        
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to remove type');
+        }
+        
+        const result = await response.json();
+        showNotification(result.message || 'Type removed successfully');
+        await fetchNatures();
+        return result;
+      } catch (error) {
+        console.error('Error removing type:', error);
+        showNotification(`Error: ${error.message}`, 'error');
+        throw error;
+      }
+    }
+    
+    // UI Rendering
+    function renderCategories(categories) {
+      const container = document.getElementById('current-categories');
+      container.innerHTML = '';
+      
+      // Ensure categories are unique
+      const uniqueCategories = [...new Set(categories)];
+      
+      uniqueCategories.forEach(category => {
+        const tag = document.createElement('div');
+        tag.className = 'category-tag';
+        tag.innerHTML = `
+          ${category}
+          <button class="remove-category" data-category="${category}">&times;</button>
+        `;
+        container.appendChild(tag);
+      });
+      
+      // Add event listeners for remove buttons
+      document.querySelectorAll('.remove-category').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const category = this.dataset.category;
+          const nature = natures.find(n => n.id === currentNatureId);
+          
+          if (nature) {
+            // Update the nature locally for UI
+            nature.categories = nature.categories.filter(c => c !== category);
+            renderCategories(nature.categories);
           }
-        ];
-        localStorage.setItem('complaintCloudNatures', JSON.stringify(initialNatures));
-      }
-    }
-    
-    function getNatures() {
-      return JSON.parse(localStorage.getItem('complaintCloudNatures')) || [];
-    }
-    
-    function saveNatures(natures) {
-      localStorage.setItem('complaintCloudNatures', JSON.stringify(natures));
-    }
-    
-    function addNewNature(nature) {
-      const natures = getNatures();
-      const newNature = {
-        id: Date.now(),
-        ...nature
-      };
-      natures.push(newNature);
-      saveNatures(natures);
-      return newNature;
-    }
-    
-    function updateNature(natureId, updates) {
-      const natures = getNatures();
-      const index = natures.findIndex(n => n.id == natureId);
-      if (index !== -1) {
-        natures[index] = { ...natures[index], ...updates };
-        saveNatures(natures);
-        return true;
-      }
-      return false;
-    }
-    
-    function deleteNature(natureId) {
-      const natures = getNatures();
-      const filtered = natures.filter(n => n.id != natureId);
-      saveNatures(filtered);
-      return true;
-    }
-    
-    function generateNaturesTableRows(natures) {
-      return natures.map((nature, index) => `
-        <tr data-nature-id="${nature.id}">
-          <td>${index + 1}</td>
-          <td>
-            <div class="static-field">${nature.nature}</div>
-            <input type="text" class="edit-field" value="${nature.nature}" data-field="nature">
-          </td>
-          <td>
-            <div class="static-field">${nature.category}</div>
-            <input type="text" class="edit-field" value="${nature.category}" data-field="category">
-          </td>
-          <td>
-            <div class="nature-types">
-              ${nature.types.map(type => `
-                <div class="nature-type">
-                  ${type}
-                  <button class="remove-type" data-type="${type}">&times;</button>
-                </div>
-              `).join('')}
-            </div>
-            <div class="add-type-form">
-              <input type="text" placeholder="Add new type">
-              <button class="add-type-btn"><i class="fas fa-plus"></i></button>
-            </div>
-          </td>
-          <td class="action-buttons">
-            <div class="edit-controls">
-              <button class="action-btn-nature save-edit-btn">
-                <i class="fas fa-save"></i>
-              </button>
-              <button class="action-btn-nature cancel-edit-btn">
-                <i class="fas fa-times"></i>
-              </button>
-            </div>
-            <div class="static-controls">
-              <button class="action-btn-nature edit-btn">
-                <i class="fas fa-edit"></i>
-              </button>
-              <button class="action-btn-nature delete-btn delete">
-                <i class="fas fa-trash"></i>
-              </button>
-            </div>
-          </td>
-        </tr>
-      `).join('');
+        });
+      });
     }
     
     function loadNaturesTable() {
-      const natures = getNatures();
-      const tbody = document.getElementById('natures-table-body');
-      if (tbody) {
-        tbody.innerHTML = generateNaturesTableRows(natures);
-        
-        document.querySelectorAll('.edit-btn').forEach(btn => {
-          btn.addEventListener('click', function() {
-            const row = this.closest('tr');
-            row.classList.add('edit-mode');
-          });
-        });
-        
-        document.querySelectorAll('.save-edit-btn').forEach(btn => {
-          btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const row = this.closest('tr');
-            const natureId = row.dataset.natureId;
-            const natureInput = row.querySelector('[data-field="nature"]');
-            const categoryInput = row.querySelector('[data-field="category"]');
-            
-            if (!natureInput || !categoryInput) return;
-            
-            const nature = natureInput.value;
-            const category = categoryInput.value;
-            
-            updateNature(natureId, { nature, category });
-            loadNaturesTable();
-          });
-        });
-        
-        document.querySelectorAll('.cancel-edit-btn').forEach(btn => {
-          btn.addEventListener('click', function() {
-            const row = this.closest('tr');
-            const natureStatic = row.querySelector('.static-field[data-field="nature"]');
-            const categoryStatic = row.querySelector('.static-field[data-field="category"]');
-            const natureInput = row.querySelector('[data-field="nature"]');
-            const categoryInput = row.querySelector('[data-field="category"]');
-            
-            if (natureStatic && natureInput) {
-              natureInput.value = natureStatic.textContent;
-            }
-            if (categoryStatic && categoryInput) {
-              categoryInput.value = categoryStatic.textContent;
-            }
-            
-            row.classList.remove('edit-mode');
-          });
-        });
-        
-        document.querySelectorAll('.delete-btn').forEach(btn => {
-          btn.addEventListener('click', function() {
-            const row = this.closest('tr');
-            const natureId = row.dataset.natureId;
-            if (confirm('Are you sure you want to delete this nature?')) {
-              deleteNature(natureId);
-              row.remove();
-            }
-          });
-        });
-        
-        document.querySelectorAll('.remove-type').forEach(btn => {
-          btn.addEventListener('click', function() {
-            const type = this.dataset.type;
-            const row = this.closest('tr');
-            const natureId = row.dataset.natureId;
-            
-            const natures = getNatures();
-            const nature = natures.find(n => n.id == natureId);
-            if (nature) {
-              nature.types = nature.types.filter(t => t !== type);
-              saveNatures(natures);
-              this.parentElement.remove();
-            }
-          });
-        });
-        
-        document.querySelectorAll('.add-type-btn').forEach(btn => {
-          btn.addEventListener('click', function() {
-            const input = this.previousElementSibling;
-            const type = input.value.trim();
-            
-            if (type) {
-              const row = this.closest('tr');
-              const natureId = row.dataset.natureId;
-              
-              const natures = getNatures();
-              const nature = natures.find(n => n.id == natureId);
-              if (nature) {
-                nature.types.push(type);
-                saveNatures(natures);
-                
-                const typeElement = document.createElement('div');
-                typeElement.className = 'nature-type';
-                typeElement.innerHTML = `
-                  ${type}
-                  <button class="remove-type" data-type="${type}">&times;</button>
-                `;
-                
-                const removeBtn = typeElement.querySelector('.remove-type');
-                removeBtn.addEventListener('click', function() {
-                  const type = this.dataset.type;
-                  nature.types = nature.types.filter(t => t !== type);
-                  saveNatures(natures);
-                  typeElement.remove();
-                });
-                
-                this.parentElement.previousElementSibling.appendChild(typeElement);
-                input.value = '';
-              }
-            }
-          });
-        });
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const paginatedNatures = filteredNatures.slice(startIndex, startIndex + itemsPerPage);
+      
+      if (paginatedNatures.length === 0) {
+        naturesTable.style.display = 'none';
+        noDataContainer.style.display = 'block';
+      } else {
+        naturesTable.style.display = 'table';
+        noDataContainer.style.display = 'none';
+        naturesTableBody.innerHTML = generateTableRows(paginatedNatures);
       }
+      
+      updatePaginationControls();
     }
-
-    document.addEventListener('DOMContentLoaded', function() {
-      initializeLocalStorage();
-      loadNaturesTable();
-      
-      document.getElementById('toggle-nature-form-btn').addEventListener('click', function() {
-        const form = document.getElementById('new-nature-form');
-        if (form.classList.contains('active')) {
-          form.classList.remove('active');
-        } else {
-          form.classList.add('active');
-        }
-      });
-      
-      document.getElementById('cancel-new-nature').addEventListener('click', function() {
-        document.getElementById('new-nature-form').classList.remove('active');
-      });
-      
-      document.getElementById('save-new-nature').addEventListener('click', function() {
-        const name = document.getElementById('new-nature-name').value;
-        const category = document.getElementById('new-nature-category').value;
+    
+    function generateTableRows(natures) {
+      return natures.map((nature, index) => {
+        const globalIndex = (currentPage - 1) * itemsPerPage + index + 1;
         
-        if (!name || !category) {
-          alert('Please fill in all required fields');
+        // Generate types with remove buttons
+        const typesHtml = nature.types.map(type => `
+          <div class="tag">
+            ${type}
+            <button class="remove-btn" data-nature-id="${nature.id}" data-type="${type}">
+              &times;
+            </button>
+          </div>
+        `).join('');
+        
+        return `
+          <tr data-nature-id="${nature.id}">
+            <td>${globalIndex}</td>
+            <td>${nature.name}</td>
+            <td>
+              <div class="tag-container">
+                ${nature.categories.map(cat => `<div class="tag">${cat}</div>`).join('')}
+              </div>
+            </td>
+            <td>
+              <div class="tag-container">
+                ${typesHtml}
+              </div>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button class="action-btn add" data-nature-id="${nature.id}">
+                  <i class="fas fa-plus"></i> Type
+                </button>
+                <button class="action-btn edit" data-nature-id="${nature.id}">
+                  <i class="fas fa-edit"></i> Edit
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+    
+    function updatePaginationControls() {
+      const totalPages = Math.ceil(filteredNatures.length / itemsPerPage);
+      document.getElementById('current-page').textContent = `Page ${currentPage} of ${totalPages}`;
+      
+      // Update button states
+      document.getElementById('prev-page').disabled = currentPage === 1;
+      document.getElementById('next-page').disabled = currentPage === totalPages || totalPages === 0;
+    }
+    
+    // Modal Management
+    function openModal(modalId) {
+      document.getElementById(modalId).classList.add('active');
+    }
+    
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('active');
+    }
+    
+    function closeAllModals() {
+      document.querySelectorAll('.modal-overlay').forEach(modal => {
+        modal.classList.remove('active');
+      });
+    }
+    
+    // Event Handlers
+    function setupEventListeners() {
+      // Add Nature Button
+      document.getElementById('add-nature-btn').addEventListener('click', () => {
+        document.getElementById('nature-name').value = '';
+        openModal('add-nature-modal');
+      });
+      
+      // Add First Nature Button
+      document.getElementById('add-first-nature').addEventListener('click', () => {
+        document.getElementById('nature-name').value = '';
+        openModal('add-nature-modal');
+      });
+      
+      // Save Nature Button
+      document.getElementById('save-nature').addEventListener('click', async () => {
+        const name = document.getElementById('nature-name').value.trim();
+        if (!name) {
+          showNotification('Nature name is required', 'error');
           return;
         }
         
-        const newNature = {
-          nature: name,
-          category: category,
-          types: []
-        };
-        
-        addNewNature(newNature);
-        loadNaturesTable();
-        
-        document.getElementById('new-nature-name').value = '';
-        document.getElementById('new-nature-category').value = '';
-        document.getElementById('new-nature-form').classList.remove('active');
+        await createNature(name);
+        closeModal('add-nature-modal');
       });
+      
+      // Cancel Add Nature
+      document.getElementById('cancel-add-nature').addEventListener('click', () => {
+        closeModal('add-nature-modal');
+      });
+      
+      // Edit Nature Button
+      document.addEventListener('click', (e) => {
+        if (e.target.closest('.action-btn.edit')) {
+          const btn = e.target.closest('.action-btn.edit');
+          currentNatureId = btn.dataset.natureId;
+          const nature = natures.find(n => n.id === currentNatureId);
+          
+          if (nature) {
+            document.getElementById('edit-name').value = nature.name;
+            renderCategories(nature.categories);
+            openModal('edit-nature-modal');
+          }
+        }
+      });
+      
+      // Add Type Button
+      document.addEventListener('click', (e) => {
+        if (e.target.closest('.action-btn.add')) {
+          const btn = e.target.closest('.action-btn.add');
+          currentNatureId = btn.dataset.natureId;
+          document.getElementById('type-name').value = '';
+          openModal('add-type-modal');
+        }
+      });
+      
+      // Remove Type Button
+      document.addEventListener('click', (e) => {
+        if (e.target.closest('.remove-btn')) {
+          const btn = e.target.closest('.remove-btn');
+          const natureId = btn.dataset.natureId;
+          const type = btn.dataset.type;
+          
+          if (confirm(`Remove type "${type}"?`)) {
+            removeTypeFromNature(natureId, type);
+          }
+        }
+      });
+      
+      // Save Type Button
+      document.getElementById('save-type').addEventListener('click', async () => {
+        const typeName = document.getElementById('type-name').value.trim();
+        if (!typeName) {
+          showNotification('Type name is required', 'error');
+          return;
+        }
+        
+        await addTypeToNature(currentNatureId, typeName);
+        closeModal('add-type-modal');
+      });
+      
+      // Cancel Add Type
+      document.getElementById('cancel-add-type').addEventListener('click', () => {
+        closeModal('add-type-modal');
+      });
+      
+      // Add Category Button
+      document.getElementById('add-category-btn').addEventListener('click', () => {
+        const category = document.getElementById('category-dropdown').value;
+        const nature = natures.find(n => n.id === currentNatureId);
+        
+        if (nature) {
+          // Add category only if it doesn't exist
+          if (!nature.categories.includes(category)) {
+            nature.categories.push(category);
+            renderCategories(nature.categories);
+          } else {
+            showNotification('Category already added', 'warning');
+          }
+        }
+      });
+      
+      // Save Edit Button
+      document.getElementById('save-edit').addEventListener('click', async () => {
+        const name = document.getElementById('edit-name').value.trim();
+        if (!name) {
+          showNotification('Nature name is required', 'error');
+          return;
+        }
+        
+        const nature = natures.find(n => n.id === currentNatureId);
+        if (nature) {
+          // Ensure categories are unique
+          const uniqueCategories = [...new Set(nature.categories)];
+          
+          await updateNature(currentNatureId, {
+            name: name,
+            categories: uniqueCategories
+          });
+          closeModal('edit-nature-modal');
+        }
+      });
+      
+      // Delete Nature Button
+      document.getElementById('delete-nature').addEventListener('click', () => {
+        if (confirm('Are you sure you want to delete this nature? This action cannot be undone.')) {
+          deleteNature(currentNatureId);
+          closeModal('edit-nature-modal');
+        }
+      });
+      
+      // Cancel Edit Nature
+      document.getElementById('cancel-edit-nature').addEventListener('click', () => {
+        closeModal('edit-nature-modal');
+      });
+      
+      // Pagination Controls
+      document.getElementById('items-per-page').addEventListener('change', (e) => {
+        itemsPerPage = parseInt(e.target.value);
+        currentPage = 1;
+        loadNaturesTable();
+      });
+      
+      document.getElementById('prev-page').addEventListener('click', () => {
+        if (currentPage > 1) {
+          currentPage--;
+          loadNaturesTable();
+        }
+      });
+      
+      document.getElementById('next-page').addEventListener('click', () => {
+        const totalPages = Math.ceil(filteredNatures.length / itemsPerPage);
+        if (currentPage < totalPages) {
+          currentPage++;
+          loadNaturesTable();
+        }
+      });
+      
+      // Close modals when clicking outside
+      document.querySelectorAll('.modal-overlay').forEach(overlay => {
+        overlay.addEventListener('click', (e) => {
+          if (e.target === overlay) {
+            closeAllModals();
+          }
+        });
+      });
+    }
+    
+    // Initialize Application
+    document.addEventListener('DOMContentLoaded', () => {
+      setupEventListeners();
+      fetchNatures();
     });
   </script>
 </body>
