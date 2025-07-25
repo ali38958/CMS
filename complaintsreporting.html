@@ -1,0 +1,1420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SCMS Complaints Reporting</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: #f5f7fa;
+      padding-bottom: 40px;
+    }
+
+    /* Header Styles */
+    header {
+      width: 100vw;
+      height: 60px;
+      background-color: rgb(136, 28, 28);
+      margin-top: 36px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 25px;
+      margin-bottom: 30px;
+      position: relative;
+      z-index: 10;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .nav-bar {
+      width: 100vw;
+      background-color: rgb(136, 28, 28);
+      display: flex;
+      justify-content: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      position: relative;
+      z-index: 1;
+      margin-top: 40px;
+    }
+
+    .nav-container {
+      width: 100%;
+      max-width: 1500px;
+      display: flex;
+      margin-left: 90px;
+    }
+
+    .nav-item {
+      padding: 15px 25px;
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      position: relative;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-item:hover {
+      background-color: rgba(0,0,0,0.1);
+    }
+
+    .nav-item.active {
+      background-color: rgba(0,0,0,0.2);
+    }
+
+    .nav-item.active::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60%;
+      height: 3px;
+      background-color: white;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 2;
+    }
+
+    .logo .logo-image {
+      width: 130px;
+      height: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 5px;
+      background-color: #f4f4f4;
+      border-radius: 50%;
+    }
+
+    .logo .logo-image img {
+      border-radius: 50%;
+      width: 100%;
+      height: auto;
+    }
+
+    .logo h2 {
+      color: white;
+      font-size: 20px;
+      white-space: nowrap;
+    }
+
+    .user {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      color: white;
+    }
+
+    .user h2 {
+      font-size: 16px;
+      white-space: nowrap;
+    }
+
+    .logout-btn {
+      background-color: white;
+      color: rgb(136, 28, 28);
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s;
+      border: 1px solid white;
+    }
+
+    .logout-btn:hover {
+      background-color: #ddd;
+    }
+
+    .logout-btn:active {
+      border: 1px solid white;
+      background-color: rgb(136, 28, 28);
+      color: white;
+    }
+
+    /* Notification Styles */
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 25px;
+      border-radius: 8px;
+      color: white;
+      font-weight: 600;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transform: translateX(110%);
+      transition: transform 0.3s ease;
+    }
+    
+    .notification.show {
+      transform: translateX(0);
+    }
+    
+    .notification.success {
+      background: #4caf50;
+    }
+    
+    .notification.error {
+      background: #f44336;
+    }
+    
+    .notification.warning {
+      background: #ff9800;
+    }
+    
+    .notification i {
+      font-size: 20px;
+    }
+
+    /* Reporting Section Styles */
+    .content {
+      width: 100%;
+      max-width: 1800px;
+      margin: 0 auto;
+      padding: 25px;
+      background-color: white;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+      border-radius: 16px;
+      margin-top: 20px;
+    }
+
+    /* Variables */
+    :root {
+      --primary: rgb(136, 28, 28);
+      --primary-light: rgba(136, 28, 28, 0.1);
+      --primary-light-2: rgba(136, 28, 28, 0.05);
+      --secondary: #8c2f2f;
+      --accent: #4caf50;
+      --warning: #ff9800;
+      --danger: #f44336;
+      --light: #f8f9fa;
+      --dark: #212529;
+      --gray: #6c757d;
+      --card-bg: rgba(255, 255, 255, 0.95);
+      --nav-bg: rgba(255, 255, 255, 0.85);
+      --nav-active: rgba(136, 28, 28, 0.15);
+      --nav-hover: rgba(136, 28, 28, 0.08);
+      --success: #4caf50;
+      --border-radius: 12px;
+    }
+
+    /* Complaints Section */
+    .complaints-section-container {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      gap: 30px;
+      min-height: 600px;
+    }
+    
+    .complaints-sidebar {
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      padding: 25px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+      border: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .complaints-option {
+      padding: 18px 20px;
+      margin-bottom: 15px;
+      border-radius: var(--border-radius);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--primary-light-2);
+      color: #555;
+      border: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .complaints-option:hover {
+      background: var(--nav-hover);
+      transform: translateX(5px);
+      box-shadow: 0 5px 12px rgba(136,28,28,0.1);
+    }
+    
+    .complaints-option.active {
+      background: var(--nav-active);
+      color: var(--primary);
+      box-shadow: 0 5px 15px rgba(136, 28, 28, 0.1);
+      border-left: 4px solid var(--primary);
+    }
+    
+    .complaints-option i {
+      font-size: 20px;
+      min-width: 24px;
+      text-align: center;
+    }
+    
+    .complaints-content {
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      padding: 30px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    /* Report Section */
+    .report-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    
+    .report-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--primary);
+      position: relative;
+      padding-left: 15px;
+    }
+    
+    .report-title::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 80%;
+      width: 5px;
+      background: var(--primary);
+      border-radius: 3px;
+    }
+    
+    .hidden {
+      display: none;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: var(--dark);
+    }
+    
+    .form-control {
+      width: 100%;
+      padding: 14px 18px;
+      border-radius: var(--border-radius);
+      border: 1px solid rgba(0,0,0,0.1);
+      background: rgba(248, 249, 250, 0.5);
+      font-size: 16px;
+      transition: all 0.3s;
+    }
+    
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(136, 28, 28, 0.2);
+    }
+    
+    .btn {
+      padding: 12px 24px;
+      border-radius: var(--border-radius);
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 6px 18px rgba(136, 28, 28, 0.25);
+    }
+    
+    .btn-primary:hover {
+      background: #a33a3a;
+      transform: translateY(-3px);
+      box-shadow: 0 8px 22px rgba(136, 28, 28, 0.35);
+    }
+    
+    .btn-secondary {
+      background: var(--gray);
+      color: white;
+      box-shadow: 0 6px 18px rgba(108, 117, 125, 0.3);
+    }
+    
+    .btn-secondary:hover {
+      background: #5a6268;
+      transform: translateY(-3px);
+      box-shadow: 0 8px 22px rgba(108, 117, 125, 0.4);
+    }
+    
+    /* Radio Button Styles */
+    .radio-group {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 25px;
+      flex-wrap: wrap;
+    }
+    
+    .radio-item {
+      display: flex;
+      align-items: center;
+      padding: 15px 20px;
+      background: var(--primary-light-2);
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.3s;
+      border: 2px solid transparent;
+    }
+    
+    .radio-item:hover {
+      background: var(--nav-hover);
+    }
+    
+    .radio-item.selected {
+      background: var(--nav-active);
+      border-color: var(--primary);
+      box-shadow: 0 5px 15px rgba(136,28,28,0.1);
+    }
+    
+    .radio-item input[type="radio"] {
+      margin-right: 12px;
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+    
+    .radio-item label {
+      margin-bottom: 0;
+      font-weight: 600;
+      color: #555;
+      cursor: pointer;
+    }
+    
+    .radio-item.selected label {
+      color: var(--primary);
+    }
+    
+    /* Report Form Styles */
+    .report-form {
+      background: white;
+      border-radius: var(--border-radius);
+      padding: 25px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      border: 1px solid rgba(0,0,0,0.05);
+      margin-bottom: 25px;
+    }
+    
+    /* Summary Report Section */
+    .summary-report-section {
+      background: linear-gradient(to bottom, #ffffff, #f9f9f9);
+      border-radius: var(--border-radius);
+      padding: 25px;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+      border: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .summary-header {
+      text-align: center;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+    }
+    
+    .summary-title {
+      font-size: 24px;
+      color: var(--primary);
+      font-weight: 700;
+    }
+    
+    .summary-subtitle {
+      color: var(--gray);
+      font-size: 16px;
+    }
+    
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 25px;
+      margin-top: 20px;
+    }
+    
+    .summary-card {
+      background: white;
+      border-radius: var(--border-radius);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      padding: 20px;
+      border: 1px solid rgba(0,0,0,0.05);
+      transition: transform 0.3s;
+    }
+    
+    .summary-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+    }
+    
+    .card-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .card-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--primary-light);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 15px;
+    }
+    
+    .card-icon i {
+      color: var(--primary);
+      font-size: 18px;
+    }
+    
+    .card-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--dark);
+    }
+    
+    .summary-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+    
+    .stat-item {
+      text-align: center;
+      padding: 15px;
+      background: var(--primary-light-2);
+      border-radius: var(--border-radius);
+    }
+    
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 5px;
+    }
+    
+    .stat-label {
+      font-size: 14px;
+      color: var(--gray);
+    }
+    
+    .summary-table-container {
+      margin-top: 20px;
+      overflow-x: auto;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      border-radius: var(--border-radius);
+      overflow: hidden;
+      background: white;
+    }
+    
+    th {
+      background: rgba(136, 28, 28, 0.1);
+      color: var(--primary);
+      font-weight: 700;
+      padding: 16px;
+      text-align: left;
+    }
+    
+    td {
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    tr:hover {
+      background: rgba(136, 28, 28, 0.05);
+    }
+    
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+    
+    /* Chart container */
+    .chart-container {
+      margin-top: 30px;
+      height: 300px;
+      background: white;
+      border-radius: var(--border-radius);
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    
+    /* Report Visualization */
+    .report-visualization {
+      background: white;
+      border-radius: var(--border-radius);
+      padding: 25px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      border: 1px solid rgba(0,0,0,0.05);
+      margin-top: 25px;
+    }
+    
+    .visual-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .visual-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+    
+    /* New styles for summary report */
+    .summary-action-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    
+    .year-selection {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .year-label {
+      font-weight: 600;
+      color: var(--dark);
+    }
+    
+    .report-buttons {
+      display: flex;
+      gap: 15px;
+    }
+    
+    .data-tables {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin-top: 20px;
+    }
+    
+    .data-table {
+      background: white;
+      border-radius: var(--border-radius);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      overflow: hidden;
+    }
+    
+    .table-title {
+      background: rgba(136, 28, 28, 0.1);
+      color: var(--primary);
+      font-weight: 700;
+      padding: 16px;
+      text-align: center;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .progress-bar {
+      height: 8px;
+      background-color: #e9ecef;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+    
+    .progress-value {
+      height: 100%;
+      background-color: var(--primary);
+      border-radius: 4px;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 992px) {
+      .nav-container {
+        margin-left: 30px;
+      }
+      
+      .complaints-section-container {
+        grid-template-columns: 1fr;
+      }
+      
+      .complaints-sidebar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+      }
+      
+      .complaints-option {
+        margin-bottom: 0;
+        flex: 1;
+        min-width: 150px;
+      }
+      
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .data-tables {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .nav-bar {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      
+      .nav-container {
+        margin-left: 0;
+        justify-content: center;
+      }
+      
+      .nav-item {
+        padding: 12px 15px;
+        font-size: 14px;
+      }
+      
+      header {
+        flex-direction: column;
+        height: auto;
+        padding: 15px;
+        gap: 15px;
+      }
+      
+      .logo {
+        margin-bottom: 10px;
+      }
+      
+      .complaints-option {
+        padding: 12px 15px;
+        font-size: 14px;
+      }
+      
+      .radio-group {
+        flex-direction: column;
+        gap: 10px;
+      }
+      
+      .radio-item {
+        width: 100%;
+      }
+      
+      .btn {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+      
+      .content {
+        padding: 15px;
+      }
+      
+      .summary-action-bar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .year-selection {
+        width: 100%;
+        justify-content: space-between;
+      }
+      
+      .report-buttons {
+        width: 100%;
+        justify-content: space-between;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Notification -->
+  <div class="notification" id="notification">
+      <i class="fas fa-check-circle"></i>
+      <span id="notification-text">Operation completed successfully</span>
+  </div>
+  
+  <!-- Header -->
+  <header>
+    <div class="logo">
+      <div class="logo-image">
+        <img src="logo.jpg" alt="logo image">
+      </div>
+      <h2>Secured CMS</h2>
+    </div>
+
+    <div class="user">
+      <h2>CH HAND</h2>
+      <button class="logout-btn">Logout</button>
+    </div>
+  </header>
+
+  <!-- Navigation -->
+  <div class="nav-bar">
+    <div class="nav-container">
+      <a href="#" class="nav-item">
+        <i class="fas fa-chart-line"></i>
+        Dashboard
+      </a>
+      <a href="#" class="nav-item">
+        <i class="fas fa-ticket-alt"></i>
+        Complaints
+      </a>
+      <a href="#" class="nav-item">
+        <i class="fas fa-users"></i>
+        Users
+      </a>
+      <a href="#" class="nav-item">
+        <i class="fas fa-store"></i>
+        Store
+      </a>
+      <a href="#" class="nav-item">
+        <i class="fas fa-boxes"></i>
+        Stock
+      </a>
+      <a href="#" class="nav-item active">
+        <i class="fas fa-file-alt"></i>
+        Reporting
+      </a>
+    </div>
+  </div>
+  
+  <!-- Reporting Content -->
+  <div class="content">
+    <div class="complaints-section-container">
+      <div class="complaints-sidebar">
+        <a href="daily-report.html" class="complaints-option">
+          <i class="fas fa-calendar-day"></i>
+          Daily Report
+        </a>
+        <div class="complaints-option active">
+          <i class="fas fa-clipboard"></i>
+          Complaints Report
+        </div>
+        <a href="skillman-report.html" class="complaints-option">
+          <i class="fas fa-users"></i>
+          Skillman Report
+        </a>
+        <a href="vacant-apartments.html" class="complaints-option">
+          <i class="fas fa-building"></i>
+          Vacant Apartments
+        </a>
+        <a href="rating-report.html" class="complaints-option">
+          <i class="fas fa-star"></i>
+          Rating Report
+        </a>
+      </div>
+      
+      <div class="complaints-content">
+        <div class="report-header">
+          <h1 class="report-title">Complaints Report</h1>
+        </div>
+        
+        <!-- Report type selection with radio buttons -->
+        <div class="radio-group">
+          <div class="radio-item" id="default-report">
+            <input type="radio" id="default" name="report-type" value="default" checked>
+            <label for="default">Default Report</label>
+          </div>
+          <div class="radio-item" id="sector-report">
+            <input type="radio" id="sector" name="report-type" value="sector">
+            <label for="sector">Sector Report</label>
+          </div>
+          <div class="radio-item" id="sub-div-report">
+            <input type="radio" id="sub-div" name="report-type" value="sub-div">
+            <label for="sub-div">Sub Division Report</label>
+          </div>
+          <div class="radio-item" id="summary-report">
+            <input type="radio" id="summary" name="report-type" value="summary">
+            <label for="summary">Summary Report</label>
+          </div>
+        </div>
+        
+        <!-- Default Report Form -->
+        <div id="default-report-form" class="report-form">
+          <form>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="colony">Select Colony</label>
+                  <select class="form-control" name="colony">
+                    <option value="">Select Colony</option>
+                    <option value="colony1">North Colony</option>
+                    <option value="colony2">South Colony</option>
+                    <option value="colony3">East Colony</option>
+                    <option value="colony4">West Colony</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="building">Select Building</label>
+                  <select class="form-control" name="building">
+                    <option value="">Select Building</option>
+                    <option value="building1">Building A</option>
+                    <option value="building2">Building B</option>
+                    <option value="building3">Building C</option>
+                    <option value="building4">Building D</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="category">Complaint Category</label>
+                  <select class="form-control" name="category">
+                    <option value="">Select Category</option>
+                    <option value="electrical">Electrical</option>
+                    <option value="plumbing">Plumbing</option>
+                    <option value="ac">Air Conditioning</option>
+                    <option value="carpentry">Carpentry</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="nature">Nature of Complaint</label>
+                  <select class="form-control" name="nature">
+                    <option value="">Select Nature</option>
+                    <option value="urgent">Urgent</option>
+                    <option value="major">Major</option>
+                    <option value="minor">Minor</option>
+                    <option value="routine">Routine</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="status">Status</label>
+                  <select class="form-control" name="status">
+                    <option value="">Select Status</option>
+                    <option value="open">Open</option>
+                    <option value="in-progress">In Progress</option>
+                    <option value="resolved">Resolved</option>
+                    <option value="closed">Closed</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="priority">Priority</label>
+                  <select class="form-control" name="priority">
+                    <option value="">Select Priority</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="from-date">From Date</label>
+                  <input type="date" class="form-control" id="from-date">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="to-date">To Date</label>
+                  <input type="date" class="form-control" id="to-date">
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <button class="btn btn-primary">
+                <i class="fas fa-download"></i> Export to CSV
+              </button>
+              <button class="btn btn-secondary">
+                <i class="fas fa-print"></i> Print Report
+              </button>
+            </div>
+          </form>
+        </div>
+        
+        <!-- Sector Report Form -->
+        <div id="sector-report-form" class="report-form hidden">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="sector-from-date">From Date</label>
+                <input type="date" class="form-control" id="sector-from-date">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="sector-to-date">To Date</label>
+                <input type="date" class="form-control" id="sector-to-date">
+              </div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-12">
+              <div class="form-group">
+                <button class="btn btn-primary">
+                  <i class="fas fa-chart-bar"></i> Generate Sector Report
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="report-visualization">
+            <div class="visual-header">
+              <h3 class="visual-title">Sector Performance</h3>
+              <span>Q3 2023</span>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Sector</th>
+                  <th>Complaints Received</th>
+                  <th>Resolved</th>
+                  <th>Pending</th>
+                  <th>Resolution Rate</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Sector A</td>
+                  <td>42</td>
+                  <td>35</td>
+                  <td>7</td>
+                  <td>83%</td>
+                </tr>
+                <tr>
+                  <td>Sector B</td>
+                  <td>38</td>
+                  <td>32</td>
+                  <td>6</td>
+                  <td>84%</td>
+                </tr>
+                <tr>
+                  <td>Sector C</td>
+                  <td>56</td>
+                  <td>48</td>
+                  <td>8</td>
+                  <td>86%</td>
+                </tr>
+                <tr>
+                  <td>Sector D</td>
+                  <td>29</td>
+                  <td>24</td>
+                  <td>5</td>
+                  <td>83%</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <!-- Sub Division Report Form -->
+        <div id="subdiv-report-form" class="report-form hidden">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="subdiv-from-date">From Date</label>
+                <input type="date" class="form-control" id="subdiv-from-date">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="subdiv-to-date">To Date</label>
+                <input type="date" class="form-control" id="subdiv-to-date">
+              </div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-8">
+              <div class="form-group">
+                <label for="subdiv-category">Select Category</label>
+                <select class="form-control" id="subdiv-category">
+                  <option value="">All Categories</option>
+                  <option value="electrical">Electrical</option>
+                  <option value="plumbing">Plumbing</option>
+                  <option value="ac">Air Conditioning</option>
+                  <option value="carpentry">Carpentry</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group" style="margin-top: 30px;">
+                <button class="btn btn-primary">
+                  Generate Report
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="report-visualization">
+            <div class="visual-header">
+              <h3 class="visual-title">Sub Division Analysis</h3>
+              <span>Q3 2023</span>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Sub Division</th>
+                  <th>Inprogress</th>
+                  <th>Completed</th>
+                  <th>SNA</th>
+                  <th>Deferred</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Electrical</td>
+                  <td>12</td>
+                  <td>25</td>
+                  <td>3</td>
+                  <td>2</td>
+                  <td>42</td>
+                </tr>
+                <tr>
+                  <td>Plumbing</td>
+                  <td>8</td>
+                  <td>30</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>40</td>
+                </tr>
+                <tr>
+                  <td>Air Conditioning</td>
+                  <td>5</td>
+                  <td>15</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>20</td>
+                </tr>
+                <tr>
+                  <td>Carpentry</td>
+                  <td>7</td>
+                  <td>18</td>
+                  <td>2</td>
+                  <td>1</td>
+                  <td>28</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <!-- Summary Report Section -->
+        <div id="summary-report-form" class="report-form">
+          <div class="summary-action-bar">
+            <div class="year-selection">
+              <span class="year-label">Select Year:</span>
+              <select class="form-control" id="summary-year" style="width: 120px;">
+                <option value="2023">2023</option>
+                <option value="2022">2022</option>
+                <option value="2021">2021</option>
+                <option value="2020">2020</option>
+              </select>
+            </div>
+            <div class="report-buttons">
+              <button class="btn btn-primary" id="generate-summary">
+                <i class="fas fa-chart-pie"></i> Generate Report
+              </button>
+              <button class="btn btn-secondary" id="print-summary">
+                <i class="fas fa-print"></i> Print Report
+              </button>
+            </div>
+          </div>
+          
+          <div id="summary-results">
+            <div class="summary-header">
+              <h2 class="summary-title">Complaints Summary Report</h2>
+              <p class="summary-subtitle">2023 Annual Performance Overview</p>
+            </div>
+            
+            <div class="data-tables">
+              <!-- Table 1: Complaints by Nature -->
+              <div class="data-table">
+                <div class="table-title">Complaints by Nature</div>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Nature</th>
+                      <th>Total</th>
+                      <th>Percentage</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Urgent</td>
+                      <td>158</td>
+                      <td>28%</td>
+                    </tr>
+                    <tr>
+                      <td>Major</td>
+                      <td>202</td>
+                      <td>36%</td>
+                    </tr>
+                    <tr>
+                      <td>Minor</td>
+                      <td>124</td>
+                      <td>22%</td>
+                    </tr>
+                    <tr>
+                      <td>Routine</td>
+                      <td>78</td>
+                      <td>14%</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              
+              <!-- Table 2: Complaints by Colony -->
+              <div class="data-table">
+                <div class="table-title">Complaints by Colony</div>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Colony</th>
+                      <th>Total</th>
+                      <th>Percentage</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>North Colony</td>
+                      <td>145</td>
+                      <td>26%</td>
+                    </tr>
+                    <tr>
+                      <td>South Colony</td>
+                      <td>132</td>
+                      <td>23%</td>
+                    </tr>
+                    <tr>
+                      <td>East Colony</td>
+                      <td>168</td>
+                      <td>30%</td>
+                    </tr>
+                    <tr>
+                      <td>West Colony</td>
+                      <td>117</td>
+                      <td>21%</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            
+            <div class="chart-container">
+              <canvas id="complaintsChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Notification system
+    function showNotification(message, type) {
+      const notification = document.getElementById('notification');
+      const text = document.getElementById('notification-text');
+      
+      text.textContent = message;
+      notification.className = 'notification ' + type;
+      notification.classList.add('show');
+      
+      setTimeout(() => {
+        notification.classList.remove('show');
+      }, 3000);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // Logout button functionality
+      document.querySelector('.logout-btn').addEventListener('click', function() {
+        showNotification('Logging out... Redirecting to login page.', 'success');
+        setTimeout(() => {
+          // In a real app, this would redirect to the login page
+          alert('You have been logged out');
+        }, 1500);
+      });
+      
+      // Set today's date as default
+      const today = new Date();
+      const formattedDate = today.toISOString().split('T')[0];
+      document.getElementById('from-date').value = formattedDate;
+      document.getElementById('to-date').value = formattedDate;
+      document.getElementById('sector-from-date').value = formattedDate;
+      document.getElementById('sector-to-date').value = formattedDate;
+      document.getElementById('subdiv-from-date').value = formattedDate;
+      document.getElementById('subdiv-to-date').value = formattedDate;
+      
+      // Radio button functionality
+      const radioItems = document.querySelectorAll('.radio-item');
+      const defaultReport = document.getElementById('default-report-form');
+      const sectorReport = document.getElementById('sector-report-form');
+      const subdivReport = document.getElementById('subdiv-report-form');
+      const summaryReport = document.getElementById('summary-report-form');
+      
+      // Function to hide all reports
+      function hideAllReports() {
+        defaultReport.classList.add('hidden');
+        sectorReport.classList.add('hidden');
+        subdivReport.classList.add('hidden');
+        summaryReport.classList.add('hidden');
+      }
+      
+      radioItems.forEach(item => {
+        item.addEventListener('click', function() {
+          // Remove selected class from all items
+          radioItems.forEach(i => i.classList.remove('selected'));
+          // Add selected class to clicked item
+          this.classList.add('selected');
+          // Check the radio input
+          const radioInput = this.querySelector('input[type="radio"]');
+          radioInput.checked = true;
+          // Show/hide sections based on selection
+          hideAllReports();
+          if (radioInput.value === 'default') {
+            defaultReport.classList.remove('hidden');
+          } else if (radioInput.value === 'sector') {
+            sectorReport.classList.remove('hidden');
+          } else if (radioInput.value === 'sub-div') {
+            subdivReport.classList.remove('hidden');
+          } else if (radioInput.value === 'summary') {
+            summaryReport.classList.remove('hidden');
+          }
+        });
+      });
+      
+      // Initialize the first radio as selected
+      document.querySelector('.radio-item').classList.add('selected'); 
+      
+      // Create a simple bar chart using canvas
+      const canvas = document.getElementById('complaintsChart');
+      if (canvas) {
+        const ctx = canvas.getContext('2d'); 
+        // Set canvas dimensions
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+        // Chart data
+        const data = {
+          labels: ['Electrical', 'Plumbing', 'HVAC', 'Carpentry', 'Other'],
+          values: [52, 40, 23, 15, 20],
+          colors: ['#881c1c', '#a33a3a', '#bd5858', '#d77676', '#f19494']
+        };
+        // Draw the chart
+        const maxValue = Math.max(...data.values);
+        const barWidth = (canvas.width - 100) / data.labels.length;
+        const scale = (canvas.height - 80) / maxValue;
+        // Draw bars
+        for (let i = 0; i < data.labels.length; i++) {
+          const barHeight = data.values[i] * scale;
+          const x = 50 + i * barWidth;
+          const y = canvas.height - 30 - barHeight;
+          // Draw bar
+          ctx.fillStyle = data.colors[i];
+          ctx.fillRect(x, y, barWidth - 20, barHeight);
+          // Draw label
+          ctx.fillStyle = '#555';
+          ctx.font = '14px Arial';
+          ctx.textAlign = 'center';
+          ctx.fillText(data.labels[i], x + (barWidth - 20) / 2, canvas.height - 10);
+          // Draw value
+          ctx.fillStyle = '#fff';
+          ctx.font = 'bold 14px Arial';
+          ctx.textAlign = 'center';
+          ctx.fillText(data.values[i], x + (barWidth - 20) / 2, y + 20);
+        }
+        // Draw axis
+        ctx.strokeStyle = '#ccc';
+        ctx.lineWidth = 1;
+        // Y-axis
+        ctx.beginPath();
+        ctx.moveTo(40, 30);
+        ctx.lineTo(40, canvas.height - 30);
+        ctx.stroke();
+        // X-axis
+        ctx.beginPath();
+        ctx.moveTo(40, canvas.height - 30);
+        ctx.lineTo(canvas.width - 20, canvas.height - 30);
+        ctx.stroke();
+        // Draw Y-axis labels
+        ctx.fillStyle = '#777';
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'right';
+        for (let i = 0; i <= 5; i++) {
+          const value = i * (maxValue / 5);
+          const y = canvas.height - 30 - value * scale;
+          ctx.beginPath();
+          ctx.moveTo(35, y);
+          ctx.lineTo(40, y);
+          ctx.stroke();
+          ctx.fillText(Math.round(value), 35, y + 4);
+        } 
+      }
+      
+      // Generate summary report button
+      document.getElementById('generate-summary').addEventListener('click', function() {
+        showNotification('Summary report generated for selected year', 'success');
+      });
+      
+      // Print summary report button
+      document.getElementById('print-summary').addEventListener('click', function() {
+        showNotification('Printing summary report...', 'success');
+        setTimeout(() => {
+          alert('Print dialog would open here in a real application');
+        }, 500);
+      });
+    });
+  </script>
+</body>
+</html>
