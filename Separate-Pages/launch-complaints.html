@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SCMS - Launch Complaints</title>
+  <title>MES CMS - Launch Complaints</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     * {
@@ -226,360 +226,145 @@
       overflow: hidden;
     }
     
-    .complaints-panel {
-      display: none;
-    }
-    
-    .complaints-panel.active {
-      display: block;
-      animation: fadeIn 0.4s ease;
-    }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    
-    .panel-header {
-      margin-bottom: 25px;
-      padding-bottom: 15px;
-      border-bottom: 1px solid rgba(0,0,0,0.08);
-    }
-    
-    .panel-title {
-      font-size: 24px;
-      font-weight: 700;
-      color: var(--primary);
-    }
-    
-    .form-group {
-      margin-bottom: 20px;
-    }
-    
-    .form-group label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: 600;
-      color: var(--dark);
-    }
-    
-    .required:after {
-      content: " *";
-      color: var(--danger);
-    }
-    
-    .form-control {
-      width: 100%;
-      padding: 14px 18px;
-      border-radius: 12px;
-      border: 1px solid rgba(0,0,0,0.1);
-      background: rgba(248, 249, 250, 0.5);
-      font-size: 16px;
-      transition: all 0.3s;
-    }
-    
-    .form-control:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(136, 28, 28, 0.2);
-    }
-    
-    .btn {
-      padding: 14px 28px;
-      border-radius: 12px;
-      font-weight: 600;
-      font-size: 16px;
-      cursor: pointer;
-      border: none;
-      transition: all 0.3s;
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-    }
-    
-    .btn-primary {
-      background: var(--primary);
-      color: white;
-      box-shadow: 0 6px 18px rgba(136, 28, 28, 0.2);
-    }
-    
-    .btn-primary:hover {
-      background: #a33a3a;
-      transform: translateY(-3px);
-      box-shadow: 0 8px 22px rgba(136, 28, 28, 0.3);
-    }
-    
-    .btn-secondary {
-      background: var(--gray);
-      color: white;
-      box-shadow: 0 6px 18px rgba(108, 117, 125, 0.3);
-    }
-    
-    .btn-secondary:hover {
-      background: #5a6268;
-      transform: translateY(-3px);
-      box-shadow: 0 8px 22px rgba(108, 117, 125, 0.4);
-    }
-    
-    .search-box {
-      display: flex;
-      margin-bottom: 30px;
-    }
-    
-    .search-box input {
-      flex: 1;
-      border-radius: 12px 0 0 12px;
-    }
-    
-    .search-box button {
-      border-radius: 0 12px 12px 0;
-    }
-    
-    .user-addresses {
-      display: none;
-      margin-bottom: 20px;
-    }
-    
-    .user-addresses.active {
-      display: block;
-    }
-    
-    .user-address {
-      background: rgba(136, 28, 28, 0.1);
-      padding: 15px;
-      border-radius: 12px;
-      margin-bottom: 10px;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-    
-    .user-address:hover {
-      background: rgba(136, 28, 28, 0.2);
-    }
-    
-    .user-address.selected {
-      background: rgba(136, 28, 28, 0.3);
-      border: 2px solid var(--primary);
-    }
-    
-    .user-address h4 {
-      margin-bottom: 5px;
-      color: var(--primary);
-    }
-    
-    .user-address p {
-      margin: 3px 0;
-      color: var(--dark);
-    }
-    
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.7);
-      z-index: 1000;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .modal.active {
-      display: flex;
-    }
-    
-    .modal-content {
-      background: white;
-      border-radius: 18px;
-      width: 90%;
-      max-width: 700px;
-      max-height: 90vh;
-      overflow-y: auto;
-      padding: 30px;
-      position: relative;
-    }
-    
-    .close-modal {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      font-size: 24px;
-      cursor: pointer;
-      color: var(--gray);
-      transition: color 0.3s;
-    }
-    
-    .close-modal:hover {
-      color: var(--danger);
-    }
-    
-    .section-title {
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--primary);
-      margin: 20px 0 15px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid rgba(0,0,0,0.1);
-    }
-    
-    .form-row {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
-    }
-    
-    .new-building-toggle {
-      display: flex;
-      align-items: center;
-      margin: 15px 0;
-    }
-    
-    .new-building-toggle label {
-      margin-left: 10px;
-      font-weight: 600;
-    }
-    
-    .form-actions {
-      display: flex;
-      gap: 15px;
-      margin-top: 30px;
-    }
-    
-    .warning-note {
-      background: rgba(255, 152, 0, 0.1);
-      padding: 15px;
-      border-radius: 12px;
-      margin: 20px 0;
-      border-left: 4px solid var(--warning);
-    }
-    
-    .locations-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-      border-radius: 12px;
-      overflow: hidden;
-    }
-    
-    .locations-table th {
-      background: rgba(136, 28, 28, 0.1);
-      color: var(--primary);
-      font-weight: 700;
-      padding: 16px;
-      text-align: left;
-    }
-    
-    .locations-table td {
-      padding: 14px 16px;
-      border-bottom: 1px solid rgba(0,0,0,0.05);
-    }
-    
-    .locations-table tr:hover {
-      background: rgba(136, 28, 28, 0.05);
-    }
-    
-    .locations-table tr.selected {
-      background: rgba(136, 28, 28, 0.2);
-    }
-    
-    .user-found-details {
-      background: rgba(76, 175, 80, 0.1);
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 20px;
-      border-left: 4px solid var(--accent);
-      display: none;
-    }
-    
-    .user-found-details.active {
-      display: block;
-    }
-    
-    .user-detail-row {
-      display: flex;
-      margin-bottom: 10px;
-    }
-    
-    .user-detail-label {
-      font-weight: 600;
-      width: 120px;
-      color: var(--dark);
-    }
-    
-    .user-detail-value {
-      flex: 1;
-      color: var(--gray);
-    }
-    
-    .search-method-toggle {
-      display: flex;
-      gap: 15px;
-      margin-bottom: 15px;
-    }
-    
-    .method-toggle {
-      position: relative;
-      display: inline-block;
-      width: 60px;
-      height: 30px;
-    }
-    
-    .method-toggle input { 
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-    
-    .toggle-slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: #ccc;
-      transition: .4s;
-      border-radius: 34px;
-    }
-    
-    .toggle-slider:before {
-      position: absolute;
-      content: "";
-      height: 22px;
-      width: 22px;
-      left: 4px;
-      bottom: 4px;
-      background-color: white;
-      transition: .4s;
-      border-radius: 50%;
-    }
-    
-    input:checked + .toggle-slider {
-      background-color: var(--primary);
-    }
-    
-    input:checked + .toggle-slider:before {
-      transform: translateX(30px);
-    }
-    
-    .toggle-label {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-weight: 500;
-    }
-
     #all-complaints, #natures {
       text-decoration: none;
       color: inherit;
+    }
+
+    /* Improved Launch Complaint Form */
+    .launch-complaint-form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      max-width: auto;
+      margin: 0 0;
+    }
+
+    .complaint-header {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--primary);
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 8px;
+      margin-bottom: 10px;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 15px;
+      width: 50vw;
+    }
+
+    .form-group {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .form-group.full-width {
+      flex: 0 0 100%;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+      color: #555;
+      font-weight: 500;
+    }
+
+    input[type="text"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      background-color: #f9f9f9;
+      transition: all 0.2s;
+    }
+
+    input[type="text"]:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      background-color: #fff;
+      box-shadow: 0 0 0 2px rgba(136, 28, 28, 0.1);
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+      width: 50vw;
+    }
+
+
+    button {
+      padding: 10px 18px;
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    button:hover {
+      background-color: #9e1e1e;
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    .search-button {
+      flex: 0 0 80px;
+    }
+
+    .assign-button {
+      flex: 0 0 80px;
+    }
+
+    .select-button {
+      flex: 0 0 80px;
+    }
+
+    .launch-button {
+      align-self: flex-start;
+      padding: 10px 25px;
+    }
+
+
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .form-row {
+        flex-direction: column;
+        gap: 15px;
+        width: 100%;
+      }
+      
+      button {
+        width: 100%;
+      }
+      
+      .search-button,
+      .assign-button,
+      .select-button {
+        flex: 1;
+      }
     }
 
     /* Responsive Design */
     @media (max-width: 992px) {
       .complaints-section-container {
         grid-template-columns: 1fr;
+      }
+
+      .form-row {
+        width: 100%;
       }
       
       .complaints-sidebar {
@@ -593,6 +378,10 @@
         flex: 1;
         min-width: 150px;
       }
+      
+      textarea {
+        width: 100%;
+      }
     }
 
     @media (max-width: 768px) {
@@ -600,43 +389,585 @@
         flex-wrap: wrap;
         justify-content: center;
       }
+
+      .form-row {
+        width: 100%;
+      }
       
       .nav-item {
         padding: 15px;
         font-size: 15px;
       }
-      
-      .complaints-option {
-        padding: 12px 15px;
-        font-size: 14px;
-      }
-      
-      .form-row {
-        grid-template-columns: 1fr;
-      }
-      
-      .form-actions {
-        flex-direction: column;
-      }
-      
-      .user-detail-row {
-        flex-direction: column;
-      }
-      
-      .user-detail-label {
+
+      textarea {
         width: 100%;
-        margin-bottom: 5px;
       }
     }
+
+    
+    /* ===== NEW MODAL STYLES ===== */
+    /* Modal Backdrop */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-backdrop.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    /* Main Modal Container */
+    .modal-container {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      width: 90%;
+      max-width: 500px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transform: translateY(-20px);
+      transition: transform 0.3s ease;
+    }
+
+    .modal-backdrop.active .modal-container {
+      transform: translateY(0);
+    }
+
+    /* Modal Header */
+    .modal-header {
+      padding: 15px 20px;
+      background-color: var(--primary);
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-header h3 {
+      font-size: 18px;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 5px;
+    }
+
+    /* Modal Body */
+    .modal-body {
+      padding: 20px;
+      overflow-y: auto;
+      flex-grow: 1;
+    }
+
+    /* Form Styles */
+    .modal-form-group {
+      margin-bottom: 15px;
+    }
+
+    .modal-form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: var(--dark);
+    }
+
+    .modal-form-control {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .modal-form-control:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    /* Modal Footer */
+    .modal-footer {
+      padding: 15px 20px;
+      background-color: #f8f9fa;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      border-top: 1px solid #ddd;
+    }
+
+    /* Button Styles */
+    .modal-btn {
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .modal-btn-primary {
+      background-color: var(--primary);
+      color: white;
+      border: 1px solid var(--primary);
+    }
+
+    .modal-btn-primary:hover {
+      background-color: var(--secondary);
+    }
+
+    .modal-btn-outline {
+      background-color: transparent;
+      border: 1px solid var(--gray);
+      color: var(--dark);
+    }
+
+    .modal-btn-outline:hover {
+      background-color: #f0f0f0;
+    }
+
+    /* Error Message */
+    .error-message {
+      color: var(--error);
+      font-size: 14px;
+      margin-top: 5px;
+      display: none;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+      .modal-container {
+        width: 95%;
+      }
+    }
+
+
+
+
+
+
+
+
+    /* ===== Address Modal Styles ===== */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.modal-backdrop.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.modal-container {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 700px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: translateY(-20px);
+  transition: transform 0.3s ease;
+}
+
+.modal-backdrop.active .modal-container {
+  transform: translateY(0);
+}
+
+.modal-header {
+  padding: 15px 20px;
+  background-color: var(--primary);
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 {
+  font-size: 18px;
+  margin: 0;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
+.section-title {
+  font-size: 16px;
+  color: var(--primary);
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.search-container {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.search-input {
+  flex: 1;
+  position: relative;
+}
+
+.search-input i {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--gray);
+}
+
+.search-input input {
+  padding-left: 35px;
+  width: 100%;
+  padding: 10px 12px 10px 35px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  background-color: #f9f9f9;
+  transition: all 0.2s;
+}
+
+.search-input input:focus {
+  outline: none;
+  border-color: var(--primary);
+  background-color: #fff;
+  box-shadow: 0 0 0 2px rgba(136, 28, 28, 0.1);
+}
+
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.checkbox-container input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--primary);
+}
+
+.table-container {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  overflow: hidden;
+  max-height: 250px;
+  overflow-y: auto;
+  position: relative;
+}
+
+.address-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.address-table thead {
+  background-color: var(--primary);
+  color: white;
+  position: sticky;
+  top: 0;
+}
+
+.address-table th {
+  padding: 12px 15px;
+  text-align: left;
+  font-weight: 600;
+}
+
+.address-table td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.address-table tbody tr {
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+
+.address-table tbody tr:hover {
+  background-color: var(--nav-hover);
+}
+
+.address-table tbody tr.selected {
+  background-color: var(--nav-active);
+}
+
+.new-building-form {
+  display: none;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background-color: #f9f9f9;
+  margin-top: 10px;
+}
+
+.new-building-form label {
+  margin-top: 15px;
+}
+
+label {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.new-building-form.active {
+  display: block;
+}
+
+.modal-footer {
+  padding: 15px 20px;
+  background-color: #f8f9fa;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-top: 1px solid #ddd;
+}
+
+.btn {
+  padding: 10px 18px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: white;
+  border: 1px solid var(--primary);
+}
+
+.btn-primary:hover {
+  background-color: #9e1e1e;
+}
+
+.btn-outline {
+  background-color: transparent;
+  border: 1px solid var(--gray);
+  color: var(--dark);
+}
+
+.btn-outline:hover {
+  background-color: #f0f0f0;
+}
+
+.error-message {
+  color: var(--danger);
+  font-size: 14px;
+  margin-top: 5px;
+  text-align: center;
+  padding: 10px;
+}
+
+.no-records {
+  text-align: center;
+  padding: 20px;
+  color: var(--gray);
+  font-style: italic;
+}
+
+.spinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top: 4px solid var(--primary);
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 20px auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
   </style>
 </head>
 <body>
+
+  
+  <!-- ===== NEW MODAL HTML ===== -->
+  <div class="modal-backdrop" id="customerModal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3><i class="fas fa-user-plus"></i> Add New Customer</h3>
+        <button class="close-btn" id="closeModalBtn">&times;</button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="modal-form-group">
+          <label for="customer-name">Customer Name *</label>
+          <input type="text" id="customer-name" class="modal-form-control" placeholder="Enter customer name" required>
+          <div id="name-error" class="error-message">Please enter customer name</div>
+        </div>
+        
+        <div class="modal-form-group">
+          <label for="customer-email">Email (Optional)</label>
+          <input type="email" id="customer-email" class="modal-form-control" placeholder="Enter email address">
+          <div id="email-error" class="error-message">Please enter a valid email address</div>
+        </div>
+        
+        <div class="modal-form-group">
+          <label for="customer-phone">Phone Number *</label>
+          <input type="tel" id="customer-phone" class="modal-form-control" placeholder="Enter phone number" required>
+          <div id="phone-error" class="error-message">Please enter a valid phone number</div>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="modal-btn modal-btn-outline" id="cancelModalBtn">Cancel</button>
+        <button class="modal-btn modal-btn-primary" id="saveCustomerBtn">Save Customer</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Assign Address Modal -->
+  <div class="modal-backdrop" id="addressModal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3><i class="fas fa-map-marker-alt"></i> Assign Address</h3>
+        <button class="close-btn" id="closeAddressModalBtn">&times;</button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="address-section">
+          <h4 class="section-title"><i class="fas fa-map-marker-alt"></i> Address Information</h4>
+          
+          <div class="search-container">
+            <div class="search-input">
+              <i class="fas fa-search"></i>
+              <input type="text" class="form-control" id="building-search" placeholder="Search building by name">
+            </div>
+            <div class="checkbox-container">
+              <input type="checkbox" id="new-building">
+              <label for="new-building">New Building</label>
+            </div>
+          </div>
+          
+          <div class="new-building-form" id="newBuildingForm">
+            <div class="form-group">
+              <label for="house-building-no">House/Building No.</label>
+              <input type="text" class="form-control" id="house-building-no" placeholder="Enter house/building number">
+            </div>
+            
+            <div class="form-group">
+              <label for="colony">Colony</label>
+              <select class="form-control" id="colony">
+                <option value="">Loading colonies...</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label for="apartment-type">Apartment#/Type</label>
+              <select class="form-control" id="apartment-type">
+                <option value="">Loading apartment types...</option>
+              </select>
+            </div>
+
+            <!-- Inside your modal where new building fields are shown -->
+            <div class="form-group">
+              <label for="area">Area</label>
+              <select id="area" class="form-control">
+                <option value="">Select Area</option>
+                <option value="B&R-I">B&R-I</option>
+                <option value="B&R-II">B&R-II</option>
+                <option value="B&R-III">B&R-III</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="residentialStatus">Residential Status</label>
+              <select id="residentialStatus" class="form-control">
+                <option value="">Select Status</option>
+                <option value="Resdl">Resdl</option>
+                <option value="Non-Resdl">Non-Resdl</option>
+              </select>
+            </div>
+
+
+          </div>
+          
+          <div class="table-container" id="addressTableContainer">
+            <table class="address-table">
+              <thead>
+                <tr>
+                  <th>Customer</th>
+                  <th>House/Building No.</th>
+                  <th>Colony</th>
+                  <th>Apartment#/Type</th>
+                </tr>
+              </thead>
+              <tbody id="address-table-body">
+                <!-- Table rows will be generated by JavaScript -->
+              </tbody>
+            </table>
+            <div id="loading-spinner" class="spinner" style="display: none;"></div>
+            <div id="error-message" class="error-message" style="display: none;"></div>
+            <div id="no-records" class="no-records" style="display: none;">No records found</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="btn btn-outline" id="cancelAddressBtn">Cancel</button>
+        <button class="btn btn-primary" id="saveAddressBtn">Assign Building</button>
+      </div>
+    </div>
+  </div>
+  
+
+  <!--Header Section-->
   <header>
     <div class="logo">
       <div class="logo-image">
         <img src="logo.jpg" alt="logo image">
       </div>
-      <h2>Secured CMS</h2>
+      <h2>MES CMS</h2>
     </div>
 
     <div class="user">
@@ -655,7 +986,7 @@
         <i class="fas fa-ticket-alt"></i>
         Complaints
       </a>
-      <a href="#" class="nav-item">
+      <a href="all-users.html" class="nav-item">
         <i class="fas fa-users"></i>
         Users
       </a>
@@ -690,779 +1021,766 @@
           Natures
         </a>
       </div>
-      
+    
       <div class="complaints-content">
-        <!-- Launch Complaints Panel -->
-        <div id="launch-complaints" class="complaints-panel active">
-          <div class="panel-header">
-            <h2 class="panel-title">Launch New Complaint</h2>
-          </div>
+        <form class="launch-complaint-form">
+          <h2 class="complaint-header">Launch Complaint</h2>
           
-          <div class="search-method-toggle">
-            <div class="toggle-label">
-              <span>Find by Phone</span>
-              <label class="method-toggle">
-                <input type="checkbox" id="search-method-toggle">
-                <span class="toggle-slider"></span>
-              </label>
-              <span>Find by Location</span>
+          <div class="form-row">
+            <div class="form-group" style="flex: 1 1 70%">
+              <label for="customer-search">Search customer by name or phone number</label>
+              <input type="text" id="customer-search" placeholder="Enter name or phone">
+            </div>
+            <div class="form-group" style="align-self: flex-end">
+              <button type="button" class="search-button">Find</button>
             </div>
           </div>
-          
-          <div class="form-group phone-search">
-            <label for="find-phone" class="required">Find by Phone Number</label>
-            <div class="search-box">
-              <input type="tel" id="find-phone" class="form-control" placeholder="Enter phone number">
-              <button class="btn btn-primary" id="find-user-btn">
-                <i class="fas fa-search"></i>
-                Find
-              </button>
-            </div>
-          </div>
-          
-          <div class="form-group location-search" style="display: none;">
-            <label for="find-location" class="required">Find by Location</label>
-            <div class="search-box">
-              <input type="text" id="find-location" class="form-control" placeholder="Enter colony name">
-              <button class="btn btn-primary" id="find-location-btn">
-                <i class="fas fa-search"></i>
-                Find
-              </button>
-            </div>
-          </div>
-          
-          <div class="user-found-details" id="user-found-details">
-            <h3><i class="fas fa-user-check"></i> User Found</h3>
-            <div class="user-detail-row">
-              <div class="user-detail-label">Name:</div>
-              <div class="user-detail-value" id="found-user-name"></div>
-            </div>
-            <div class="user-detail-row">
-              <div class="user-detail-label">Phone:</div>
-              <div class="user-detail-value" id="found-user-phone"></div>
-            </div>
-          </div>
-          
-          <div class="user-addresses" id="user-addresses">
-            <h3>Select an Address</h3>
-          </div>
-          
-          <div class="form-group" id="complaint-form" style="display: none;">
-            <div class="form-row">
-              <div class="form-group">
-                <label for="category-select" class="required">Select Category</label>
-                <select id="category-select" class="form-control" required>
-                  <option value="">Select Category</option>
-                  <option value="air-conditioner">Air Conditioner</option>
-                  <option value="aluminium">Aluminium</option>
-                  <option value="cooking-range">Cooking Range/Hub Stove</option>
-                  <option value="electrical">Electrical</option>
-                  <option value="plumbing">Plumbing</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label for="category-description">Category Description</label>
-                <textarea id="category-description" class="form-control" rows="2" placeholder="Enter category description"></textarea>
-              </div>
-            </div>
-            
-            <div class="form-row">
-              <div class="form-group">
-                <label for="skillman-select" class="required">Assign Skillman</label>
-                <select id="skillman-select" class="form-control" required>
-                  <option value="">Select Skillman</option>
-                  <option value="John Davis (Electrician)">John Davis (Electrician)</option>
-                  <option value="Mark Wilson (Plumber)">Mark Wilson (Plumber)</option>
-                  <option value="Lisa Thompson (Carpenter)">Lisa Thompson (Carpenter)</option>
-                  <option value="Mike Chen (AC Specialist)">Mike Chen (AC Specialist)</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label for="poc" class="required">Point of Contact</label>
-                <input type="text" id="poc" class="form-control" placeholder="Enter POC name" required>
-              </div>
-            </div>
-            
-            <button class="btn btn-primary" id="launch-complaint-btn">
-              <i class="fas fa-paper-plane"></i>
-              Launch Complaint
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- Add User Modal -->
-  <div class="modal" id="add-user-modal">
-    <div class="modal-content">
-      <span class="close-modal" id="close-add-user-modal">&times;</span>
-      <h2 class="panel-title">Add New User</h2>
-      
-      <div class="section-title">Customer Information</div>
-      <div class="form-row">
-        <div class="form-group">
-          <label for="customer-name" class="required">Full Name</label>
-          <input type="text" id="customer-name" class="form-control" placeholder="Enter customer name" required>
-        </div>
-        <div class="form-group">
-          <label for="customer-phone" class="required">Phone Number</label>
-          <input type="tel" id="customer-phone" class="form-control" placeholder="Enter phone number" required>
-        </div>
-      </div>
-      
-      <div class="section-title">Address Information</div>
-      <div class="form-group">
-        <label for="building-search">Search Building by name</label>
-        <div class="search-box">
-          <input type="text" id="building-search" class="form-control" placeholder="Enter building name">
-          <button class="btn btn-secondary" id="find-building-btn">
-            <i class="fas fa-search"></i>
-            Find
-          </button>
-        </div>
-      </div>
-      
-      <div class="new-building-toggle">
-        <input type="checkbox" id="new-building-checkbox">
-        <label for="new-building-checkbox">New Building</label>
-      </div>
-      
-      <div id="existing-locations-section">
-        <table class="locations-table" id="locations-table">
-          <thead>
-            <tr>
-              <th>Building Name</th>
-              <th>Colony</th>
-              <th>Building Type</th>
-              <th>Building No</th>
-            </tr>
-          </thead>
-          <tbody id="locations-table-body">
-            <!-- Locations will be populated by JavaScript -->
-          </tbody>
-        </table>
-      </div>
-      
-      <div id="new-building-form" style="display: none;">
-        <div class="form-row">
-          <div class="form-group">
-            <label for="colony-select" class="required">Select Colony</label>
-            <select id="colony-select" class="form-control" required>
-              <option value="">Select Colony</option>
-              <option value="colony1">Green Valley</option>
-              <option value="colony2">Sunset Hills</option>
-              <option value="colony3">River View</option>
-            </select>
+
+          <!--to show user status-->
+          <div id="user-status" style="margin-top: 8px; font-weight: bold;"></div>
+
+          
+          <div class="form-row">
+            <div class="form-group" style="flex: 1 1 70%">
+              <label for="location">Location</label>
+              <select id="location" disabled>
+                <option value="">Select Location</option>
+                <!-- Options would be added dynamically -->
+              </select>
+            </div>
+            <div class="form-group" style="align-self: flex-end">
+              <button type="button" class="assign-button" disabled>Assign</button>
+            </div>
           </div>
-          <div class="form-group">
-            <label for="building-type" class="required">Select Building Type</label>
-            <select id="building-type" class="form-control" required>
-              <option value="">Select Type</option>
-              <option value="residential">Residential</option>
-              <option value="commercial">Commercial</option>
-              <option value="mixed">Mixed Use</option>
-            </select>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="category">Category</label>
+              <select id="category">
+                <option value="">Select Category</option>
+                <!-- Options would be added dynamically -->
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="category-type">Category Type</label>
+              <select id="category-type">
+                <option value="">Select Type</option>
+                <!-- Options would be added dynamically -->
+              </select>
+            </div>
           </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label for="building-no" class="required">Building/House No</label>
-            <input type="text" id="building-no" class="form-control" placeholder="Enter building number" required>
+          
+          <div class="form-group full-width">
+            <label for="description">About Complaint</label>
+            <textarea id="description" placeholder="Enter complaint details"></textarea>
           </div>
-          <div class="form-group">
-            <label for="apartment-no">Apartment/Unit</label>
-            <input type="text" id="apartment-no" class="form-control" placeholder="Enter apartment number">
+          
+          <div class="form-row">
+            <div class="form-group" style="flex: 1 1 70%">
+              <label for="skillman">Skillman</label>
+              <input type="text" id="skillman" disabled>
+            </div>
+            <div class="form-group" style="align-self: flex-end">
+              <button type="button" class="select-button">Select</button>
+            </div>
           </div>
-          <div class="form-group">
-            <label for="apartment-type">Apartment Type</label>
-            <select id="apartment-type" class="form-control">
-              <option value="">Select Type</option>
-              <option value="studio">Studio</option>
-              <option value="1bhk">1BHK</option>
-              <option value="2bhk">2BHK</option>
-              <option value="3bhk">3BHK</option>
-              <option value="penthouse">Penthouse</option>
-            </select>
-          </div>
-        </div>
-      </div>
-      
-      <div class="warning-note">
-        <i class="fas fa-exclamation-triangle"></i> Apartments that are clearly accommodated will be overridden!
-      </div>
-      
-      <div class="form-actions">
-        <button class="btn btn-secondary" id="cancel-add-user">
-          <i class="fas fa-times"></i>
-          Close
-        </button>
-        <button class="btn btn-primary" id="save-new-user">
-          <i class="fas fa-save"></i>
-          Save User
-        </button>
+          
+          <button type="submit" class="launch-button">Launch Complaint</button>
+        </form>
       </div>
     </div>
   </div>
 
   <script>
-    function initializeLocalStorage() {
-      if (!localStorage.getItem('complaintCloudUsers')) {
-        const initialUsers = [
-          {
-            id: 1,
-            name: "Sarah Williams",
-            phone: "+1 234 567 890",
-            addresses: [
-              {
-                id: 1,
-                name: "Home Address",
-                street: "123 Main St",
-                colony: "Green Valley",
-                buildingType: "Residential",
-                buildingNo: "5",
-                apartmentNo: "301",
-                apartmentType: "2BHK"
-              }
-            ]
-          },
-          {
-            id: 2,
-            name: "Michael Brown",
-            phone: "+1 345 678 901",
-            addresses: [
-              {
-                id: 1,
-                name: "Office Address",
-                street: "456 Business Ave",
-                colony: "Sunset Hills",
-                buildingType: "Commercial",
-                buildingNo: "12",
-                apartmentNo: "Suite 1200",
-                apartmentType: "Office"
-              },
-              {
-                id: 2,
-                name: "Home Address",
-                street: "789 Oak Lane",
-                colony: "River View",
-                buildingType: "Residential",
-                buildingNo: "7B",
-                apartmentNo: "102",
-                apartmentType: "3BHK"
-              }
-            ]
-          },
-          {
-            id: 3,
-            name: "Robert Garcia",
-            phone: "+1 456 789 012",
-            addresses: [
-              {
-                id: 1,
-                name: "Home Address",
-                street: "101 Pine Street",
-                colony: "Green Valley",
-                buildingType: "Residential",
-                buildingNo: "8",
-                apartmentNo: "204",
-                apartmentType: "1BHK"
-              }
-            ]
-          },
-          {
-            id: 4,
-            name: "Emily Chen",
-            phone: "+1 567 890 123",
-            addresses: [
-              {
-                id: 1,
-                name: "Apartment",
-                street: "202 Maple Road",
-                colony: "Sunset Hills",
-                buildingType: "Residential",
-                buildingNo: "15B",
-                apartmentNo: "502",
-                apartmentType: "Penthouse"
-              }
-            ]
-          }
-        ];
-        localStorage.setItem('complaintCloudUsers', JSON.stringify(initialUsers));
-      }
-      
-      if (!localStorage.getItem('complaintCloudComplaints')) {
-        const initialComplaints = [
-          {
-            id: 1001,
-            customerName: "Sarah Williams",
-            phone: "+1 234 567 890",
-            address: "123 Main St, Green Valley, Building 5, Apt 301 (2BHK)",
-            category: "Electrical",
-            description: "Power outage in living room",
-            skillman: "John Davis (Electrician)",
-            status: "In Progress",
-            date: "2023-05-15"
-          },
-          {
-            id: 1002,
-            customerName: "Michael Brown",
-            phone: "+1 345 678 901",
-            address: "789 Oak Lane, River View, Building 7B, Apt 102 (3BHK)",
-            category: "Plumbing",
-            description: "Kitchen sink leakage",
-            skillman: "Mark Wilson (Plumber)",
-            status: "Resolved",
-            date: "2023-05-10"
-          },
-          {
-            id: 1003,
-            customerName: "Sarah Williams",
-            phone: "+1 234 567 890",
-            address: "123 Main St, Green Valley, Building 5, Apt 301 (2BHK)",
-            category: "Air Conditioner",
-            description: "AC not cooling properly",
-            skillman: "Mike Chen (AC Specialist)",
-            status: "Open",
-            date: "2023-05-18"
-          },
-          {
-            id: 1004,
-            customerName: "Robert Garcia",
-            phone: "+1 456 789 012",
-            address: "101 Pine Street, Green Valley, Building 8, Apt 204 (1BHK)",
-            category: "Electrical",
-            description: "Flickering lights in bedroom",
-            skillman: "John Davis (Electrician)",
-            status: "Open",
-            date: "2023-05-20"
-          },
-          {
-            id: 1005,
-            customerName: "Emily Chen",
-            phone: "+1 567 890 123",
-            address: "202 Maple Road, Sunset Hills, Building 15B, Apt 502 (Penthouse)",
-            category: "Aluminium",
-            description: "Window not closing properly",
-            skillman: "Lisa Thompson (Carpenter)",
-            status: "In Progress",
-            date: "2023-05-22"
-          }
-        ];
-        localStorage.setItem('complaintCloudComplaints', JSON.stringify(initialComplaints));
-      }
-    }
-    
-    const dummyLocations = [
-      {
-        id: 1,
-        name: "Green Valley Heights",
-        colony: "Green Valley",
-        buildingType: "Residential",
-        buildingNo: "GV-12"
-      },
-      {
-        id: 2,
-        name: "Sunset Business Center",
-        colony: "Sunset Hills",
-        buildingType: "Commercial",
-        buildingNo: "SH-05"
-      },
-      {
-        id: 3,
-        name: "River View Apartments",
-        colony: "River View",
-        buildingType: "Residential",
-        buildingNo: "RV-08"
-      },
-      {
-        id: 4,
-        name: "Central Plaza",
-        colony: "Downtown",
-        buildingType: "Mixed Use",
-        buildingNo: "CT-01"
-      },
-      {
-        id: 5,
-        name: "Pine Grove Complex",
-        colony: "North Park",
-        buildingType: "Residential",
-        buildingNo: "PG-23"
-      }
-    ];
-    
-    function getUsers() {
-      return JSON.parse(localStorage.getItem('complaintCloudUsers')) || [];
-    }
-    
-    function saveUsers(users) {
-      localStorage.setItem('complaintCloudUsers', JSON.stringify(users));
-    }
-    
-    function getComplaints() {
-      return JSON.parse(localStorage.getItem('complaintCloudComplaints')) || [];
-    }
-    
-    function saveComplaints(complaints) {
-      localStorage.setItem('complaintCloudComplaints', JSON.stringify(complaints));
-    }
-    
-    function addNewUser(user) {
-      const users = getUsers();
-      const newUser = {
-        id: Date.now(),
-        ...user
-      };
-      users.push(newUser);
-      saveUsers(users);
-      return newUser;
-    }
-    
-    function addNewComplaint(complaint) {
-      const complaints = getComplaints();
-      const newComplaint = {
-        id: Date.now(),
-        ...complaint
-      };
-      complaints.push(newComplaint);
-      saveComplaints(complaints);
-      return newComplaint;
-    }
-    
-    function findUserByPhone(phone) {
-      const users = getUsers();
-      return users.find(user => user.phone === phone);
-    }
-    
-    function findUsersByLocation(location) {
-      const users = getUsers();
-      const searchLower = location.toLowerCase();
-      return users.filter(user => 
-        user.addresses.some(address => 
-          address.colony.toLowerCase() === searchLower
-        )
-      );
-    }
-    
-    function generateAddressHTML(address) {
-      return `
-        <div class="user-address" data-address-id="${address.id}">
-          <h4>${address.name}</h4>
-          <p>${address.street}, ${address.colony}</p>
-          <p>Building ${address.buildingNo}, ${address.apartmentNo} (${address.apartmentType})</p>
-        </div>
-      `;
-    }
-    
-    function generateLocationRows(locations) {
-      return locations.map(location => `
-        <tr data-location-id="${location.id}">
-          <td>${location.name}</td>
-          <td>${location.colony}</td>
-          <td>${location.buildingType}</td>
-          <td>${location.buildingNo}</td>
-        </tr>
-      `).join('');
+
+  // Assign Address Modal Functionality
+  document.addEventListener('DOMContentLoaded', function() {
+    // DOM Elements
+    const addressModal = document.getElementById('addressModal');
+    const assignBtn = document.querySelector('.assign-button');
+    const closeAddressModalBtn = document.getElementById('closeAddressModalBtn');
+    const cancelAddressBtn = document.getElementById('cancelAddressBtn');
+    const saveAddressBtn = document.getElementById('saveAddressBtn');
+    const newBuildingCheckbox = document.getElementById('new-building');
+    const newBuildingForm = document.getElementById('newBuildingForm');
+    const addressTableBody = document.getElementById('address-table-body');
+    const buildingSearch = document.getElementById('building-search');
+    const loadingSpinner = document.getElementById('loading-spinner');
+    const errorMessage = document.getElementById('error-message');
+    const noRecords = document.getElementById('no-records');
+    const houseBuildingNo = document.getElementById('house-building-no');
+    const colonySelect = document.getElementById('colony');
+    const apartmentTypeSelect = document.getElementById('apartment-type');
+    //added
+    const areaSelect = document.getElementById('area');
+    const residentialStatusSelect = document.getElementById('residentialStatus');
+
+
+    // Open modal when Assign button is clicked
+    assignBtn.addEventListener('click', function() {
+      openAddressModal();
+    });
+
+    // Modal state management
+    function openAddressModal() {
+      addressModal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      fetchAddressData();
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
-      initializeLocalStorage();
+    function closeAddressModal() {
+      addressModal.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    // Function to fetch address data
+    function fetchAddressData() {
+      loadingSpinner.style.display = 'block';
+      addressTableBody.innerHTML = '';
+      errorMessage.style.display = 'none';
+      noRecords.style.display = 'none';
       
-      const locationsTableBody = document.getElementById('locations-table-body');
-      if (locationsTableBody) {
-        locationsTableBody.innerHTML = generateLocationRows(dummyLocations);
-      }
-      
-      document.getElementById('new-building-checkbox').addEventListener('change', function() {
-        const isChecked = this.checked;
-        document.getElementById('new-building-form').style.display = 
-          isChecked ? 'block' : 'none';
-        document.getElementById('existing-locations-section').style.display = 
-          isChecked ? 'none' : 'block';
-      });
-      
-      document.addEventListener('click', function(e) {
-        if (e.target.closest('#locations-table-body tr')) {
-          const row = e.target.closest('tr');
-          document.querySelectorAll('#locations-table-body tr').forEach(r => {
-            r.classList.remove('selected');
-          });
-          row.classList.add('selected');
-        }
-      });
-      
-      document.getElementById('find-user-btn').addEventListener('click', function() {
-        const phone = document.getElementById('find-phone').value;
-        if (phone) {
-          const user = findUserByPhone(phone);
-          if (user) {
-            document.getElementById('user-found-details').classList.add('active');
-            document.getElementById('found-user-name').textContent = user.name;
-            document.getElementById('found-user-phone').textContent = user.phone;
-            
-            const userAddresses = document.getElementById('user-addresses');
-            userAddresses.classList.add('active');
-            userAddresses.innerHTML = '<h3>Select an Address</h3>';
-            
-            user.addresses.forEach(address => {
-              userAddresses.innerHTML += generateAddressHTML(address);
-            });
-            
-            document.querySelectorAll('.user-address').forEach(address => {
-              address.addEventListener('click', function() {
-                document.querySelectorAll('.user-address').forEach(a => {
-                  a.classList.remove('selected');
-                });
-                this.classList.add('selected');
-              });
-            });
-            
-            document.getElementById('complaint-form').style.display = 'block';
+      fetch('http://localhost:3000/api/addresses')
+        .then(response => response.json())
+        .then(data => {
+          loadingSpinner.style.display = 'none';
+          if (data && data.length > 0) {
+            renderAddressTable(data);
           } else {
-            document.getElementById('add-user-modal').classList.add('active');
-            document.getElementById('customer-phone').value = phone;
+            noRecords.style.display = 'block';
           }
-        } else {
-          alert('Please enter a phone number');
-        }
-      });
-      
-      document.getElementById('search-method-toggle').addEventListener('change', function() {
-        const isLocationSearch = this.checked;
-        document.querySelector('.phone-search').style.display = isLocationSearch ? 'none' : 'block';
-        document.querySelector('.location-search').style.display = isLocationSearch ? 'block' : 'none';
-      });
-      
-      document.getElementById('find-location-btn').addEventListener('click', function() {
-        const location = document.getElementById('find-location').value;
-        if (location) {
-          const users = findUsersByLocation(location);
-          const userAddresses = document.getElementById('user-addresses');
-          
-          if (users.length > 0) {
-            userAddresses.classList.add('active');
-            userAddresses.innerHTML = '<h3>Select a User</h3>';
-            
-            users.forEach(user => {
-              const userElement = document.createElement('div');
-              userElement.className = 'user-address';
-              userElement.dataset.userId = user.id;
-              userElement.innerHTML = `
-                <h4>${user.name}</h4>
-                <p>${user.phone}</p>
-                <p>${user.addresses[0].colony}</p>
-              `;
-              userAddresses.appendChild(userElement);
-            });
-            
-            document.querySelectorAll('.user-address[data-user-id]').forEach(el => {
-              el.addEventListener('click', function() {
-                const userId = this.dataset.userId;
-                const user = getUsers().find(u => u.id == userId);
-                
-                if (user) {
-                  document.getElementById('user-found-details').classList.add('active');
-                  document.getElementById('found-user-name').textContent = user.name;
-                  document.getElementById('found-user-phone').textContent = user.phone;
-                  
-                  const addressesContainer = document.getElementById('user-addresses');
-                  addressesContainer.innerHTML = '<h3>Select an Address</h3>';
-                  
-                  user.addresses.forEach(address => {
-                    addressesContainer.innerHTML += generateAddressHTML(address);
-                  });
-                  
-                  document.querySelectorAll('.user-address').forEach(address => {
-                    address.addEventListener('click', function() {
-                      document.querySelectorAll('.user-address').forEach(a => {
-                        a.classList.remove('selected');
-                      });
-                      this.classList.add('selected');
-                    });
-                  });
-                  
-                  document.getElementById('complaint-form').style.display = 'block';
-                }
-              });
-            });
-          } else {
-            alert('No users found in this location');
-          }
-        } else {
-          alert('Please enter a location');
-        }
-      });
-      
-      document.getElementById('close-add-user-modal').addEventListener('click', function() {
-        document.getElementById('add-user-modal').classList.remove('active');
-      });
-      
-      document.getElementById('cancel-add-user').addEventListener('click', function() {
-        document.getElementById('add-user-modal').classList.remove('active');
-      });
-      
-      document.getElementById('save-new-user').addEventListener('click', function() {
-        const name = document.getElementById('customer-name').value;
-        const phone = document.getElementById('customer-phone').value;
-        
-        if (!name || !phone) {
-          alert('Please fill in all required fields');
-          return;
-        }
-        
-        let address = null;
-        const isNewBuilding = document.getElementById('new-building-checkbox').checked;
-        
-        if (isNewBuilding) {
-          const colonySelect = document.getElementById('colony-select');
-          const colony = colonySelect.options[colonySelect.selectedIndex].text;
-          const buildingTypeSelect = document.getElementById('building-type');
-          const buildingType = buildingTypeSelect.options[buildingTypeSelect.selectedIndex].text;
-          const buildingNo = document.getElementById('building-no').value;
-          const apartmentNo = document.getElementById('apartment-no').value || '';
-          const apartmentTypeSelect = document.getElementById('apartment-type');
-          const apartmentType = apartmentTypeSelect.value ? 
-            apartmentTypeSelect.options[apartmentTypeSelect.selectedIndex].text : '';
-          
-          address = {
-            id: Date.now(),
-            name: "Primary Address",
-            street: "New Building",
-            colony: colony,
-            buildingType: buildingType,
-            buildingNo: buildingNo,
-            apartmentNo: apartmentNo,
-            apartmentType: apartmentType
-          };
-        } else {
-          const selectedRow = document.querySelector('#locations-table-body tr.selected');
-          if (!selectedRow) {
-            alert('Please select a location from the table');
-            return;
-          }
-          const locationId = parseInt(selectedRow.dataset.locationId);
-          const location = dummyLocations.find(loc => loc.id === locationId);
-          
-          address = {
-            id: Date.now(),
-            name: location.name,
-            street: location.name,
-            colony: location.colony,
-            buildingType: location.buildingType,
-            buildingNo: location.buildingNo,
-            apartmentNo: "",
-            apartmentType: ""
-          };
-        }
-        
-        const newUser = {
-          name,
-          phone,
-          addresses: [address]
-        };
-        
-        const addedUser = addNewUser(newUser);
-        document.getElementById('add-user-modal').classList.remove('active');
-        
-        document.getElementById('user-found-details').classList.add('active');
-        document.getElementById('found-user-name').textContent = addedUser.name;
-        document.getElementById('found-user-phone').textContent = addedUser.phone;
-        
-        const userAddresses = document.getElementById('user-addresses');
-        userAddresses.classList.add('active');
-        userAddresses.innerHTML = '<h3>Select an Address</h3>';
-        userAddresses.innerHTML += generateAddressHTML(addedUser.addresses[0]);
-        
-        document.querySelectorAll('.user-address').forEach(address => {
-          address.addEventListener('click', function() {
-            document.querySelectorAll('.user-address').forEach(a => {
-              a.classList.remove('selected');
-            });
-            this.classList.add('selected');
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          loadingSpinner.style.display = 'none';
+          errorMessage.style.display = 'block';
+          errorMessage.textContent = 'Error loading address data';
+        });
+    }
+
+    // Function to fetch colonies
+    function fetchColonies() {
+      colonySelect.innerHTML = '<option value="">Loading colonies...</option>';
+      fetch('http://localhost:3000/api/colonies')
+        .then(response => response.json())
+        .then(data => {
+          colonySelect.innerHTML = '<option value="">Select Colony</option>';
+          data.forEach(colony => {
+            const option = document.createElement('option');
+            option.value = colony.id;
+            option.textContent = colony.name;
+            colonySelect.appendChild(option);
           });
         });
-        
-        document.getElementById('complaint-form').style.display = 'block';
-      });
+    }
+
+    // Function to fetch apartment types
+    function fetchApartmentTypes() {
+      apartmentTypeSelect.innerHTML = '<option value="">Loading apartment types...</option>';
+      fetch('http://localhost:3000/api/apartment-types')
+        .then(response => response.json())
+        .then(data => {
+          apartmentTypeSelect.innerHTML = '<option value="">Select Apartment Type</option>';
+          data.forEach(type => {
+            const option = document.createElement('option');
+            option.value = type.id;
+            option.textContent = type.name;
+            apartmentTypeSelect.appendChild(option);
+          });
+        });
+    }
+
+    // Function to render address table
+    function renderAddressTable(data) {
+      addressTableBody.innerHTML = '';
+      noRecords.style.display = 'none';
       
-      document.getElementById('launch-complaint-btn').addEventListener('click', function() {
-        const phone = document.getElementById('find-phone').value;
-        const user = findUserByPhone(phone);
+      data.forEach((address, index) => {
+        const row = document.createElement('tr');
+        if (index === 0) row.classList.add('selected');
         
-        if (!user) {
-          alert('User not found');
-          return;
-        }
+        row.innerHTML = `
+          <td>${address.customer || 'N/A'}</td>
+          <td>${address.buildingNo || 'N/A'}</td>
+          <td>${address.colony || 'N/A'}</td>
+          <td>${address.apartment || 'N/A'}</td>
+        `;
         
-        const selectedAddress = document.querySelector('.user-address.selected');
-        if (!selectedAddress) {
-          alert('Please select an address');
-          return;
-        }
+        row.addEventListener('click', function() {
+          document.querySelectorAll('.address-table tbody tr').forEach(r => {
+            r.classList.remove('selected');
+          });
+          this.classList.add('selected');
+        });
         
-        const addressId = selectedAddress.dataset.addressId;
-        const address = user.addresses.find(addr => addr.id == addressId);
-        
-        const addressString = `${address.street}, ${address.colony}, Building ${address.buildingNo}, ${address.apartmentNo} (${address.apartmentType})`;
-        
-        const categorySelect = document.getElementById('category-select');
-        const category = categorySelect.options[categorySelect.selectedIndex].text;
-        
-        const skillmanSelect = document.getElementById('skillman-select');
-        const skillman = skillmanSelect.options[skillmanSelect.selectedIndex].text;
-        
-        const description = document.getElementById('category-description').value;
-        const poc = document.getElementById('poc').value;
-        
-        if (!category || !skillman || !poc) {
-          alert('Please fill in all required fields');
-          return;
-        }
-        
-        const complaint = {
-          customerName: user.name,
-          phone: user.phone,
-          address: addressString,
-          category: category,
-          description: description,
-          skillman: skillman,
-          status: 'Open',
-          date: new Date().toLocaleDateString()
-        };
-        
-        const newComplaint = addNewComplaint(complaint);
-        
-        alert(`Complaint #${newComplaint.id} launched successfully!`);
-        
-        document.getElementById('find-phone').value = '';
-        document.getElementById('find-location').value = '';
-        document.getElementById('user-found-details').classList.remove('active');
-        document.getElementById('user-addresses').classList.remove('active');
-        document.getElementById('user-addresses').innerHTML = '';
-        document.getElementById('complaint-form').style.display = 'none';
-        document.getElementById('category-select').value = '';
-        document.getElementById('category-description').value = '';
-        document.getElementById('skillman-select').value = '';
-        document.getElementById('poc').value = '';
+        addressTableBody.appendChild(row);
       });
-      
-      document.getElementById('find-building-btn').addEventListener('click', function() {
-        const searchTerm = document.getElementById('building-search').value.toLowerCase();
-        if (!searchTerm) {
-          locationsTableBody.innerHTML = generateLocationRows(dummyLocations);
-          return;
-        }
-        
-        const filteredLocations = dummyLocations.filter(location => 
-          location.name.toLowerCase().includes(searchTerm) ||
-          location.colony.toLowerCase().includes(searchTerm) ||
-          location.buildingType.toLowerCase().includes(searchTerm) ||
-          location.buildingNo.toLowerCase().includes(searchTerm)
-        );
-        
-        locationsTableBody.innerHTML = generateLocationRows(filteredLocations);
-      });
+    }
+
+    // New Building checkbox
+    newBuildingCheckbox.addEventListener('change', function() {
+      if (this.checked) {
+        newBuildingForm.classList.add('active');
+        addressTableContainer.style.display = 'none';
+        fetchColonies();
+        fetchApartmentTypes();
+      } else {
+        newBuildingForm.classList.remove('active');
+        addressTableContainer.style.display = 'block';
+      }
     });
-  </script>
+
+    // Close modal when clicking outside
+    addressModal.addEventListener('click', function(e) {
+      if (e.target === addressModal) {
+        closeAddressModal();
+      }
+    });
+
+    // Close modal buttons
+    closeAddressModalBtn.addEventListener('click', closeAddressModal);
+    cancelAddressBtn.addEventListener('click', closeAddressModal);
+
+    // Save button
+// Save button functionality
+saveAddressBtn.addEventListener('click', async function () {
+  // Get customer info from search field
+  const customerInfo = getCustomerInfo();
+  
+  if (!customerInfo) {
+    alert('Please search for a customer first');
+    return;
+  }
+
+  if (newBuildingCheckbox.checked) {
+    // Handle new building case
+    const buildingNo = houseBuildingNo.value.trim();
+    const colony = colonySelect.value;
+    const apartmentType = apartmentTypeSelect.value;
+    const area = areaSelect.value;
+    const residentialStatus = residentialStatusSelect.value;
+
+    // Validate all required fields
+    if (!buildingNo || !colony || !apartmentType || !area || !residentialStatus) {
+      alert('Please fill in all new building fields');
+      return;
+    }
+
+    // Prepare payload for new building
+    const payload = {
+      customer: customerInfo,
+      type: 'new',
+      buildingNo,
+      colony,
+      apartmentType,
+      area,
+      residentialStatus
+    };
+
+    try {
+      // Send data to backend
+      const response = await fetch('http://localhost:3000/api/assign-location', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to assign location');
+      }
+
+      const data = await response.json();
+      console.log('API Response:', data); // Add this for debugging
+
+      // Populate location dropdown with response
+      if (data.locations && data.locations.length > 0) {
+        populateLocationSelect(data.locations);
+      } else {
+        alert('No locations returned from server');
+      }
+      
+      closeAddressModal();
+    } catch (err) {
+      console.error('Failed to assign new building:', err);
+      alert('Error assigning new building. Please try again.');
+    }
+
+  } else {
+    // Handle existing address selection
+    const selectedRow = document.querySelector('.address-table tbody tr.selected');
+    
+    if (!selectedRow) {
+      alert('Please select an address from the table');
+      return;
+    }
+
+    // Prepare payload for existing address
+    const payload = {
+      customer: customerInfo,
+      type: 'existing',
+      buildingNo: selectedRow.cells[1].textContent.trim(),
+      colony: selectedRow.cells[2].textContent.trim(),
+      apartment: selectedRow.cells[3].textContent.trim()
+    };
+
+    try {
+      // Send data to backend
+      const response = await fetch('http://localhost:3000/api/assign-location', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to assign location');
+      }
+
+      const data = await response.json();
+      console.log('API Response:', data); // Add this for debugging
+
+      // Populate location dropdown with response
+      if (data.locations && data.locations.length > 0) {
+        populateLocationSelect(data.locations);
+      } else {
+        alert('No locations returned from server');
+      }
+      
+      closeAddressModal();
+    } catch (err) {
+      console.error('Failed to assign existing address:', err);
+      alert('Error assigning address. Please try again.');
+    }
+  }
+});
+
+// Helper function to get customer info from search field
+function getCustomerInfo() {
+  const searchInput = document.getElementById('customer-search');
+  return searchInput.value.trim();
+}
+
+// Helper function to populate location dropdown
+function populateLocationSelect(locations) {
+  const locationSelect = document.getElementById('location');
+  locationSelect.innerHTML = '<option value="">Select Location</option>';
+  
+  locations.forEach(loc => {
+    const option = document.createElement('option');
+    option.value = loc.id;
+    // Use loc.label if it exists, otherwise fall back to buildingNo and colony
+    option.textContent = loc.label || `${loc.buildingNo || ''}, ${loc.colony || ''}`.trim();
+    locationSelect.appendChild(option);
+  });
+  
+  locationSelect.disabled = false;
+  
+  // Also enable the assign button if it was disabled
+  const assignButton = document.querySelector('.assign-button');
+  if (assignButton) {
+    assignButton.disabled = false;
+  }
+}
+
+
+// Category and Category Type Combobox Population
+const categorySelect = document.getElementById('category');
+const categoryTypeSelect = document.getElementById('category-type');
+
+// Fetch categories from API
+async function fetchCategories() {
+    try {
+        const response = await fetch('http://localhost:3000/api/categories');
+        if (!response.ok) {
+            throw new Error('Failed to fetch categories');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching categories:', error);
+        return [];
+    }
+}
+
+// Fetch category types based on selected category ID
+async function fetchCategoryTypes(categoryId) {
+    try {
+        const response = await fetch(`http://localhost:3000/api/categories/${categoryId}/types`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch category types');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching category types:', error);
+        return [];
+    }
+}
+
+// Populate category dropdown
+async function populateCategories() {
+    categorySelect.innerHTML = '<option value="">Loading categories...</option>';
+    
+    try {
+        const categories = await fetchCategories();
+        categorySelect.innerHTML = '<option value="">Select Category</option>';
+        
+        categories.forEach(category => {
+            const option = document.createElement('option');
+            option.value = category.id; // This is the row number from ROW_NUMBER()
+            option.textContent = category.name; // This is "subdivision->nature" format
+            categorySelect.appendChild(option);
+        });
+    } catch (error) {
+        categorySelect.innerHTML = '<option value="">Error loading categories</option>';
+        console.error('Error populating categories:', error);
+    }
+}
+
+// Populate category types dropdown based on selected category
+async function populateCategoryTypes(categoryId) {
+    categoryTypeSelect.innerHTML = '<option value="">Loading types...</option>';
+    categoryTypeSelect.disabled = true;
+    
+    if (!categoryId) {
+        categoryTypeSelect.innerHTML = '<option value="">Select Type</option>';
+        return;
+    }
+    
+    try {
+        const categoryTypes = await fetchCategoryTypes(categoryId);
+        categoryTypeSelect.innerHTML = '<option value="">Select Type</option>';
+        
+        categoryTypes.forEach(type => {
+            const option = document.createElement('option');
+            option.value = type.id;
+            option.textContent = type.name;
+            categoryTypeSelect.appendChild(option);
+        });
+        
+        categoryTypeSelect.disabled = false;
+    } catch (error) {
+        categoryTypeSelect.innerHTML = '<option value="">Error loading types</option>';
+        console.error('Error populating category types:', error);
+    }
+}
+
+// Event listener for category selection change
+categorySelect.addEventListener('change', function() {
+    populateCategoryTypes(this.value);
+});
+
+// Initialize categories when page loads
+populateCategories();
+
+// Disable category type select initially
+categoryTypeSelect.disabled = true;
+
+
+
+
+
+    
+  });
+
+
+
+
+  // Modal functionality with API integration
+  document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('customerModal');
+    const closeBtn = document.getElementById('closeModalBtn');
+    const cancelBtn = document.getElementById('cancelModalBtn');
+    const saveBtn = document.getElementById('saveCustomerBtn');
+    const findBtn = document.querySelector('.search-button');
+    
+    const customerName = document.getElementById('customer-name');
+    const customerEmail = document.getElementById('customer-email');
+    const customerPhone = document.getElementById('customer-phone');
+    const customerSearch = document.getElementById('customer-search'); // Search input
+    
+    const nameError = document.getElementById('name-error');
+    const emailError = document.getElementById('email-error');
+    const phoneError = document.getElementById('phone-error');
+
+    // Open modal when Find button is clicked
+// Open modal when Find button is clicked
+findBtn.addEventListener('click', async function () {
+  const searchTerm = customerSearch.value.trim();
+  const locationSelect = document.getElementById('location');
+  const assignButton = document.querySelector('.assign-button');
+  const userStatus = document.getElementById('user-status');
+
+  if (!searchTerm) {
+    alert('Please enter a name or phone number.');
+    return;
+  }
+
+  // Clear previous UI state
+  userStatus.textContent = '';
+  locationSelect.innerHTML = '<option value="">Select Location</option>';
+  locationSelect.disabled = true;
+  assignButton.disabled = true;
+
+  try {
+    const response = await fetch(`http://localhost:3000/api/customers/search?q=${encodeURIComponent(searchTerm)}`);
+    
+    if (!response.ok) {
+      throw new Error('Failed to search customer');
+    }
+
+    const result = await response.json();
+    console.log('Search result:', result); // For debugging
+
+    if (result && result.exists) {
+      // ✅ User exists
+      userStatus.textContent = '✅ User found';
+      userStatus.style.color = 'green';
+
+      // Populate location dropdown
+      if (result.locations && result.locations.length > 0) {
+        populateLocationSelect(result.locations);
+      } else {
+        locationSelect.innerHTML = '<option value="">No locations found</option>';
+      }
+
+      // Enable location and assign button
+      locationSelect.disabled = false;
+      assignButton.disabled = false;
+    } else {
+      // ❌ User not found - open modal
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+  } catch (error) {
+    console.error('Search error:', error);
+    userStatus.textContent = '❌ Error searching user';
+    userStatus.style.color = 'red';
+    locationSelect.innerHTML = '<option value="">Error loading locations</option>';
+  }
+});
+
+
+    // API functions
+    async function saveCustomer(customerData) {
+      try {
+        // Replace with your actual API endpoint
+        const response = await fetch('http://localhost:3000/api/customers', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(customerData)
+        });
+
+        const result = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(result.message || 'Failed to save customer');
+        }
+        
+        return result;
+      } catch (error) {
+        console.error('Error:', error);
+        throw error;
+      }
+    }
+
+    async function searchCustomer(searchTerm) {
+      try {
+        // Replace with your actual search endpoint
+        const response = await fetch(`http://localhost:3000/api/customers/search?q=${encodeURIComponent(searchTerm)}`);
+        
+        if (!response.ok) {
+          throw new Error('Search failed');
+        }
+        
+        return await response.json();
+      } catch (error) {
+        console.error('Search error:', error);
+        throw error;
+      }
+    }
+
+    // Save customer with API call
+    saveBtn.addEventListener('click', async function() {
+      if (!validateForm()) return;
+      
+      const customerData = {
+        name: customerName.value.trim(),
+        email: customerEmail.value.trim(),
+        phone: customerPhone.value.trim()
+      };
+      
+      // Show loading state
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+      
+      try {
+        const result = await saveCustomer(customerData);
+        alert(result.message || 'Customer saved successfully!');
+        
+        // Update the search field with the new customer's info
+        customerSearch.value = customerData.name;
+        
+        closeModal();
+      } catch (error) {
+        alert(error.message || 'Failed to save customer. Please try again.');
+      } finally {
+        // Reset button state
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save Customer';
+      }
+    });
+
+    // (Rest of your existing modal functions remain the same)
+    function closeModal() {
+      modal.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    function resetForm() {
+      customerName.value = '';
+      customerEmail.value = '';
+      customerPhone.value = '';
+      hideAllErrors();
+    }
+    
+    function hideAllErrors() {
+      nameError.style.display = 'none';
+      emailError.style.display = 'none';
+      phoneError.style.display = 'none';
+    }
+    
+    function validateForm() {
+      let isValid = true;
+      hideAllErrors();
+      
+      if (!customerName.value.trim()) {
+        nameError.style.display = 'block';
+        isValid = false;
+      }
+      
+      if (customerEmail.value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail.value)) {
+        emailError.style.display = 'block';
+        isValid = false;
+      }
+      
+      if (!customerPhone.value.trim()) {
+        phoneError.textContent = 'Please enter phone number';
+        phoneError.style.display = 'block';
+        isValid = false;
+      } else if (!/^[0-9+\- ]+$/.test(customerPhone.value)) {
+        phoneError.textContent = 'Please enter a valid phone number';
+        phoneError.style.display = 'block';
+        isValid = false;
+      }
+      
+      return isValid;
+    }
+
+    // (Rest of your existing event listeners remain the same)
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) {
+        closeModal();
+      }
+    });
+
+    closeBtn.addEventListener('click', closeModal);
+    cancelBtn.addEventListener('click', closeModal);
+
+    customerName.addEventListener('blur', validateName);
+    customerEmail.addEventListener('blur', validateEmail);
+    customerPhone.addEventListener('blur', validatePhone);
+
+    function validateName() {
+      if (!customerName.value.trim()) {
+        nameError.style.display = 'block';
+      } else {
+        nameError.style.display = 'none';
+      }
+    }
+    
+    function validateEmail() {
+      if (customerEmail.value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail.value)) {
+        emailError.style.display = 'block';
+      } else {
+        emailError.style.display = 'none';
+      }
+    }
+    
+    function validatePhone() {
+      if (!customerPhone.value.trim()) {
+        phoneError.textContent = 'Please enter phone number';
+        phoneError.style.display = 'block';
+      } else if (!/^[0-9+\- ]+$/.test(customerPhone.value)) {
+        phoneError.textContent = 'Please enter a valid phone number';
+        phoneError.style.display = 'block';
+      } else {
+        phoneError.style.display = 'none';
+      }
+    }
+  });
+
+
+
+function getCustomerInfo() {
+  const searchInput = document.getElementById('customer-search');
+  const searchValue = searchInput.value.trim();
+  return searchValue;
+}
+
+
+function populateLocationSelect(locations) {
+  const locationSelect = document.getElementById('location');
+  locationSelect.innerHTML = '<option value="">Select Location</option>';
+  locations.forEach(loc => {
+    const option = document.createElement('option');
+    option.value = loc.id;
+    option.textContent = loc.name;
+    locationSelect.appendChild(option);
+  });
+  locationSelect.disabled = false;
+}
+
+function populateLocationSelect(locations) {
+  const locationSelect = document.getElementById('location');
+  locationSelect.innerHTML = '<option value="">Select Location</option>';
+  
+  if (!locations || !Array.isArray(locations)) {
+    console.error('Invalid locations data:', locations);
+    locationSelect.innerHTML = '<option value="">Error loading locations</option>';
+    return;
+  }
+
+  locations.forEach(loc => {
+    const option = document.createElement('option');
+    option.value = loc.id;
+    
+    // Use the label if provided, otherwise construct from available data
+    if (loc.label) {
+      option.textContent = loc.label;
+    } else if (loc.buildingNo && loc.colony) {
+      option.textContent = `${loc.buildingNo}, ${loc.colony}`;
+    } else {
+      option.textContent = `Location ID: ${loc.id}`;
+    }
+    
+    locationSelect.appendChild(option);
+  });
+  
+  locationSelect.disabled = false;
+  
+  // Enable assign button if it exists
+  const assignButton = document.querySelector('.assign-button');
+  if (assignButton) {
+    assignButton.disabled = false;
+  }
+}
+
+
+
+
+
+</script>
+
 </body>
 </html>
