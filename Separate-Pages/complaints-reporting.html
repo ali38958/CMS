@@ -324,15 +324,16 @@
       color: var(--dark);
     }
     
-    .form-control {
-      width: 100%;
-      padding: 14px 18px;
-      border-radius: var(--border-radius);
-      border: 1px solid rgba(0,0,0,0.1);
-      background: rgba(248, 249, 250, 0.5);
-      font-size: 16px;
-      transition: all 0.3s;
-    }
+  .form-control {
+  width: 100%;
+  
+  border-radius: var(--border-radius);
+  border: 1px solid rgba(0,0,0,0.1);
+  background: #f8f9fa; /* Changed to solid color */
+  color: #212529; /* Added text color */
+  font-size: px;
+  transition: all 0.3s;
+}
     
     .form-control:focus {
       outline: none;
@@ -573,16 +574,6 @@
     
     tr:nth-child(even) {
       background-color: #f9f9f9;
-    }
-    
-    /* Chart container */
-    .chart-container {
-      margin-top: 30px;
-      height: 300px;
-      background: white;
-      border-radius: var(--border-radius);
-      padding: 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     }
     
     /* Report Visualization */
@@ -1198,6 +1189,16 @@
                       <td>28%</td>
                     </tr>
                     <tr>
+                      <td>Urgent</td>
+                      <td>158</td>
+                      <td>28%</td>
+                    </tr>
+                    <tr>
+                      <td>Urgent</td>
+                      <td>158</td>
+                      <td>28%</td>
+                    </tr>
+                    <tr>
                       <td>Major</td>
                       <td>202</td>
                       <td>36%</td>
@@ -1253,9 +1254,7 @@
               </div>
             </div>
             
-            <div class="chart-container">
-              <canvas id="complaintsChart"></canvas>
-            </div>
+            
           </div>
         </div>
       </div>
@@ -1338,69 +1337,6 @@
       // Initialize the first radio as selected
       document.querySelector('.radio-item').classList.add('selected'); 
       
-      // Create a simple bar chart using canvas
-      const canvas = document.getElementById('complaintsChart');
-      if (canvas) {
-        const ctx = canvas.getContext('2d'); 
-        // Set canvas dimensions
-        canvas.width = canvas.offsetWidth;
-        canvas.height = canvas.offsetHeight;
-        // Chart data
-        const data = {
-          labels: ['Electrical', 'Plumbing', 'HVAC', 'Carpentry', 'Other'],
-          values: [52, 40, 23, 15, 20],
-          colors: ['#881c1c', '#a33a3a', '#bd5858', '#d77676', '#f19494']
-        };
-        // Draw the chart
-        const maxValue = Math.max(...data.values);
-        const barWidth = (canvas.width - 100) / data.labels.length;
-        const scale = (canvas.height - 80) / maxValue;
-        // Draw bars
-        for (let i = 0; i < data.labels.length; i++) {
-          const barHeight = data.values[i] * scale;
-          const x = 50 + i * barWidth;
-          const y = canvas.height - 30 - barHeight;
-          // Draw bar
-          ctx.fillStyle = data.colors[i];
-          ctx.fillRect(x, y, barWidth - 20, barHeight);
-          // Draw label
-          ctx.fillStyle = '#555';
-          ctx.font = '14px Arial';
-          ctx.textAlign = 'center';
-          ctx.fillText(data.labels[i], x + (barWidth - 20) / 2, canvas.height - 10);
-          // Draw value
-          ctx.fillStyle = '#fff';
-          ctx.font = 'bold 14px Arial';
-          ctx.textAlign = 'center';
-          ctx.fillText(data.values[i], x + (barWidth - 20) / 2, y + 20);
-        }
-        // Draw axis
-        ctx.strokeStyle = '#ccc';
-        ctx.lineWidth = 1;
-        // Y-axis
-        ctx.beginPath();
-        ctx.moveTo(40, 30);
-        ctx.lineTo(40, canvas.height - 30);
-        ctx.stroke();
-        // X-axis
-        ctx.beginPath();
-        ctx.moveTo(40, canvas.height - 30);
-        ctx.lineTo(canvas.width - 20, canvas.height - 30);
-        ctx.stroke();
-        // Draw Y-axis labels
-        ctx.fillStyle = '#777';
-        ctx.font = '12px Arial';
-        ctx.textAlign = 'right';
-        for (let i = 0; i <= 5; i++) {
-          const value = i * (maxValue / 5);
-          const y = canvas.height - 30 - value * scale;
-          ctx.beginPath();
-          ctx.moveTo(35, y);
-          ctx.lineTo(40, y);
-          ctx.stroke();
-          ctx.fillText(Math.round(value), 35, y + 4);
-        } 
-      }
       
       // Generate summary report button
       document.getElementById('generate-summary').addEventListener('click', function() {
