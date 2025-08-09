@@ -1,5 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
+  <script>  
+    setTimeout(() => {
+      console.log("2 seconds later...");
+    }, 2000); // 2000 milliseconds = 2 seconds
+    
+    // Variables to store user data
+    let complaintReceiverName = '';
+    let complaintReceiverId = null;
+
+    async function verifyAuthToken() {
+      const authToken = localStorage.getItem('authToken');
+      
+      if (!authToken) {
+        console.log('No authToken found in localStorage');
+        alert('Authentication failed: No token found');
+        window.location.href = 'login.html';
+        return;
+      }
+
+      try {
+        console.log('Attempting to verify authToken...');
+        
+        const response = await fetch('http://localhost:3000/verify-token-get-receiver', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('API Response:', data);
+
+        if (data.success) {
+          console.log('Token verification successful for user:', data.user.name);
+          
+          // Store user data in localStorage
+          localStorage.setItem('currentUser', JSON.stringify(data.user));
+          
+          // Store user ID in variable
+          complaintReceiverId = data.user.id;
+          console.log('Current user ID:', complaintReceiverId);
+          
+          // Store receiver name
+          complaintReceiverName = data.receiver?.name || 'Unknown';
+          console.log('Complaint receiver name:', complaintReceiverName);
+          
+        } else {
+          console.log('Token verification failed:', data.message || 'No error message provided');
+          alert('Authentication failed: ' + (data.message || 'Invalid token'));
+          window.location.href = 'login.html';
+        }
+      } catch (error) {
+        console.error('Error during token verification:', error);
+        alert('Authentication failed: ' + error.message);
+        window.location.href = 'login.html';
+      }
+    }
+
+    // Call the function when the page loads
+    document.addEventListener('DOMContentLoaded', verifyAuthToken);
+  </script>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -11,11 +77,14 @@
       padding: 0;
       box-sizing: border-box;
       font-family: Arial, sans-serif;
+      box-sizing: border-box;
     }
 
     body {
       background-color: #eef2f5;
       padding-bottom: 40px;
+      overflow-x: hidden;
+
     }
 
     /* Header Styles */
@@ -825,11 +894,377 @@ label {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+
+
+
+    /* Color Variables */
+    :root {
+      --primary: #8c1c1c;
+      --primary-light: #a83232;
+      --secondary: #6c757d;
+      --light: #f8f9fa;
+      --dark: #212529;
+      --gray: #e9ecef;
+      --border: #ced4da;
+      --error: #dc3545;
+    }
+
+    /* Modal Styles */
+    .skillman-modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .skillman-modal-backdrop.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .skillman-modal-container {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+      width: 95%;
+      max-width: 600px;
+      height: 700px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transform: translateY(-20px);
+      transition: transform 0.3s ease;
+    }
+
+    .skillman-modal-backdrop.active .skillman-modal-container {
+      transform: translateY(0);
+    }
+
+    /* Modal Header */
+    .skillman-modal-header {
+      padding: 16px 20px;
+      background-color: var(--primary);
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .skillman-modal-header h3 {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 22px;
+      cursor: pointer;
+      padding: 2px;
+      line-height: 1;
+    }
+
+    /* Modal Body */
+    .skillman-modal-body {
+      padding: 20px;
+      overflow-y: visible;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Priority Section - Original Radio Buttons */
+    .priority-section {
+      margin-bottom: 24px;
+    }
+
+    .priority-section label {
+      display: block;
+      margin-bottom: 3px;
+      font-weight: 600;
+      color: var(--dark);
+      font-size: 14px;
+    }
+
+    .priority-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 30px;
+      margin-top: 15px;
+    }
+
+    .priority-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .priority-option input[type="radio"] {
+      accent-color: var(--primary);
+    }
+
+    #priority-label {
+      font-size: 15px;
+      font-weight: bold;
+      color: var(--primary);
+    }
+
+    /* Dropdown Styles */
+    .dropdown {
+      position: relative;
+      margin-bottom: 20px;
+    }
+
+    .dropdown-toggle {
+      width: 100%;
+      padding: 12px 15px;
+      background-color: white;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: border-color 0.2s;
+    }
+
+    .dropdown-toggle:hover {
+      border-color: var(--primary);
+    }
+
+    .dropdown-toggle i {
+      transition: transform 0.2s;
+    }
+
+    .dropdown-toggle.active i {
+      transform: rotate(180deg);
+    }
+
+    .dropdown-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      width: 100%;
+      max-height: 300px;
+      background-color: white;
+      border: 1px solid var(--border);
+      border-radius: 0 0 6px 6px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      z-index: 10;
+      display: none;
+      margin-top: -1px;
+      overflow: hidden;
+    }
+
+    .dropdown-menu.active {
+      display: block;
+    }
+
+    .dropdown-search {
+      padding: 10px 15px;
+      border-bottom: 1px solid var(--gray);
+      position: sticky;
+      top: 0;
+      background: white;
+      z-index: 11;
+    }
+
+    .dropdown-search input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+    }
+
+    .dropdown-search input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .dropdown-items {
+      max-height: 250px;
+      overflow-y: auto;
+    }
+
+    .dropdown-item {
+      padding: 10px 15px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .dropdown-item:hover {
+      background-color: var(--gray);
+    }
+
+    .dropdown-item.selected {
+      background-color: rgba(140, 28, 28, 0.1);
+    }
+
+    .skillman-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .skillman-name {
+      font-weight: 600;
+    }
+
+    .skillman-details {
+      display: flex;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--secondary);
+    }
+
+    /* Helper Skillman Section */
+    .helper-section {
+      margin-top: 30px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .helper-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .helper-header label {
+      font-weight: 600;
+      color: var(--dark);
+    }
+
+    .helper-tag-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      min-height: 50px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background-color: white;
+    }
+
+    .helper-tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 12px;
+      background-color: var(--gray);
+      border-radius: 16px;
+      font-size: 14px;
+      height: fit-content;
+    }
+
+    .helper-tag button {
+      background: none;
+      border: none;
+      margin-left: 6px;
+      color: var(--secondary);
+      cursor: pointer;
+      padding: 0;
+      line-height: 1;
+    }
+
+    .helper-tag button:hover {
+      color: var(--error);
+    }
+
+    .empty-helpers {
+      color: var(--secondary);
+      font-style: italic;
+    }
+
+    /* Modal Footer */
+    .modal-footer {
+      padding: 16px 20px;
+      background-color: #f8f9fa;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    /* Buttons */
+    .btn {
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-outline {
+      background-color: transparent;
+      border: 1px solid var(--secondary);
+      color: var(--secondary);
+    }
+
+    .btn-outline:hover {
+      background-color: #f0f0f0;
+    }
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: white;
+      border: 1px solid var(--primary);
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-light);
+    }
+
+    #primarySkillmanText, #helperSkillmanText {
+      color: rgb(172, 172, 172);
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .priority-options {
+        flex-direction: column;
+        gap: 10px;
+      }
+      
+      .skillman-modal-body {
+        padding: 16px;
+      }
+      
+      .skillman-details {
+        flex-direction: column;
+        gap: 2px;
+      }
+      
+      .modal-container {
+        height: 90vh;
+      }
+    }
+
+    .line {
+      background-color: rgb(202, 202, 202); 
+      height: 1px; 
+      margin-top:20px;
+      margin-bottom:10px;
+    }
+
   </style>
 </head>
 <body>
-
-  
   <!-- ===== NEW MODAL HTML ===== -->
   <div class="modal-backdrop" id="customerModal">
     <div class="modal-container">
@@ -959,7 +1394,100 @@ label {
       </div>
     </div>
   </div>
+
+
+
+
+
   
+<!-- Modal Structure -->
+<div class="skillman-modal-backdrop" id="modalBackdrop">
+  <div class="skillman-modal-container">
+    <!-- Modal Header -->
+    <div class="skillman-modal-header">
+      <h3><i class="fas fa-user-cog"></i> Assign Skillman to Complaint</h3>
+      <button class="close-btn" id="closeBtn">&times;</button>
+    </div>
+    
+    <!-- Modal Body -->
+    <div class="skillman-modal-body">
+      <!-- Priority Section with Original Radio Buttons -->
+      <div class="priority-section">
+        <label id="priority-label">Priority</label>
+        <div class="priority-options">
+          <div class="priority-option">
+            <input type="radio" id="immediate" name="priority" value="immediate" checked>
+            <label for="immediate">Immediate (2Hrs)</label>
+          </div>
+          <div class="priority-option">
+            <input type="radio" id="urgent" name="priority" value="urgent">
+            <label for="urgent">Urgent (6Hrs)</label>
+          </div>
+          <div class="priority-option">
+            <input type="radio" id="routine" name="priority" value="routine">
+            <label for="routine">Routine (24Hrs)</label>
+          </div>
+          <div class="priority-option">
+            <input type="radio" id="deferred" name="priority" value="deferred">
+            <label for="deferred">Deferred</label>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Primary Skillman Dropdown -->
+      <div class="dropdown" id="primarySkillmanDropdown">
+        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: black">Primary Skillman</label>
+        <button class="dropdown-toggle" id="primarySkillmanToggle">
+          <span id="primarySkillmanText" >Select a skillman</span>
+          <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="dropdown-menu" id="primarySkillmanMenu">
+          <div class="dropdown-search">
+            <input type="text" placeholder="Search skillman..." id="primarySkillmanSearch">
+          </div>
+          <div class="dropdown-items" id="primarySkillmanItems">
+            <!-- Items will be populated by JavaScript -->
+          </div>
+        </div>
+      </div>
+      
+      <!-- Helper Skillman Section -->
+      <div class="helper-section">
+        <div class="helper-header">
+          <label>Helper Skillman</label>
+          <small>Add multiple if needed</small>
+        </div>
+        
+        <div class="dropdown" id="helperSkillmanDropdown">
+          <button class="dropdown-toggle" id="helperSkillmanToggle">
+            <span id="helperSkillmanText" >Add helper skillman</span>
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="dropdown-menu" id="helperSkillmanMenu">
+            <div class="dropdown-search">
+              <input type="text" placeholder="Search helper..." id="helperSkillmanSearch">
+            </div>
+            <div class="dropdown-items" id="helperSkillmanItems">
+              <!-- Items will be populated by JavaScript -->
+            </div>
+          </div>
+        </div>
+        
+        <div class="helper-tag-container" id="helperTags">
+          <div class="empty-helpers">No helpers added yet</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Modal Footer -->
+    <div class="modal-footer">
+      <button class="btn btn-outline" id="cancelBtn">Cancel</button>
+      <button class="btn btn-primary" id="assignBtn">Assign Skillman</button>
+    </div>
+  </div>
+</div>
+  
+
 
   <!--Header Section-->
   <header>
@@ -1082,17 +1610,23 @@ label {
               <input type="text" id="skillman" disabled>
             </div>
             <div class="form-group" style="align-self: flex-end">
-              <button type="button" class="select-button">Select</button>
+              <button type="button" class="select-button" id="select-button">Select</button>
             </div>
           </div>
-          
-          <button type="submit" class="launch-button">Launch Complaint</button>
+          <div class="line"></div>
+          <button type="submit" class="launch-button"">
+            <i class="fas fa-rocket"></i> | Launch Complaint</button>
         </form>
       </div>
     </div>
   </div>
 
   <script>
+
+
+    const SERVER_URL = 'http://localhost:3000';
+    let currentAddressData = [];
+    let customerId = null; // To store the selected customer ID
 
   // Assign Address Modal Functionality
   document.addEventListener('DOMContentLoaded', function() {
@@ -1135,34 +1669,54 @@ label {
     }
 
     // Function to fetch address data
-    function fetchAddressData() {
-      loadingSpinner.style.display = 'block';
-      addressTableBody.innerHTML = '';
-      errorMessage.style.display = 'none';
-      noRecords.style.display = 'none';
-      
-      fetch('http://localhost:3000/api/addresses')
-        .then(response => response.json())
-        .then(data => {
-          loadingSpinner.style.display = 'none';
-          if (data && data.length > 0) {
-            renderAddressTable(data);
-          } else {
-            noRecords.style.display = 'block';
-          }
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          loadingSpinner.style.display = 'none';
-          errorMessage.style.display = 'block';
-          errorMessage.textContent = 'Error loading address data';
-        });
-    }
+function fetchAddressData() {
+  loadingSpinner.style.display = 'block';
+  addressTableBody.innerHTML = '';
+  errorMessage.style.display = 'none';
+  noRecords.style.display = 'none';
+  
+  fetch(SERVER_URL+'/api/addresses')
+    .then(response => response.json())
+    .then(data => {
+      loadingSpinner.style.display = 'none';
+      currentAddressData = data; // Store the data for searching
+      if (data && data.length > 0) {
+        renderAddressTable(data);
+      } else {
+        noRecords.style.display = 'block';
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      loadingSpinner.style.display = 'none';
+      errorMessage.style.display = 'block';
+      errorMessage.textContent = 'Error loading address data';
+    });
+}
+
+// Add this after your other event listeners in the address modal section
+buildingSearch.addEventListener('input', function() {
+  const searchTerm = this.value.trim().toLowerCase();
+  
+  if (searchTerm === '') {
+    // If search is empty, show all data
+    renderAddressTable(currentAddressData);
+    return;
+  }
+  
+  // Filter addresses where building number includes the search term
+  const filteredData = currentAddressData.filter(address => {
+    const buildingNo = address.buildingNo ? address.buildingNo.toLowerCase() : '';
+    return buildingNo.includes(searchTerm);
+  });
+  
+  renderAddressTable(filteredData);
+});
 
     // Function to fetch colonies
     function fetchColonies() {
       colonySelect.innerHTML = '<option value="">Loading colonies...</option>';
-      fetch('http://localhost:3000/api/colonies')
+      fetch(SERVER_URL+'/api/colonies')
         .then(response => response.json())
         .then(data => {
           colonySelect.innerHTML = '<option value="">Select Colony</option>';
@@ -1178,7 +1732,7 @@ label {
     // Function to fetch apartment types
     function fetchApartmentTypes() {
       apartmentTypeSelect.innerHTML = '<option value="">Loading apartment types...</option>';
-      fetch('http://localhost:3000/api/apartment-types')
+      fetch(SERVER_URL+'/api/apartment-types')
         .then(response => response.json())
         .then(data => {
           apartmentTypeSelect.innerHTML = '<option value="">Select Apartment Type</option>';
@@ -1192,31 +1746,37 @@ label {
     }
 
     // Function to render address table
-    function renderAddressTable(data) {
-      addressTableBody.innerHTML = '';
-      noRecords.style.display = 'none';
-      
-      data.forEach((address, index) => {
-        const row = document.createElement('tr');
-        if (index === 0) row.classList.add('selected');
-        
-        row.innerHTML = `
-          <td>${address.customer || 'N/A'}</td>
-          <td>${address.buildingNo || 'N/A'}</td>
-          <td>${address.colony || 'N/A'}</td>
-          <td>${address.apartment || 'N/A'}</td>
-        `;
-        
-        row.addEventListener('click', function() {
-          document.querySelectorAll('.address-table tbody tr').forEach(r => {
-            r.classList.remove('selected');
-          });
-          this.classList.add('selected');
-        });
-        
-        addressTableBody.appendChild(row);
+function renderAddressTable(data) {
+  addressTableBody.innerHTML = '';
+  
+  if (data.length === 0) {
+    noRecords.style.display = 'block';
+    return;
+  }
+  
+  noRecords.style.display = 'none';
+  
+  data.forEach((address, index) => {
+    const row = document.createElement('tr');
+    if (index === 0) row.classList.add('selected');
+    
+    row.innerHTML = `
+      <td>${address.customer || 'N/A'}</td>
+      <td>${address.buildingNo || 'N/A'}</td>
+      <td>${address.colony || 'N/A'}</td>
+      <td>${address.apartment || 'N/A'}</td>
+    `;
+    
+    row.addEventListener('click', function() {
+      document.querySelectorAll('.address-table tbody tr').forEach(r => {
+        r.classList.remove('selected');
       });
-    }
+      this.classList.add('selected');
+    });
+    
+    addressTableBody.appendChild(row);
+  });
+}
 
     // New Building checkbox
     newBuildingCheckbox.addEventListener('change', function() {
@@ -1280,7 +1840,7 @@ saveAddressBtn.addEventListener('click', async function () {
 
     try {
       // Send data to backend
-      const response = await fetch('http://localhost:3000/api/assign-location', {
+      const response = await fetch(SERVER_URL+'/api/assign-location', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -1326,7 +1886,7 @@ saveAddressBtn.addEventListener('click', async function () {
 
     try {
       // Send data to backend
-      const response = await fetch('http://localhost:3000/api/assign-location', {
+      const response = await fetch(SERVER_URL+'/api/assign-location', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -1390,7 +1950,7 @@ const categoryTypeSelect = document.getElementById('category-type');
 // Fetch categories from API
 async function fetchCategories() {
     try {
-        const response = await fetch('http://localhost:3000/api/categories');
+        const response = await fetch(SERVER_URL+'/api/categories');
         if (!response.ok) {
             throw new Error('Failed to fetch categories');
         }
@@ -1404,7 +1964,7 @@ async function fetchCategories() {
 // Fetch category types based on selected category ID
 async function fetchCategoryTypes(categoryId) {
     try {
-        const response = await fetch(`http://localhost:3000/api/categories/${categoryId}/types`);
+        const response = await fetch(SERVER_URL+`/api/categories/${categoryId}/types`);
         if (!response.ok) {
             throw new Error('Failed to fetch category types');
         }
@@ -1474,12 +2034,101 @@ populateCategories();
 // Disable category type select initially
 categoryTypeSelect.disabled = true;
 
-
-
-
-
-    
   });
+
+
+
+  //Enter functionality for Customer Search
+  // Handle Enter key in customer search field
+document.getElementById('customer-search').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        const searchTerm = this.value.trim();
+        
+        if (!searchTerm) {
+            alert('Please enter a name or phone number');
+            return;
+        }
+        
+        // Open the modal
+        const modal = document.getElementById('customerModal');
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        
+        // Determine if the input contains numbers
+        const hasNumbers = /\d/.test(searchTerm);
+        
+        // Set the value in the appropriate field
+        if (hasNumbers) {
+            document.getElementById('customer-phone').value = searchTerm;
+            document.getElementById('customer-name').focus();
+        } else {
+            document.getElementById('customer-name').value = searchTerm;
+            document.getElementById('customer-email').focus();
+        }
+    }
+});
+
+// Add Enter key navigation in modal fields
+document.getElementById('customer-name').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById('customer-email').focus();
+    }
+});
+
+document.getElementById('customer-email').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById('customer-phone').focus();
+    }
+});
+
+document.getElementById('customer-phone').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        // Validate and save if valid
+        if (validateForm()) {
+            document.getElementById('saveCustomerBtn').click();
+        }
+    }
+});
+
+// Helper function to validate form (reusing your existing function)
+function validateForm() {
+    let isValid = true;
+    hideAllErrors();
+    
+    if (!document.getElementById('customer-name').value.trim()) {
+        document.getElementById('name-error').style.display = 'block';
+        isValid = false;
+    }
+    
+    const email = document.getElementById('customer-email').value;
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        document.getElementById('email-error').style.display = 'block';
+        isValid = false;
+    }
+    
+    const phone = document.getElementById('customer-phone').value.trim();
+    if (!phone) {
+        document.getElementById('phone-error').textContent = 'Please enter phone number';
+        document.getElementById('phone-error').style.display = 'block';
+        isValid = false;
+    } else if (!/^[0-9+\- ]+$/.test(phone)) {
+        document.getElementById('phone-error').textContent = 'Please enter a valid phone number';
+        document.getElementById('phone-error').style.display = 'block';
+        isValid = false;
+    }
+    
+    return isValid;
+}
+
+function hideAllErrors() {
+    document.getElementById('name-error').style.display = 'none';
+    document.getElementById('email-error').style.display = 'none';
+    document.getElementById('phone-error').style.display = 'none';
+}
 
 
 
@@ -1501,6 +2150,14 @@ categoryTypeSelect.disabled = true;
     const emailError = document.getElementById('email-error');
     const phoneError = document.getElementById('phone-error');
 
+        // Add Enter key functionality
+    customerSearch.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            findBtn.click();
+        }
+    });
+
     // Open modal when Find button is clicked
 // Open modal when Find button is clicked
 findBtn.addEventListener('click', async function () {
@@ -1514,14 +2171,15 @@ findBtn.addEventListener('click', async function () {
     return;
   }
 
-  // Clear previous UI state
+  // Clear previous UI state and reset customerId
+  customerId = null;
   userStatus.textContent = '';
   locationSelect.innerHTML = '<option value="">Select Location</option>';
   locationSelect.disabled = true;
   assignButton.disabled = true;
 
   try {
-    const response = await fetch(`http://localhost:3000/api/customers/search?q=${encodeURIComponent(searchTerm)}`);
+    const response = await fetch(SERVER_URL+`/api/customers/search?q=${encodeURIComponent(searchTerm)}`);
     
     if (!response.ok) {
       throw new Error('Failed to search customer');
@@ -1532,6 +2190,9 @@ findBtn.addEventListener('click', async function () {
 
     if (result && result.exists) {
       // ✅ User exists
+      customerId = result.customer.id; // Store the customer ID
+      console.log('Stored customer ID:', customerId); // Optional debug log
+      
       userStatus.textContent = '✅ User found';
       userStatus.style.color = 'green';
 
@@ -1563,7 +2224,7 @@ findBtn.addEventListener('click', async function () {
     async function saveCustomer(customerData) {
       try {
         // Replace with your actual API endpoint
-        const response = await fetch('http://localhost:3000/api/customers', {
+        const response = await fetch(SERVER_URL+'/api/customers', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -1587,7 +2248,7 @@ findBtn.addEventListener('click', async function () {
     async function searchCustomer(searchTerm) {
       try {
         // Replace with your actual search endpoint
-        const response = await fetch(`http://localhost:3000/api/customers/search?q=${encodeURIComponent(searchTerm)}`);
+        const response = await fetch(SERVER_URL+`/api/customers/search?q=${encodeURIComponent(searchTerm)}`);
         
         if (!response.ok) {
           throw new Error('Search failed');
@@ -1779,8 +2440,498 @@ function populateLocationSelect(locations) {
 
 
 
+document.addEventListener('DOMContentLoaded', function() {
+    // DOM Elements
+    const modalBackdrop = document.getElementById('modalBackdrop');
+    const closeBtn = document.getElementById('closeBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const assignBtn = document.getElementById('assignBtn');
+    const demoShowModal = document.getElementById('select-button');
+    const skillmanInput = document.getElementById('skillman');
+    
+    // Dropdown Elements
+    const primaryDropdown = {
+      toggle: document.getElementById('primarySkillmanToggle'),
+      menu: document.getElementById('primarySkillmanMenu'),
+      search: document.getElementById('primarySkillmanSearch'),
+      items: document.getElementById('primarySkillmanItems'),
+      text: document.getElementById('primarySkillmanText')
+    };
+    
+    const helperDropdown = {
+      toggle: document.getElementById('helperSkillmanToggle'),
+      menu: document.getElementById('helperSkillmanMenu'),
+      search: document.getElementById('helperSkillmanSearch'),
+      items: document.getElementById('helperSkillmanItems'),
+      text: document.getElementById('helperSkillmanText')
+    };
+    
+    const helperTags = document.getElementById('helperTags');
+    
+    // Data
+    let allSkillmen = [];
+    let selectedPrimary = null;
+    let selectedHelpers = [];
+    
+    // Initialize
+    function init() {
+      fetchSkillmen();
+      setupEventListeners();
+    }
+    
+    // Fetch skillmen from backend API
+    async function fetchSkillmen() {
+      try {
+        // Show loading state
+        primaryDropdown.items.innerHTML = '<div class="dropdown-item">Loading skillmen...</div>';
+        helperDropdown.items.innerHTML = '<div class="dropdown-item">Loading skillmen...</div>';
+        
+        const response = await fetch(SERVER_URL+'/api/skillmen');
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch skillmen');
+        }
+        
+        const data = await response.json();
+        
+        // Transform backend data to match our frontend structure
+        allSkillmen = data.map(skillman => ({
+          id: skillman.id || skillman._id,
+          name: skillman.name,
+          phone: skillman.phoneNumber,
+          location: skillman.area,
+          skill: skillman.designation
+        }));
+        
+        renderDropdowns();
+      } catch (error) {
+        console.error('Error fetching skillmen:', error);
+        // Show error state
+        primaryDropdown.items.innerHTML = '<div class="dropdown-item error">Error loading skillmen</div>';
+        helperDropdown.items.innerHTML = '<div class="dropdown-item error">Error loading skillmen</div>';
+        
+        // Fallback to empty array
+        allSkillmen = [];
+      }
+    }
+    
+    // Render dropdown items
+    function renderDropdowns() {
+      renderPrimaryDropdown();
+      renderHelperDropdown();
+    }
+    
+    function renderPrimaryDropdown(searchTerm = '') {
+      primaryDropdown.items.innerHTML = '';
+      
+      const filtered = filterSkillmen(searchTerm);
+      
+      if (filtered.length === 0) {
+        primaryDropdown.items.innerHTML = '<div class="dropdown-item">No skillmen found</div>';
+      } else {
+        filtered.forEach(skillman => {
+          const item = document.createElement('div');
+          item.className = 'dropdown-item' + 
+            (selectedPrimary && selectedPrimary.id === skillman.id ? ' selected' : '');
+          
+          // Format: Name (Phone), Location, Skill
+          item.innerHTML = `
+            <div class="skillman-info">
+              <div class="skillman-name">${skillman.name}</div>
+              <div class="skillman-details">
+                <span>${skillman.phone}</span>
+                <span>${skillman.location}</span>
+                <span>${skillman.skill}</span>
+              </div>
+            </div>
+          `;
+          
+          item.addEventListener('click', () => {
+            selectPrimarySkillman(skillman);
+            toggleDropdown(primaryDropdown);
+          });
+          primaryDropdown.items.appendChild(item);
+        });
+      }
+    }
+    
+    function renderHelperDropdown(searchTerm = '') {
+      helperDropdown.items.innerHTML = '';
+      
+      const filtered = filterSkillmen(searchTerm).filter(skillman => 
+        !selectedHelpers.some(h => h.id === skillman.id)
+      );
+      
+      if (filtered.length === 0) {
+        helperDropdown.items.innerHTML = '<div class="dropdown-item">No helpers found</div>';
+      } else {
+        filtered.forEach(skillman => {
+          const item = document.createElement('div');
+          item.className = 'dropdown-item';
+          
+          // Same format for helpers
+          item.innerHTML = `
+            <div class="skillman-info">
+              <div class="skillman-name">${skillman.name}</div>
+              <div class="skillman-details">
+                <span>${skillman.phone}</span>
+                <span>${skillman.location}</span>
+                <span>${skillman.skill}</span>
+              </div>
+            </div>
+          `;
+          
+          item.addEventListener('click', () => {
+            addHelperSkillman(skillman);
+            toggleDropdown(helperDropdown);
+          });
+          helperDropdown.items.appendChild(item);
+        });
+      }
+    }
+    
+    function filterSkillmen(searchTerm) {
+      if (!searchTerm) return allSkillmen;
+      const term = searchTerm.toLowerCase();
+      return allSkillmen.filter(skillman => 
+        skillman.name.toLowerCase().includes(term) ||
+        (skillman.phone && skillman.phone.toLowerCase().includes(term)) ||
+        (skillman.location && skillman.location.toLowerCase().includes(term)) ||
+        (skillman.skill && skillman.skill.toLowerCase().includes(term))
+      );
+    }
+    
+    // Selection functions
+    function selectPrimarySkillman(skillman) {
+      selectedPrimary = skillman;
+      primaryDropdown.text.textContent = `${skillman.name} (${skillman.phone}), ${skillman.location}, ${skillman.skill}`;
+      renderHelperDropdown();
+    }
+    
+    function addHelperSkillman(skillman) {
+      if (!selectedHelpers.some(h => h.id === skillman.id)) {
+        selectedHelpers.push(skillman);
+        renderHelperTags();
+      }
+    }
+    
+    function removeHelperSkillman(skillmanId) {
+      selectedHelpers = selectedHelpers.filter(h => h.id !== skillmanId);
+      renderHelperTags();
+    }
+    
+    function renderHelperTags() {
+      helperTags.innerHTML = '';
+      
+      if (selectedHelpers.length === 0) {
+        helperTags.innerHTML = '<div class="empty-helpers">No helpers added yet</div>';
+      } else {
+        selectedHelpers.forEach(skillman => {
+          const tag = document.createElement('div');
+          tag.className = 'helper-tag';
+          tag.innerHTML = `
+            ${skillman.name} (${skillman.phone}), ${skillman.location}, ${skillman.skill}
+            <button type="button" data-id="${skillman.id}">
+              <i class="fas fa-times"></i>
+            </button>
+          `;
+          tag.querySelector('button').addEventListener('click', (e) => {
+            e.stopPropagation();
+            removeHelperSkillman(skillman.id);
+          });
+          helperTags.appendChild(tag);
+        });
+      }
+    }
+    
+    // Dropdown toggle function
+    function toggleDropdown(dropdown) {
+      const isActive = dropdown.menu.classList.contains('active');
+      
+      // Close all dropdowns first
+      document.querySelectorAll('.dropdown-menu').forEach(menu => {
+        menu.classList.remove('active');
+      });
+      document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+        toggle.classList.remove('active');
+      });
+      
+      // Toggle this dropdown if it wasn't active
+      if (!isActive) {
+        dropdown.menu.classList.add('active');
+        dropdown.toggle.classList.add('active');
+        
+        // Focus search input when opening
+        if (dropdown.search) {
+          setTimeout(() => dropdown.search.focus(), 10);
+        }
+      }
+    }
+    
+    // Close dropdowns when clicking outside
+    function closeAllDropdowns() {
+      document.querySelectorAll('.dropdown-menu').forEach(menu => {
+        menu.classList.remove('active');
+      });
+      document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+        toggle.classList.remove('active');
+      });
+    }
+    
+    // Setup event listeners
+    function setupEventListeners() {
+      // Dropdown toggles
+      primaryDropdown.toggle.addEventListener('click', () => toggleDropdown(primaryDropdown));
+      helperDropdown.toggle.addEventListener('click', () => toggleDropdown(helperDropdown));
+      
+      // Search inputs
+      primaryDropdown.search.addEventListener('input', (e) => {
+        renderPrimaryDropdown(e.target.value);
+      });
+      
+      helperDropdown.search.addEventListener('input', (e) => {
+        renderHelperDropdown(e.target.value);
+      });
+      
+      // Close dropdowns when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.dropdown')) {
+          closeAllDropdowns();
+        }
+      });
+      
+      // Modal controls
+      closeBtn.addEventListener('click', closeModal);
+      cancelBtn.addEventListener('click', closeModal);
+      demoShowModal.addEventListener('click', openModal);
+
+
+      
+assignBtn.addEventListener('click', async () => {
+    const priority = document.querySelector('input[name="priority"]:checked').value;
+    const assignmentData = {
+        priority,
+        primarySkillman: selectedPrimary,  // Can be null
+        helperSkillmen: selectedHelpers
+    };
+    
+    try {
+        // Format the skillman information for display
+        let skillmanDisplayText = `Priority: ${formatPriority(priority)}\n`;
+        
+        if (selectedPrimary) {
+            skillmanDisplayText += `⏐ Primary: ${selectedPrimary.name} (${selectedPrimary.phone})`;
+        }
+        
+        if (selectedHelpers.length > 0) {
+            skillmanDisplayText += `\n ⏐ Helpers: ${selectedHelpers.map(h => `${h.name} (${h.phone})`).join(', ')}`;
+        }
+        
+        // Update the skillman input field with the formatted text
+        if (skillmanInput) {
+            skillmanInput.value = skillmanDisplayText;
+        }
+        
+        // Store the assignment data for later use (e.g., complaint launching)
+        window.currentAssignment = assignmentData;
+        
+        closeModal();
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error processing assignment. Please try again.');
+    }
+});
+
+// Helper function to format priority for display
+function formatPriority(priority) {
+    const priorityMap = {
+        'immediate': 'Immediate (2Hrs)',
+        'urgent': 'Urgent (6Hrs)',
+        'routine': 'Routine (24Hrs)',
+        'deferred': 'Deferred'
+    };
+    return priorityMap[priority] || priority;
+}
+    }
+    
+    // Modal functions
+    function openModal() {
+      modalBackdrop.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      // Refresh skillmen data when modal opens
+      fetchSkillmen();
+    }
+    
+    function closeModal() {
+      modalBackdrop.classList.remove('active');
+      document.body.style.overflow = '';
+      resetForm();
+    }
+    
+    function resetForm() {
+      selectedPrimary = null;
+      selectedHelpers = [];
+      primaryDropdown.text.textContent = 'Select a skillman';
+      helperDropdown.text.textContent = 'Add helper skillman';
+      renderHelperTags();
+      document.getElementById('immediate').checked = true;
+      closeAllDropdowns();
+    }
+    
+    // Initialize the app
+    init();
+});
+
+
+
+
+
+
+
+
+
+
+// Get the launch complaint form// Get the launch complaint form
+const launchForm = document.querySelector('.launch-complaint-form');
+
+if (launchForm) {
+    launchForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Get all the form data
+        const customerSearch = document.getElementById('customer-search').value.trim();
+        const location = document.getElementById('location').value;
+        const categorySelect = document.getElementById('category');
+        const categoryTypeSelect = document.getElementById('category-type');
+        const description = document.getElementById('description').value.trim();
+        
+        // Validate required fields
+        if (!customerId || !location || !categorySelect.value || !categoryTypeSelect.value || !description) {
+            alert('Please fill in all required fields');
+            return;
+        }
+        
+        // Get the selected category and category type text
+        const categoryText = categorySelect.options[categorySelect.selectedIndex].text;
+        const categoryTypeText = categoryTypeSelect.options[categoryTypeSelect.selectedIndex].text;
+        
+        // Prepare the complaint data with both IDs and text values
+        const complaintData = {
+            customerId: customerId,
+            locationId: location,
+            category: {
+                id: categorySelect.value,
+                name: categoryText
+            },
+            categoryType: {
+                id: categoryTypeSelect.value,
+                name: categoryTypeText
+            },
+            description: description,
+            priority: window.currentAssignment?.priority || 'routine', // Default to routine if no assignment
+            receiver: {
+                id: complaintReceiverId,
+                name: complaintReceiverName
+            },
+            // Only include primarySkillmanId if it exists
+            ...(window.currentAssignment?.primarySkillman && {
+                primarySkillmanId: window.currentAssignment.primarySkillman.id
+            }),
+            // Only include helpers if they exist
+            ...(window.currentAssignment?.helperSkillmen?.length > 0 && {
+                helperSkillmenIds: window.currentAssignment.helperSkillmen.map(h => h.id)
+            })
+        };
+
+        // Log the complete data being sent
+        console.log('========== COMPLAINT DATA BEING SENT TO SERVER ==========');
+        console.log('Customer:', customerSearch);
+        console.log('Location ID:', location);
+        console.log('Category:', complaintData.category);
+        console.log('Category Type:', complaintData.categoryType);
+        console.log('Description:', description);
+        console.log('Priority:', complaintData.priority);
+        console.log('Receiver:', complaintData.receiver);
+        
+        if (window.currentAssignment?.primarySkillman) {
+            console.log('Primary Skillman:', {
+                id: window.currentAssignment.primarySkillman.id,
+                name: window.currentAssignment.primarySkillman.name,
+                phone: window.currentAssignment.primarySkillman.phone
+            });
+        } else {
+            console.log('Primary Skillman: None assigned');
+        }
+        
+        if (window.currentAssignment?.helperSkillmen?.length > 0) {
+            console.log('Helper Skillmen:', window.currentAssignment.helperSkillmen.map(h => ({
+                id: h.id,
+                name: h.name,
+                phone: h.phone
+            })));
+        } else {
+            console.log('Helper Skillmen: None assigned');
+        }
+        
+        console.log('Full complaintData object:', JSON.stringify(complaintData, null, 2));
+        console.log('========================================================');
+        
+        try {
+            // Show loading state
+            const launchButton = document.querySelector('.launch-button');
+            launchButton.disabled = true;
+            launchButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Launching...';
+            
+            // Log the fetch request details
+            console.log('Sending request to:', SERVER_URL+'/complaints');
+            console.log('Request method: POST');
+            console.log('Request headers:', {
+                'Content-Type': 'application/json'
+            });
+            
+            // Send complaint to backend
+            const response = await fetch(SERVER_URL+'/complaints', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(complaintData)
+            });
+            
+            // Log response status
+            console.log('Response status:', response.status, response.statusText);
+            
+            if (!response.ok) {
+                const errorResponse = await response.text();
+                console.error('Error response from server:', errorResponse);
+                throw new Error('Failed to launch complaint');
+            }
+            
+            const result = await response.json();
+            console.log('Successful response from server:', result);
+            alert('Complaint launched successfully!');
+            
+            // Reset the form
+            launchForm.reset();
+            if (skillmanInput) skillmanInput.value = '';
+            delete window.currentAssignment;
+            
+        } catch (error) {
+            console.error('Error launching complaint:', error);
+            console.error('Error stack:', error.stack);
+            alert(error.message || 'Failed to launch complaint. Please try again.');
+        } finally {
+            // Reset button state
+            const launchButton = document.querySelector('.launch-button');
+            if (launchButton) {
+                launchButton.disabled = false;
+                launchButton.textContent = 'Launch Complaint';
+            }
+        }
+    });
+}
+
 
 </script>
-
 </body>
 </html>
