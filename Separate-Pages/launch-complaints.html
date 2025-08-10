@@ -2910,11 +2910,10 @@ if (launchForm) {
             const result = await response.json();
             console.log('Successful response from server:', result);
             alert('Complaint launched successfully!');
+            window.location.reload(); // Reload to reset the state
             
             // Reset the form
             launchForm.reset();
-            if (skillmanInput) skillmanInput.value = '';
-            delete window.currentAssignment;
             
         } catch (error) {
             console.error('Error launching complaint:', error);
