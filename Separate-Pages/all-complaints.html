@@ -11,14 +11,18 @@
       padding: 0;
       box-sizing: border-box;
       font-family: Arial, sans-serif;
+      scrollbar-width: thin;
+      scroll-behavior: smooth;
+      scrollbar-color: rgb(138, 119, 119) transparent;
     }
 
     body {
       background-color: #eef2f5;
       padding-bottom: 40px;
+      overflow-x: hidden;
     }
 
-    /* Header Styles from Code 1 */
+    /* Header Styles */
     header {
       width: 100vw;
       height: 60px;
@@ -158,7 +162,7 @@
       margin-top: 20px;
     }
     
-    /* Variables from Code 2 - Adapted to Code 1 Theme */
+    /* Variables */
     :root {
       --primary: rgb(136, 28, 28);
       --secondary: #8c2f2f;
@@ -175,7 +179,7 @@
       --success: #4caf50;
     }
 
-    /* Complaints Section from Code 2 - Theme Adjusted */
+    /* Complaints Section */
     .complaints-section-container {
       display: grid;
       grid-template-columns: 250px 1fr;
@@ -255,22 +259,6 @@
       color: var(--primary);
     }
     
-    .form-group {
-      margin-bottom: 20px;
-    }
-    
-    .form-group label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: 600;
-      color: var(--dark);
-    }
-    
-    .required:after {
-      content: " *";
-      color: var(--danger);
-    }
-    
     .form-control {
       width: 100%;
       padding: 14px 18px;
@@ -312,18 +300,6 @@
       box-shadow: 0 8px 22px rgba(136, 28, 28, 0.3);
     }
     
-    .btn-secondary {
-      background: var(--gray);
-      color: white;
-      box-shadow: 0 6px 18px rgba(108, 117, 125, 0.3);
-    }
-    
-    .btn-secondary:hover {
-      background: #5a6268;
-      transform: translateY(-3px);
-      box-shadow: 0 8px 22px rgba(108, 117, 125, 0.4);
-    }
-    
     .search-box {
       display: flex;
       margin-bottom: 30px;
@@ -338,293 +314,90 @@
       border-radius: 0 12px 12px 0;
     }
     
-    .complaint-cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 20px;
-    }
-    
-    .complaint-card {
-      background: rgba(248, 249, 250, 0.7);
-      border-radius: 12px;
-      padding: 20px;
-      border: 1px solid rgba(0,0,0,0.05);
-      transition: all 0.3s;
-    }
-    
-    .complaint-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-    }
-    
-    .complaint-card-header {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 15px;
-    }
-    
-    .complaint-card-id {
-      font-weight: 700;
-      color: var(--primary);
-    }
-    
-    .complaint-card-title {
-      font-weight: 600;
-      font-size: 18px;
-      margin-bottom: 10px;
-    }
-    
-    .complaint-card-desc {
-      color: var(--gray);
-      margin-bottom: 15px;
-      line-height: 1.5;
-    }
-    
-    .complaint-card-footer {
-      display: flex;
-      justify-content: space-between;
-      color: var(--gray);
-      font-size: 14px;
-    }
-    
-    .priority {
-      display: inline-block;
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      margin-right: 8px;
-      vertical-align: middle;
-    }
-
-    .priority.high {
-      background: var(--danger);
-      box-shadow: 0 0 8px rgba(244, 67, 54, 0.4);
-    }
-
-    .priority.medium {
-      background: var(--warning);
-      box-shadow: 0 0 8px rgba(255, 152, 0, 0.4);
-    }
-
-    .priority.low {
-      background: var(--accent);
-      box-shadow: 0 0 8px rgba(76, 175, 80, 0.4);
-    }
-    
-    .action-select {
-      width: 100%;
-      padding: 14px 18px;
-      border-radius: 12px;
-      border: 1px solid rgba(0,0,0,0.1);
-      background: rgba(248, 249, 250, 0.5);
-      font-size: 16px;
-      margin-bottom: 20px;
-    }
-    
-    .user-addresses {
-      display: none;
-      margin-bottom: 20px;
-    }
-    
-    .user-addresses.active {
-      display: block;
-    }
-    
-    .user-address {
-      background: rgba(136, 28, 28, 0.1);
-      padding: 15px;
-      border-radius: 12px;
-      margin-bottom: 10px;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-    
-    .user-address:hover {
-      background: rgba(136, 28, 28, 0.2);
-    }
-    
-    .user-address.selected {
-      background: rgba(136, 28, 28, 0.3);
-      border: 2px solid var(--primary);
-    }
-    
-    .user-address h4 {
-      margin-bottom: 5px;
-      color: var(--primary);
-    }
-    
-    .user-address p {
-      margin: 3px 0;
-      color: var(--dark);
-    }
-    
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.7);
-      z-index: 1000;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .modal.active {
-      display: flex;
-    }
-    
-    .modal-content {
-      background: white;
-      border-radius: 18px;
-      width: 90%;
-      max-width: 700px;
-      max-height: 90vh;
-      overflow-y: auto;
-      padding: 30px;
-      position: relative;
-    }
-    
-    .close-modal {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      font-size: 24px;
-      cursor: pointer;
-      color: var(--gray);
-      transition: color 0.3s;
-    }
-    
-    .close-modal:hover {
-      color: var(--danger);
-    }
-    
-    .section-title {
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--primary);
-      margin: 20px 0 15px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid rgba(0,0,0,0.1);
-    }
-    
-    .form-row {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
-    }
-    
-    .new-building-toggle {
-      display: flex;
-      align-items: center;
-      margin: 15px 0;
-    }
-    
-    .new-building-toggle label {
-      margin-left: 10px;
-      font-weight: 600;
-    }
-    
-    .form-actions {
-      display: flex;
-      gap: 15px;
-      margin-top: 30px;
-    }
-    
-    .warning-note {
-      background: rgba(255, 152, 0, 0.1);
-      padding: 15px;
-      border-radius: 12px;
-      margin: 20px 0;
-      border-left: 4px solid var(--warning);
-    }
-    
-    .locations-table {
+    /* Table-specific styles */
+    .complaints-history-table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 20px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.05);
       border-radius: 12px;
       overflow: hidden;
+      background: white;
+      font-size: 13px;
     }
+
     
-    .locations-table th {
+    .complaints-history-table th {
       background: rgba(136, 28, 28, 0.1);
       color: var(--primary);
       font-weight: 700;
-      padding: 16px;
+      padding: 10px 12px;
       text-align: left;
+      font-size: 14px;
     }
     
-    .locations-table td {
-      padding: 14px 16px;
+    .complaints-history-table td {
+      padding: 8px 12px;
       border-bottom: 1px solid rgba(0,0,0,0.05);
+      vertical-align: middle;
+      border-left: 1px solid #f3f3f3; /* vertical line color */
+      cursor: default;
+      vertical-align: top;
+
     }
     
-    .locations-table tr:hover {
+    .complaints-history-table tr:hover:not(tfoot tr) {
       background: rgba(136, 28, 28, 0.05);
     }
-    
-    .locations-table tr.selected {
-      background: rgba(136, 28, 28, 0.2);
+
+    th:nth-last-child(-n+2),
+    td:nth-last-child(-n+2) {
+      width: 120px; /* Fixed size */
+    }
+
+    td {
+      height: 60px;
     }
     
-    .user-found-details {
-      background: rgba(76, 175, 80, 0.1);
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 20px;
-      border-left: 4px solid var(--accent);
-      display: none;
+
+    tfoot {
+      height: 120px;
+      font-size: 18px;
     }
-    
-    .user-found-details.active {
-      display: block;
-    }
-    
-    .user-detail-row {
-      display: flex;
-      margin-bottom: 10px;
-    }
-    
-    .user-detail-label {
-      font-weight: 600;
-      width: 120px;
-      color: var(--dark);
-    }
-    
-    .user-detail-value {
-      flex: 1;
+
+    #pagination-info {
+      text-align: left;
+      padding: 0px;
       color: var(--gray);
+      cursor: default;
     }
     
     .status-badge {
-      padding: 5px 10px;
-      border-radius: 20px;
+      padding: 4px 8px;
+      border-radius: 12px;
       font-size: 12px;
       font-weight: 600;
       display: inline-block;
     }
     
-    .status-open {
-      background: rgba(33, 150, 243, 0.1);
-      color: #2196F3;
-    }
-    
     .status-in-progress {
-      background: rgba(255, 152, 0, 0.1);
-      color: #FF9800;
+      background: #2196F3;
+      color: white;
     }
     
-    .status-resolved {
-      background: rgba(76, 175, 80, 0.1);
-      color: #4CAF50;
+    .status-completed {
+      background: #4CAF50;
+      color: white;
     }
     
-    .status-closed {
-      background: rgba(158, 158, 158, 0.1);
-      color: #9E9E9E;
+    .status-deffered {
+      background: #0f0f0f;
+      color: white;
+    }
+    
+    .status-un-assigned {
+      background: #F44336;
+      color: white;
     }
     
     .editable-cell {
@@ -632,37 +405,25 @@
     }
     
     .editable-cell .static-value {
-      padding: 5px 10px;
+      padding: 4px 8px;
       border-radius: 4px;
       cursor: pointer;
       transition: background 0.2s;
+      font-size: 13px;
     }
     
     .editable-cell .static-value:hover {
       background: rgba(136, 28, 28, 0.1);
     }
     
-    .editable-cell .edit-input {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      border: none;
-      background: transparent;
-      padding: 5px 10px;
-      font-size: inherit;
-      outline: 2px solid var(--primary);
-      border-radius: 4px;
-    }
-    
     .editable-select {
       width: 100%;
-      padding: 5px;
+      padding: 4px;
       border: 1px solid #ddd;
       border-radius: 4px;
       background: white;
       outline: none;
+      font-size: 13px;
     }
     
     .editable-select:focus {
@@ -676,13 +437,14 @@
     }
     
     .action-btn {
-      padding: 5px 10px;
+      padding: 4px 8px;
       border-radius: 4px;
       cursor: pointer;
       transition: all 0.2s;
       border: none;
       background: rgba(136, 28, 28, 0.1);
       color: var(--primary);
+      font-size: 12px;
     }
     
     .action-btn:hover {
@@ -698,37 +460,6 @@
     .action-btn.delete:hover {
       background: var(--danger);
       color: white;
-    }
-    
-    .complaints-history-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-      border-radius: 12px;
-      overflow: hidden;
-      background: white;
-    }
-    
-    .complaints-history-table th {
-      background: rgba(136, 28, 28, 0.1);
-      color: var(--primary);
-      font-weight: 700;
-      padding: 16px;
-      text-align: left;
-    }
-    
-    .complaints-history-table td {
-      padding: 14px 16px;
-      border-bottom: 1px solid rgba(0,0,0,0.05);
-    }
-    
-    .complaints-history-table tr:hover {
-      background: rgba(136, 28, 28, 0.05);
-    }
-    
-    .complaints-history-table tr.selected {
-      background: rgba(136, 28, 28, 0.2);
     }
     
     .pagination-container {
@@ -780,9 +511,89 @@
 
     #launch-complaints,#natures {
         text-decoration: none;
-        color:rgb(136, 28, 28);
+        color: inherit;
     }
 
+    .action-dropdown {
+      position: relative;
+      display: inline-block;
+    }
+    
+    .action-dropdown-btn {
+      padding: 6px 12px;
+      background: rgba(136, 28, 28, 0.1);
+      color: var(--primary);
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+.action-dropdown-content {
+  position: absolute;
+  left: 0;
+  top: 100%;
+  display: none;
+  background-color: white;
+  min-width: 160px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  z-index: 1000;
+  border-radius: 4px;
+  overflow: visible;
+  border: 1px solid #ddd;
+  left: -75px;
+}
+    
+    .action-dropdown-content a {
+      color: var(--dark);
+      padding: 8px 12px;
+      text-decoration: none;
+      display: block;
+      font-size: 14px;
+    }
+    
+    .action-dropdown-content a:hover {
+      background-color: rgba(136, 28, 28, 0.1);
+    }
+    
+/*    .action-dropdown:hover .action-dropdown-content {
+      display: block;
+    }*/
+
+    
+/* Add these styles to ensure proper positioning */
+.action-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.action-dropdown-content {
+  position: absolute;
+  left: -75px; /* Matches your existing offset */
+  top: 100%;
+  display: none;
+  background-color: white;
+  min-width: 160px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  z-index: 1000;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  margin-top: -15px;
+  
+}
+
+/* Show class for JavaScript toggling */
+.action-dropdown-content.show {
+  display: block;
+}
+
+    @media (max-width: 1200px) {
+      .complaints-history-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+    }
 
     @media (max-width: 992px) {
       .complaints-section-container {
@@ -800,13 +611,7 @@
         flex: 1;
         min-width: 150px;
       }
-      
-      .complaints-history-table {
-        display: block;
-        overflow-x: auto;
-      }
     }
-
 
     @media (max-width: 768px) {
       .nav-bar {
@@ -819,37 +624,659 @@
         font-size: 15px;
       }
       
-      .complaints-option {
-        padding: 12px 15px;
-        font-size: 14px;
-      }
-      
-      .form-row {
-        grid-template-columns: 1fr;
-      }
-      
-      .form-actions {
+      .search-box {
         flex-direction: column;
       }
       
-      .user-detail-row {
-        flex-direction: column;
+      .search-box input {
+        border-radius: 12px;
+        margin-bottom: 10px;
       }
       
-      .user-detail-label {
+      .search-box button {
+        border-radius: 12px;
         width: 100%;
-        margin-bottom: 5px;
       }
     }
+    
+    @media (max-width: 576px) {
+      .nav-container {
+        margin-left: 0;
+        justify-content: center;
+      }
+      
+      .action-dropdown-content {
+        min-width: 140px;
+      }
+      
+      .action-dropdown-content a {
+        padding: 6px 10px;
+        font-size: 13px;
+      }
+    }
+
+
+    /* CSS for Skillman Modal*/
+    /* ===== Skillman Modal Styles ===== */
+.skillman-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.skillman-modal-backdrop.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.skillman-modal-container {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+  width: 95%;
+  max-width: 600px;
+  height: 700px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: translateY(-20px);
+  transition: transform 0.3s ease;
+}
+
+.skillman-modal-backdrop.active .skillman-modal-container {
+  transform: translateY(0);
+}
+
+/* Modal Header */
+.skillman-modal-header {
+  padding: 16px 20px;
+  background-color: var(--primary);
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.skillman-modal-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 22px;
+  cursor: pointer;
+  padding: 2px;
+  line-height: 1;
+}
+
+/* Modal Body */
+.skillman-modal-body {
+  padding: 20px;
+  overflow-y: visible;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Priority Section */
+.priority-section {
+  margin-bottom: 24px;
+}
+
+.priority-section label {
+  display: block;
+  margin-bottom: 3px;
+  font-weight: 600;
+  color: var(--dark);
+  font-size: 14px;
+}
+
+.priority-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+  margin-top: 15px;
+}
+
+.priority-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.priority-option input[type="radio"] {
+  accent-color: var(--primary);
+}
+
+#priority-label {
+  font-size: 15px;
+  font-weight: bold;
+  color: var(--primary);
+}
+
+/* Dropdown Styles */
+.dropdown {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.dropdown-toggle {
+  width: 100%;
+  padding: 12px 15px;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: border-color 0.2s;
+}
+
+.dropdown-toggle:hover {
+  border-color: var(--primary);
+}
+
+.dropdown-toggle i {
+  transition: transform 0.2s;
+}
+
+.dropdown-toggle.active i {
+  transform: rotate(180deg);
+}
+
+.dropdown-menu {
+  position: relative;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  max-height: 300px;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 0 0 6px 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  display: none;
+  margin-top: -1px;
+  overflow: hidden;
+}
+
+.dropdown-menu.active {
+  display: block;
+}
+
+.dropdown-search {
+  padding: 10px 15px;
+  border-bottom: 1px solid #eee;
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 11;
+}
+
+.dropdown-search input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.dropdown-search input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.dropdown-items {
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.dropdown-item {
+  padding: 10px 15px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.dropdown-item:hover {
+  background-color: rgba(136, 28, 28, 0.1);
+}
+
+.dropdown-item.selected {
+  background-color: rgba(136, 28, 28, 0.1);
+}
+
+.skillman-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.skillman-name {
+  font-weight: 600;
+}
+
+.skillman-details {
+  display: flex;
+  gap: 15px;
+  font-size: 13px;
+  color: var(--secondary);
+}
+
+/* Helper Skillman Section */
+.helper-section {
+  margin-top: 30px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.helper-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.helper-header label {
+  font-weight: 600;
+  color: var(--dark);
+}
+
+.helper-tag-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 50px;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background-color: white;
+}
+
+.helper-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  background-color: rgba(136, 28, 28, 0.1);
+  border-radius: 16px;
+  font-size: 14px;
+  height: fit-content;
+}
+
+.helper-tag button {
+  background: none;
+  border: none;
+  margin-left: 6px;
+  color: var(--secondary);
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.helper-tag button:hover {
+  color: var(--danger);
+}
+
+.empty-helpers {
+  color: var(--secondary);
+  font-style: italic;
+}
+
+/* Modal Footer */
+.modal-footer {
+  padding: 16px 20px;
+  background-color: #f8f9fa;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-top: 1px solid #ddd;
+  flex-shrink: 0;
+}
+
+/* Buttons */
+.btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
+}
+
+.btn-outline {
+  background-color: transparent;
+  border: 1px solid var(--secondary);
+  color: var(--secondary);
+}
+
+.btn-outline:hover {
+  background-color: #f0f0f0;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: white;
+  border: 1px solid var(--primary);
+}
+
+.btn-primary:hover {
+  background-color: #9e1e1e;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .priority-options {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .skillman-modal-body {
+    padding: 16px;
+  }
+  
+  .skillman-details {
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  .skillman-modal-container {
+    height: 90vh;
+  }
+}
+
+/* Simplified modal styles */
+.skillman-modal-container {
+  width: 95%;
+  max-width: 500px; /* Smaller width for simpler modal */
+  height: auto; /* Auto height */
+  padding-bottom: 20px;
+}
+
+.skillman-modal-body {
+  padding: 30px;
+  overflow-y: visible;
+}
+
+.dropdown {
+  margin-bottom: 20px;
+}
+
+.current-skillman-section {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+  border: 1px solid #eee;
+}
+
+.current-skillman-section h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: var(--primary);
+}
+
+.current-skillman-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.current-skillman-info .skillman-name {
+  font-weight: 600;
+}
+
+.current-skillman-info .skillman-details {
+  display: flex;
+  gap: 15px;
+  font-size: 14px;
+  color: var(--secondary);
+}
+.current-skillman-section {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+  border: 1px solid #eee;
+}
+
+.current-skillman-section h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: var(--primary);
+}
+
+.current-skillman-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.current-skillman-info .skillman-name {
+  font-weight: 600;
+}
+
+.current-skillman-info .skillman-details {
+  display: flex;
+  gap: 15px;
+  font-size: 14px;
+  color: var(--secondary);
+}
+
+.current-skillman-info .skillman-details i {
+  margin-right: 5px;
+  color: var(--primary);
+}
+
+.previous-skillman {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 12px 15px;
+  border: 1px solid #eee;
+  color: var(--primary);
+  font-size: 15px;
+}
+
+
+
+
+
+.priority-filters {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 28px;
+  justify-content: flex-end;
+}
+
+.priority-box {
+  flex: 1 1 0;
+  min-width: 160px;
+  max-width: 220px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 18px rgba(136,28,28,0.08);
+  border: 2px solid transparent;
+  text-align: center;
+  padding: 22px 10px 18px 10px;
+  cursor: pointer;
+  transition: 
+    box-shadow 0.4s,
+    border-color 0.4s,
+    background 0.4s,
+    color 0.4s,
+    transform 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+
+.priority-box .priority-icon {
+  font-size: 2.2rem;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.priority-box .priority-label {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: var(--primary);
+  letter-spacing: 0.5px;
+}
+
+.priority-box .priority-desc {
+  font-size: 0.95rem;
+  color: #888;
+  margin-bottom: 0;
+}
+
+.priority-box.immediate .priority-icon,
+.priority-icon.immediate { color: #e53935; }
+.priority-box.urgent .priority-icon,
+.priority-icon.urgent { color: #ff9800; }
+.priority-box.routine .priority-icon,
+.priority-icon.routine { color: #2196f3; }
+.priority-box.deferred .priority-icon,
+.priority-icon.deferred { color: #757575; }
+
+.priority-box.active,
+.priority-box:hover {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+  box-shadow: 0 8px 28px rgba(136,28,28,0.18);
+  transform: translateY(-3px) scale(1.03);
+}
+.priority-box.active .priority-label,
+.priority-box:hover .priority-label {
+  color: #fff;
+}
+.priority-box.active .priority-desc,
+.priority-box:hover .priority-desc {
+  color: #f8f9fa;
+}
+.priority-box.active .priority-icon.immediate,
+.priority-box:hover .priority-icon.immediate { color: #fff; }
+.priority-box.active .priority-icon.urgent,
+.priority-box:hover .priority-icon.urgent { color: #fff; }
+.priority-box.active .priority-icon.routine,
+.priority-box:hover .priority-icon.routine { color: #fff; }
+.priority-box.active .priority-icon.deferred,
+.priority-box:hover .priority-icon.deferred { color: #fff; }
+
+
+/* Filter Controls*/
+.filter-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 20px;
+  align-items: flex-end;
+}
+
+.filter-group {
+  flex: 1;
+  min-width: 180px;
+}
+
+.filter-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.filter-select {
+  width: 100%;
+  padding: 10px 12px;
+}
+
+#reset-filters {
+  height: 42px;
+  align-self: flex-end;
+  margin-bottom: 1px;
+}
+
+@media (max-width: 768px) {
+  .filter-group {
+    min-width: 100%;
+  }
+}
   </style>
 </head>
 <body>
+
+
+<!-- Skillman Assignment Modal -->
+<!-- Skillman Assignment Modal -->
+<div class="skillman-modal-backdrop" id="modalBackdrop">
+  <div class="skillman-modal-container">
+    <!-- Modal Header -->
+    <div class="skillman-modal-header">
+      <h3><i class="fas fa-user-cog"></i> <span id="modalTitle">Change Skillman</span></h3>
+      <button class="close-btn" id="closeBtn">&times;</button>
+    </div>
+    
+    <!-- Modal Body -->
+    <div class="skillman-modal-body">
+      <h4 style="margin-bottom: 5px;">Previous Skillman</h4>
+      <div id="previousSkillman" class="previous-skillman" style="margin-bottom: 18px;"></div>
+      <!-- Current Skillman Section (only shown when changing) -->
+      <div class="current-skillman-section" id="currentSkillmanSection" style="display: none;">
+        <h4>Current Skillman</h4>
+        <div class="current-skillman-info" id="currentSkillmanInfo"></div>
+      </div>
+      
+      <!-- Primary Skillman Selection -->
+      <div class="dropdown" id="primarySkillmanDropdown">
+        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: black">Skillman</label>
+        <button class="dropdown-toggle" id="primarySkillmanToggle">
+          <span id="primarySkillmanText">Select a skillman</span>
+          <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="dropdown-menu" id="primarySkillmanMenu">
+          <div class="dropdown-search">
+            <input type="text" placeholder="Search skillman..." id="primarySkillmanSearch">
+          </div>
+          <div class="dropdown-items" id="primarySkillmanItems">
+            <!-- Items will be populated by JavaScript -->
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Modal Footer -->
+    <div class="modal-footer">
+      <button class="btn btn-outline" id="cancelBtn">Cancel</button>
+      <button class="btn btn-primary" id="assignBtn">Confirm</button>
+    </div>
+  </div>
+</div>
+
+
+
   <header>
     <div class="logo">
       <div class="logo-image">
         <img src="logo.jpg" alt="logo image">
       </div>
-      <h2>Secured CMS</h2>
+      <h2>MES CMS</h2>
     </div>
 
     <div class="user">
@@ -868,7 +1295,7 @@
         <i class="fas fa-ticket-alt"></i>
         Complaints
       </a>
-      <a href="#" class="nav-item">
+      <a href="all-users.html" class="nav-item">
         <i class="fas fa-users"></i>
         Users
       </a>
@@ -890,7 +1317,7 @@
   <div class="content">
     <div class="complaints-section-container">
       <div class="complaints-sidebar">
-        <a href="#" class="complaints-option" id="launch-complaints">
+        <a href="launch-complaints.html" class="complaints-option" id="launch-complaints">
           <i class="fas fa-rocket"></i>
           Launch Complaints
         </a>
@@ -898,7 +1325,7 @@
           <i class="fas fa-list"></i>
           All Complaints
         </div>
-        <a href="#" class="complaints-option" id="natures">
+        <a href="natures.html" class="complaints-option" id="natures">
           <i class="fas fa-chart-pie"></i>
           Natures
         </a>
@@ -908,15 +1335,75 @@
         <div id="all-complaints" class="complaints-panel active">
           <div class="panel-header">
             <h2 class="panel-title">All Complaints</h2>
-            <div class="entries-per-page">
-              <span>Show</span>
-              <select id="per-page-select">
-                <option value="10">10</option>
-                <option value="30">30</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
+          </div>
+
+          <!-- Filter Controls-->
+          <div class="filter-controls">
+            <div class="filter-group">
+              <label for="receiver-filter">Receiver:</label>
+              <select id="receiver-filter" class="form-control filter-select">
+                <option value="">All Receivers</option>
               </select>
-              <span>entries</span>
+            </div>
+            
+            <div class="filter-group">
+              <label for="colony-filter">Colony:</label>
+              <select id="colony-filter" class="form-control filter-select">
+                <option value="">All Colonies</option>
+              </select>
+            </div>
+            
+            <div class="filter-group">
+              <label for="category-filter">Category:</label>
+              <select id="category-filter" class="form-control filter-select">
+                <option value="">All Categories</option>
+                <option value="B&R-I">B&R-I</option>
+                <option value="B&R-II">B&R-II</option>
+                <option value="B&R-III">B&R-III</option>
+                <option value="E&M-I">E&M-I</option>
+                <option value="E&M-II">E&M-II</option>
+                <option value="F&S-I">F&S-I</option>
+                <option value="-">-</option>
+              </select>
+            </div>
+            
+            <div class="filter-group">
+              <label for="status-filter">Status:</label>
+              <select id="status-filter" class="form-control filter-select">
+                <option value="">All Complaints</option>
+                <option value="In-Progress">In-Progress</option>
+                <option value="Completed">Completed</option>
+                <option value="Un-Assigned">Un-Assigned</option>
+                <option value="Deffered">Deferred</option>
+              </select>
+            </div>
+
+            <button id="apply-filters" class="btn btn-primary">
+              <i class="fas fa-search"></i> Find
+            </button>
+          </div>
+
+          
+          <div class="priority-filters">
+            <div class="priority-box" data-priority="immediate" id="box-immediate">
+              <div class="priority-icon immediate"><i class="fas fa-bolt"></i></div>
+              <div class="priority-label">Immediate</div>
+              <div class="priority-desc">Critical action</div>
+            </div>
+            <div class="priority-box" data-priority="urgent" id="box-urgent">
+              <div class="priority-icon urgent"><i class="fas fa-exclamation-triangle"></i></div>
+              <div class="priority-label">Urgent</div>
+              <div class="priority-desc">Needs quick response</div>
+            </div>
+            <div class="priority-box" data-priority="routine" id="box-routine">
+              <div class="priority-icon routine"><i class="fas fa-clock"></i></div>
+              <div class="priority-label">Routine</div>
+              <div class="priority-desc">Standard workflow</div>
+            </div>
+            <div class="priority-box" data-priority="deferred" id="box-deferred">
+              <div class="priority-icon deferred"><i class="fas fa-calendar-alt"></i></div>
+              <div class="priority-label">Deferred</div>
+              <div class="priority-desc">Can be scheduled</div>
             </div>
           </div>
           
@@ -927,212 +1414,21 @@
               Search
             </button>
           </div>
-          
-          <table class="complaints-history-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Customer</th>
-                <th>Phone</th>
-                <th>Category</th>
-                <th>Description</th>
-                <th>Skillman</th>
-                <th>Status</th>
-                <th>Date</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="complaints-table-body">
-              <tr data-complaint-id="1001">
-                <td>1001</td>
-                <td>Sarah Williams</td>
-                <td>+1 234 567 890</td>
-                <td>Electrical</td>
-                <td>Power outage in living room</td>
-                <td class="editable-cell">
-                  <div class="static-value" data-field="skillman">John Davis (Electrician)</div>
-                  <select class="editable-select" style="display:none;" data-field="skillman">
-                    <option value="John Davis (Electrician)">John Davis (Electrician)</option>
-                    <option value="Mark Wilson (Plumber)">Mark Wilson (Plumber)</option>
-                    <option value="Lisa Thompson (Carpenter)">Lisa Thompson (Carpenter)</option>
-                    <option value="Mike Chen (AC Specialist)">Mike Chen (AC Specialist)</option>
-                  </select>
-                </td>
-                <td class="editable-cell">
-                  <div class="static-value" data-field="status">In Progress</div>
-                  <select class="editable-select" style="display:none;" data-field="status">
-                    <option value="Open">Open</option>
-                    <option value="In Progress">In Progress</option>
-                    <option value="Resolved">Resolved</option>
-                    <option value="Closed">Closed</option>
-                  </select>
-                </td>
-                <td>2023-05-15</td>
-                <td class="action-cell">
-                  <button class="action-btn save-btn" style="display:none;">
-                    <i class="fas fa-save"></i>
-                  </button>
-                  <button class="action-btn edit-btn">
-                    <i class="fas fa-edit"></i>
-                  </button>
-                  <button class="action-btn delete-btn delete">
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </td>
-              </tr>
-              <tr data-complaint-id="1002">
-                <td>1002</td>
-                <td>Michael Brown</td>
-                <td>+1 345 678 901</td>
-                <td>Plumbing</td>
-                <td>Kitchen sink leakage</td>
-                <td class="editable-cell">
-                  <div class="static-value" data-field="skillman">Mark Wilson (Plumber)</div>
-                  <select class="editable-select" style="display:none;" data-field="skillman">
-                    <option value="John Davis (Electrician)">John Davis (Electrician)</option>
-                    <option value="Mark Wilson (Plumber)">Mark Wilson (Plumber)</option>
-                    <option value="Lisa Thompson (Carpenter)">Lisa Thompson (Carpenter)</option>
-                    <option value="Mike Chen (AC Specialist)">Mike Chen (AC Specialist)</option>
-                  </select>
-                </td>
-                <td class="editable-cell">
-                  <div class="static-value" data-field="status">Resolved</div>
-                  <select class="editable-select" style="display:none;" data-field="status">
-                    <option value="Open">Open</option>
-                    <option value="In Progress">In Progress</option>
-                    <option value="Resolved">Resolved</option>
-                    <option value="Closed">Closed</option>
-                  </select>
-                </td>
-                <td>2023-05-10</td>
-                <td class="action-cell">
-                  <button class="action-btn save-btn" style="display:none;">
-                    <i class="fas fa-save"></i>
-                  </button>
-                  <button class="action-btn edit-btn">
-                    <i class="fas fa-edit"></i>
-                  </button>
-                  <button class="action-btn delete-btn delete">
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </td>
-              </tr>
-              <tr data-complaint-id="1003">
-                <td>1003</td>
-                <td>Sarah Williams</td>
-                <td>+1 234 567 890</td>
-                <td>Air Conditioner</td>
-                <td>AC not cooling properly</td>
-                <td class="editable-cell">
-                  <div class="static-value" data-field="skillman">Mike Chen (AC Specialist)</div>
-                  <select class="editable-select" style="display:none;" data-field="skillman">
-                    <option value="John Davis (Electrician)">John Davis (Electrician)</option>
-                    <option value="Mark Wilson (Plumber)">Mark Wilson (Plumber)</option>
-                    <option value="Lisa Thompson (Carpenter)">Lisa Thompson (Carpenter)</option>
-                    <option value="Mike Chen (AC Specialist)">Mike Chen (AC Specialist)</option>
-                  </select>
-                </td>
-                <td class="editable-cell">
-                  <div class="static-value" data-field="status">Open</div>
-                  <select class="editable-select" style="display:none;" data-field="status">
-                    <option value="Open">Open</option>
-                    <option value="In Progress">In Progress</option>
-                    <option value="Resolved">Resolved</option>
-                    <option value="Closed">Closed</option>
-                  </select>
-                </td>
-                <td>2023-05-18</td>
-                <td class="action-cell">
-                  <button class="action-btn save-btn" style="display:none;">
-                    <i class="fas fa-save"></i>
-                  </button>
-                  <button class="action-btn edit-btn">
-                    <i class="fas fa-edit"></i>
-                  </button>
-                  <button class="action-btn delete-btn delete">
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </td>
-              </tr>
-              <tr data-complaint-id="1004">
-                <td>1004</td>
-                <td>Robert Garcia</td>
-                <td>+1 456 789 012</td>
-                <td>Electrical</td>
-                <td>Flickering lights in bedroom</td>
-                <td class="editable-cell">
-                  <div class="static-value" data-field="skillman">John Davis (Electrician)</div>
-                  <select class="editable-select" style="display:none;" data-field="skillman">
-                    <option value="John Davis (Electrician)">John Davis (Electrician)</option>
-                    <option value="Mark Wilson (Plumber)">Mark Wilson (Plumber)</option>
-                    <option value="Lisa Thompson (Carpenter)">Lisa Thompson (Carpenter)</option>
-                    <option value="Mike Chen (AC Specialist)">Mike Chen (AC Specialist)</option>
-                  </select>
-                </td>
-                <td class="editable-cell">
-                  <div class="static-value" data-field="status">Open</div>
-                  <select class="editable-select" style="display:none;" data-field="status">
-                    <option value="Open">Open</option>
-                    <option value="In Progress">In Progress</option>
-                    <option value="Resolved">Resolved</option>
-                    <option value="Closed">Closed</option>
-                  </select>
-                </td>
-                <td>2023-05-20</td>
-                <td class="action-cell">
-                  <button class="action-btn save-btn" style="display:none;">
-                    <i class="fas fa-save"></i>
-                  </button>
-                  <button class="action-btn edit-btn">
-                    <i class="fas fa-edit"></i>
-                  </button>
-                  <button class="action-btn delete-btn delete">
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </td>
-              </tr>
-              <tr data-complaint-id="1005">
-                <td>1005</td>
-                <td>Emily Chen</td>
-                <td>+1 567 890 123</td>
-                <td>Aluminium</td>
-                <td>Window not closing properly</td>
-                <td class="editable-cell">
-                  <div class="static-value" data-field="skillman">Lisa Thompson (Carpenter)</div>
-                  <select class="editable-select" style="display:none;" data-field="skillman">
-                    <option value="John Davis (Electrician)">John Davis (Electrician)</option>
-                    <option value="Mark Wilson (Plumber)">Mark Wilson (Plumber)</option>
-                    <option value="Lisa Thompson (Carpenter)">Lisa Thompson (Carpenter)</option>
-                    <option value="Mike Chen (AC Specialist)">Mike Chen (AC Specialist)</option>
-                  </select>
-                </td>
-                <td class="editable-cell">
-                  <div class="static-value" data-field="status">In Progress</div>
-                  <select class="editable-select" style="display:none;" data-field="status">
-                    <option value="Open">Open</option>
-                    <option value="In Progress">In Progress</option>
-                    <option value="Resolved">Resolved</option>
-                    <option value="Closed">Closed</option>
-                  </select>
-                </td>
-                <td>2023-05-22</td>
-                <td class="action-cell">
-                  <button class="action-btn save-btn" style="display:none;">
-                    <i class="fas fa-save"></i>
-                  </button>
-                  <button class="action-btn edit-btn">
-                    <i class="fas fa-edit"></i>
-                  </button>
-                  <button class="action-btn delete-btn delete">
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+
           
           <div class="pagination-container">
-            <div id="pagination-info">Showing 1 to 5 of 5 entries</div>
+            
+            <div class="entries-per-page">
+              <span>Show</span>
+              <select id="per-page-select">
+                <option value="10">10</option>
+                <option value="30">30</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </select>
+              <span>entries</span>
+            </div>
+
             <div class="pagination-controls" id="complaints-pagination">
               <button class="page-btn prev-btn disabled">
                 <i class="fas fa-chevron-left"></i>
@@ -1143,90 +1439,1803 @@
               </button>
             </div>
           </div>
+          
+          <table class="complaints-history-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Date/Time</th>
+                <th>Complaint ID</th>
+                <th>Type</th>
+                <th>Category</th>
+                <th>Colony</th>
+                <th>Building</th>
+                <th>Complaint By</th>
+                <th>Skillman</th>
+                <th>Customer</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="complaints-table-body">
+              <!-- Data will be populated by JavaScript -->
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="12">
+                  <div id="pagination-info">Loading data...</div>
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+          
         </div>
       </div>
     </div>
   </div>
 
   <script>
+
+    
+// Add these variables at the top with your other declarations
+let receivers = [];
+let colonies = [];
+let categories = [];
+let currentFilters = {
+  receiver: '',
+  colony: '',
+  category: '',
+  status: ''
+};
+    //need to add the showing entries under the table inside it
+    // Add this global variable at the top of your script
+    let allSkillmen = [];
     document.addEventListener('DOMContentLoaded', function() {
-      // Initialize event listeners for the complaints table
-      document.querySelectorAll('.edit-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-          const row = this.closest('tr');
-          row.querySelectorAll('.editable-cell').forEach(cell => {
-            const staticValue = cell.querySelector('.static-value');
-            const select = cell.querySelector('.editable-select');
-            staticValue.style.display = 'none';
-            select.style.display = 'block';
-          });
-          this.style.display = 'none';
-          row.querySelector('.save-btn').style.display = 'block';
-        });
+      // Current page and items per page
+      let currentPage = 1;
+      let itemsPerPage = 10;
+      let totalItems = 0;
+      let allComplaints = [];
+      
+      // DOM elements
+      const tableBody = document.getElementById('complaints-table-body');
+      const perPageSelect = document.getElementById('per-page-select');
+      const paginationInfo = document.querySelector('tfoot #pagination-info');
+      const paginationControls = document.getElementById('complaints-pagination');
+      const searchInput = document.getElementById('complaint-search');
+      const searchButton = document.getElementById('search-complaints-btn');
+      
+      // Initialize the table
+      fetchComplaints();
+      
+      // Event listeners
+      perPageSelect.addEventListener('change', function() {
+        itemsPerPage = parseInt(this.value);
+        currentPage = 1;
+        fetchComplaints();
       });
       
-      document.querySelectorAll('.save-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-          const row = this.closest('tr');
-          const complaintId = row.dataset.complaintId;
-          let updates = {};
-          row.querySelectorAll('.editable-cell').forEach(cell => {
-            const field = cell.querySelector('.static-value').dataset.field;
-            const select = cell.querySelector('.editable-select');
-            updates[field] = select.value;
-          });
-          
-          // In a real application, this would call an update function
-          console.log(`Updating complaint #${complaintId} with:`, updates);
-          
-          row.querySelectorAll('.editable-cell').forEach(cell => {
-            const staticValue = cell.querySelector('.static-value');
-            const select = cell.querySelector('.editable-select');
-            staticValue.textContent = select.value;
-            staticValue.style.display = 'block';
-            select.style.display = 'none';
-          });
-          
-          this.style.display = 'none';
-          row.querySelector('.edit-btn').style.display = 'block';
-          
-          alert('Complaint updated successfully!');
-        });
+      searchButton.addEventListener('click', function() {
+        currentPage = 1;
+        fetchComplaints();
       });
       
-      document.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-          const row = this.closest('tr');
-          const complaintId = row.dataset.complaintId;
-          if (confirm('Are you sure you want to delete this complaint?')) {
-            // In a real application, this would call a delete function
-            console.log(`Deleting complaint #${complaintId}`);
-            row.remove();
-            alert('Complaint deleted successfully!');
+      // Handle Enter key in search input
+      searchInput.addEventListener('keyup', function(e) {
+        if (e.key === 'Enter') {
+          currentPage = 1;
+          fetchComplaints();
+        }
+      });
+      
+      document.addEventListener('click', function(e) {
+        // Handle pagination buttons
+        if (e.target.classList.contains('page-btn')) {
+          if (e.target.classList.contains('prev-btn')) {
+            if (currentPage > 1) {
+              currentPage--;
+              fetchComplaints();
+            }
+          } else if (e.target.classList.contains('next-btn')) {
+            if (currentPage < Math.ceil(totalItems / itemsPerPage)) {
+              currentPage++;
+              fetchComplaints();
+            }
+          } else if (!isNaN(parseInt(e.target.textContent))) {
+            currentPage = parseInt(e.target.textContent);
+            fetchComplaints();
           }
-        });
+        }
       });
       
-      document.getElementById('search-complaints-btn').addEventListener('click', function() {
-        const searchTerm = document.getElementById('complaint-search').value.toLowerCase();
-        const rows = document.querySelectorAll('#complaints-table-body tr');
+      // Fetch complaints from API
+      function fetchComplaints() {
+        const searchTerm = searchInput.value.trim();
+        const url = new URL('http://localhost:3000/api/complaints');
+        url.searchParams.append('page', currentPage);
+        url.searchParams.append('pageSize', itemsPerPage);
         
-        if (!searchTerm) {
-          rows.forEach(row => row.style.display = '');
+        if (searchTerm) {
+          url.searchParams.append('search', searchTerm);
+        }
+        
+        fetch(url)
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              allComplaints = data.data;
+              totalItems = data.pagination.total;
+              renderTable();
+              updatePagination();
+            } else {
+              throw new Error(data.message || 'Failed to fetch complaints');
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            tableBody.innerHTML = `<tr><td colspan="12" style="text-align: center; color: red;">Error loading data: ${error.message}</td></tr>`;
+            paginationInfo.textContent = 'Error loading data';
+          });
+      }
+      
+      // Render the table with complaint data
+      function renderTable() {
+        tableBody.innerHTML = '';
+        
+        if (allComplaints.length === 0) {
+          tableBody.innerHTML = `<tr><td colspan="12" style="text-align: center;">No complaints found</td></tr>`;
           return;
         }
         
-        rows.forEach(row => {
-          const rowText = Array.from(row.cells).map(cell => cell.textContent.toLowerCase()).join(' ');
-          row.style.display = rowText.includes(searchTerm) ? '' : 'none';
+        allComplaints.forEach((complaint, index) => {
+          const row = document.createElement('tr');
+          row.dataset.complaintId = complaint.complaint_id;
+          
+          // Format date/time
+          const launchedAt = new Date(complaint.launched_at);
+          const dateStr = launchedAt.toISOString().split('T')[0];
+          const timeStr = launchedAt.toTimeString().split(' ')[0].substring(0, 5);
+          
+          // Determine status class and action options
+          let statusClass = '';
+          let actionOptions = '';
+          const status = complaint.status.toLowerCase();
+          
+          switch(status) {
+            case 'deffered':
+              statusClass = 'status-deffered';
+              actionOptions = `
+                <a href="#" class="complaint-details-btn"><i class="fas fa-info-circle"></i> Complaint Details</a>
+                <a href="#" class="print-complaint-btn"><i class="fas fa-print"></i> Print Complaint</a>
+              `;
+              break;
+            case 'completed':
+              statusClass = 'status-completed';
+              actionOptions = `
+                <a href="#" class="complaint-details-btn"><i class="fas fa-info-circle"></i> Complaint Details</a>
+                <a href="#" class="print-complaint-btn"><i class="fas fa-print"></i> Print Complaint</a>
+              `;
+              break;
+            case 'un-assigned':
+              statusClass = 'status-un-assigned';
+              actionOptions = `
+                <a href="#" class="complaint-details-btn"><i class="fas fa-info-circle"></i> Complaint Details</a>
+                <a href="#" class="assign-skillman-btn"><i class="fas fa-user-plus"></i> Assign Skillman</a>
+              `;
+              break;
+            case 'in-progress':
+              statusClass = 'status-in-progress';
+              actionOptions = `
+                <a href="#" class="complaint-details-btn"><i class="fas fa-info-circle"></i> Complaint Details</a>
+                <a href="#" class="change-skillman-btn"><i class="fas fa-user-edit"></i> Change Skillman</a>
+                <a href="#" class="mark-complaint-btn"><i class="fas fa-check"></i> Mark Complaint</a>
+                <a href="#" class="print-complaint-btn"><i class="fas fa-print"></i> Print Complaint</a>
+              `;
+              break;
+          }
+          
+          // Create category by combining nature and type
+          const category = complaint.nature && complaint.type 
+            ? `${complaint.nature} / ${complaint.type}`
+            : 'N/A';
+          
+          row.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${dateStr}<br>${timeStr}</td>
+            <td>${complaint.complaint_id}</td>
+            <td>${complaint.category || 'N/A'}</td>
+            <td>${category}</td>
+            <td>${complaint.location_colony_name || 'N/A'}</td>
+            <td>${complaint.location_building_number || 'N/A'}</td>
+            <td>${complaint.receiver_name || 'N/A'}</td>
+            <td class="editable-cell">
+              <div class="static-value" data-field="skillman">${complaint.skillman_name || 'Unassigned'}</div>
+              <select class="editable-select" style="display:none;" data-field="skillman">
+                <option value="John Davis">John Davis</option>
+                <option value="Mark Wilson">Mark Wilson</option>
+                <option value="Lisa Thompson">Lisa Thompson</option>
+                <option value="Mike Chen">Mike Chen</option>
+              </select>
+            </td>
+            <td>${complaint.customer_name || 'N/A'}</td>
+            <td class="editable-cell">
+              <span class="status-badge ${statusClass}">${complaint.status}</span>
+              <select class="editable-select" style="display:none;" data-field="status">
+                <option value="In-Progress">In-Progress</option>
+                <option value="Completed">Completed</option>
+                <option value="Deffered">Deffered</option>
+                <option value="Un-Assigned">Un-Assigned</option>
+              </select>
+            </td>
+            <td class="action-cell">
+              <div class="action-dropdown">
+                <button class="action-dropdown-btn">Actions <i class="fas fa-caret-down"></i></button>
+                <div class="action-dropdown-content">
+                  <a href="#" class="complaint-details-btn"><i class="fas fa-info-circle"></i> Details</a>
+                  <a href="#" class="assign-skillman-btn"><i class="fas fa-user-plus"></i> Assign</a>
+                  <!-- other action links -->
+                </div>
+              </div>
+            </td>
+          `;
+          
+          tableBody.appendChild(row);
         });
+        
+        // Add event listeners to the new rows
+        initializeRowEventListeners();
+      }
+      
+      // Update pagination controls
+      function updatePagination() {
+        const totalPages = Math.ceil(totalItems / itemsPerPage);
+        const startItem = (currentPage - 1) * itemsPerPage + 1;
+        const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+        
+        paginationInfo.textContent = `Showing ${startItem} to ${endItem} of ${totalItems} entries`;
+        
+        // Clear existing pagination buttons
+        paginationControls.innerHTML = '';
+        
+        // Previous button
+        const prevBtn = document.createElement('button');
+        prevBtn.className = `page-btn prev-btn ${currentPage === 1 ? 'disabled' : ''}`;
+        prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+        paginationControls.appendChild(prevBtn);
+        
+        // Page buttons
+        const maxVisiblePages = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+        
+        if (endPage - startPage + 1 < maxVisiblePages) {
+          startPage = Math.max(1, endPage - maxVisiblePages + 1);
+        }
+        
+        if (startPage > 1) {
+          const firstBtn = document.createElement('button');
+          firstBtn.className = 'page-btn';
+          firstBtn.textContent = '1';
+          paginationControls.appendChild(firstBtn);
+          
+          if (startPage > 2) {
+            const ellipsis = document.createElement('span');
+            ellipsis.textContent = '...';
+            ellipsis.style.padding = '8px 12px';
+            paginationControls.appendChild(ellipsis);
+          }
+        }
+        
+        for (let i = startPage; i <= endPage; i++) {
+          const pageBtn = document.createElement('button');
+          pageBtn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+          pageBtn.textContent = i;
+          paginationControls.appendChild(pageBtn);
+        }
+        
+        if (endPage < totalPages) {
+          if (endPage < totalPages - 1) {
+            const ellipsis = document.createElement('span');
+            ellipsis.textContent = '...';
+            ellipsis.style.padding = '8px 12px';
+            paginationControls.appendChild(ellipsis);
+          }
+          
+          const lastBtn = document.createElement('button');
+          lastBtn.className = 'page-btn';
+          lastBtn.textContent = totalPages;
+          paginationControls.appendChild(lastBtn);
+        }
+        
+        // Next button
+        const nextBtn = document.createElement('button');
+        nextBtn.className = `page-btn next-btn ${currentPage === totalPages ? 'disabled' : ''}`;
+        nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+        paginationControls.appendChild(nextBtn);
+      }
+      
+      // Initialize event listeners for table rows
+      function initializeRowEventListeners() {
+
+          // Add new event listeners for action buttons
+          document.querySelectorAll('.complaint-details-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+              e.preventDefault();
+              const row = this.closest('tr');
+              const complaintId = row.dataset.complaintId;
+              console.log(`Viewing details for complaint #${complaintId}`);
+              // Implement complaint details view
+            });
+          });
+
+          document.querySelectorAll('.print-complaint-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+              e.preventDefault();
+              const row = this.closest('tr');
+              const complaintId = row.dataset.complaintId;
+              console.log(`Printing complaint #${complaintId}`);
+              // Implement print functionality
+            });
+          });
+
+          document.querySelectorAll('.assign-skillman-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+              e.preventDefault();
+              const row = this.closest('tr');
+              const skillmanCell = row.querySelector('.editable-cell[data-field="skillman"]');
+              const staticValue = skillmanCell.querySelector('.static-value');
+              const select = skillmanCell.querySelector('.editable-select');
+              staticValue.style.display = 'none';
+              select.style.display = 'block';
+              select.value = staticValue.textContent;
+            });
+          });
+
+        document.querySelectorAll('.mark-complaint-btn').forEach(btn => {
+          btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const row = this.closest('tr');
+            const complaintId = row.dataset.complaintId;
+            
+            // Show confirmation dialog
+            const confirmed = confirm(`Do you want to mark the complaint #${complaintId} as 'Completed'? This action cannot be undone.`);
+            
+            if (confirmed) {
+              // Send data to backend API
+              markComplaintCompleted(complaintId, row);
+            }
+          });
+        });
+      }
+      
+      // Function to update complaint (mock implementation)
+      function updateComplaint(complaintId, field, value) {
+        console.log(`API call to update complaint ${complaintId}: ${field}=${value}`);
+        // In a real application, you would make a fetch request here
+        alert(`${field} updated successfully!`);
+      }
+      
+      // Function to delete complaint (mock implementation)
+      function deleteComplaint(complaintId, row) {
+        console.log(`API call to delete complaint ${complaintId}`);
+        // In a real application, you would make a fetch request here
+        row.remove();
+        alert('Complaint deleted successfully!');
+        // Refresh the data
+        fetchComplaints();
+      }
+
+
+
+      fetchFilterOptions();
+
+      
+
+  const findBtn = document.getElementById('apply-filters');
+  if (findBtn) {
+    findBtn.addEventListener('click', function () {
+      const receiver = document.getElementById('receiver-filter').value;
+      const colony = document.getElementById('colony-filter').value;
+      const category = document.getElementById('category-filter').value;
+      const status = document.getElementById('status-filter').value;
+
+      console.log('Receiver:', receiver);
+      console.log('Colony:', colony);
+      console.log('Category:', category);
+      console.log('Status:', status);
+    });
+  }
+
+    });
+
+    
+
+
+function markComplaintCompleted(complaintId, row) {
+  // Show loading state
+  const statusCell = row.querySelector('td:nth-child(11)'); // Status is in the 11th column
+  const statusBadge = statusCell.querySelector('.status-badge');
+  
+  // Store original status for potential rollback
+  const originalStatus = statusBadge.textContent;
+  const originalStatusClass = statusBadge.className;
+  
+  statusBadge.textContent = 'Updating...';
+  statusBadge.className = 'status-badge status-in-progress';
+  
+  // Make API call to update status
+  fetch('http://localhost:3000/api/complaints/update-status', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      complaint_id: complaintId,
+      status: 'Completed'
+    })
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    return response.json();
+  })
+  .then(data => {
+    if (data.success) {
+      // Update UI to show completed status
+      statusBadge.textContent = 'Completed';
+      statusBadge.className = 'status-badge status-completed';
+      
+      // Update the status dropdown value
+      const statusSelect = statusCell.querySelector('.editable-select');
+      if (statusSelect) {
+        statusSelect.value = 'Completed';
+      }
+      
+      // Refresh the action dropdown options
+      const actionDropdown = row.querySelector('.action-dropdown-content');
+      if (actionDropdown) {
+        actionDropdown.innerHTML = `
+          <a href="#" class="complaint-details-btn"><i class="fas fa-info-circle"></i> Complaint Details</a>
+          <a href="#" class="print-complaint-btn"><i class="fas fa-print"></i> Print Complaint</a>
+        `;
+        
+        // Re-attach event listeners to the new buttons
+        initializeActionButtonListeners(row);
+      }
+      
+      // Show success message
+      alert('Complaint marked as completed successfully!');
+    } else {
+      throw new Error(data.message || 'Failed to update complaint status');
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    // Revert to original status
+    statusBadge.textContent = originalStatus;
+    statusBadge.className = originalStatusClass;
+    alert('Failed to update complaint status: ' + error.message);
+  });
+}
+
+
+
+
+
+  function initializeActionButtonListeners(row) {
+    // Complaint details button
+    row.querySelector('.complaint-details-btn')?.addEventListener('click', function(e) {
+      e.preventDefault();
+      const complaintId = row.dataset.complaintId;
+      console.log(`Viewing details for complaint #${complaintId}`);
+      // Implement complaint details view
+    });
+
+    // Print complaint button
+    row.querySelector('.print-complaint-btn')?.addEventListener('click', function(e) {
+      e.preventDefault();
+      const complaintId = row.dataset.complaintId;
+      console.log(`Printing complaint #${complaintId}`);
+      // Implement print functionality
+    });
+  }
+
+
+
+
+
+  function initializeRowEventListeners() {
+  // Add event listeners to all rows
+  document.querySelectorAll('tr[data-complaint-id]').forEach(row => {
+    initializeActionButtonListeners(row);
+
+
+    // Mark complaint button
+    row.querySelector('.mark-complaint-btn')?.addEventListener('click', function(e) {
+      e.preventDefault();
+      const complaintId = row.dataset.complaintId;
+      const confirmed = confirm(`Do you want to mark the complaint #${complaintId} as 'Completed'? This action cannot be undone.`);
+      if (confirmed) {
+        markComplaintCompleted(complaintId, row);
+      }
+    });
+  });
+}
+
+
+
+// JS for Skillman Modal
+// Skillman Assignment Modal Functionality
+document.addEventListener('DOMContentLoaded', function() {
+  const SERVER_URL = 'http://localhost:3000';
+  
+  // ========== Main Complaints Table Functionality ==========
+  let currentPage = 1;
+  let itemsPerPage = 10;
+  let totalItems = 0;
+  let allComplaints = [];
+  
+  // DOM elements
+  const tableBody = document.getElementById('complaints-table-body');
+  const perPageSelect = document.getElementById('per-page-select');
+  const paginationInfo = document.getElementById('pagination-info');
+  const paginationControls = document.getElementById('complaints-pagination');
+  const searchInput = document.getElementById('complaint-search');
+  const searchButton = document.getElementById('search-complaints-btn');
+  
+  // Initialize the table
+  fetchComplaints();
+  
+  // Event listeners
+  perPageSelect.addEventListener('change', function() {
+    itemsPerPage = parseInt(this.value);
+    currentPage = 1;
+    fetchComplaints();
+  });
+  
+  searchButton.addEventListener('click', function() {
+    currentPage = 1;
+    fetchComplaints();
+  });
+  
+  searchInput.addEventListener('keyup', function(e) {
+    if (e.key === 'Enter') {
+      currentPage = 1;
+      fetchComplaints();
+    }
+  });
+  
+  document.addEventListener('click', function(e) {
+    // Handle pagination buttons
+    if (e.target.classList.contains('page-btn')) {
+      if (e.target.classList.contains('prev-btn')) {
+        if (currentPage > 1) {
+          currentPage--;
+          fetchComplaints();
+        }
+      } else if (e.target.classList.contains('next-btn')) {
+        if (currentPage < Math.ceil(totalItems / itemsPerPage)) {
+          currentPage++;
+          fetchComplaints();
+        }
+      } else if (!isNaN(parseInt(e.target.textContent))) {
+        currentPage = parseInt(e.target.textContent);
+        fetchComplaints();
+      }
+    }
+  });
+  
+  // Fetch complaints from API
+  function fetchComplaints() {
+    const searchTerm = searchInput.value.trim();
+    const url = new URL(`${SERVER_URL}/api/complaints`);
+    url.searchParams.append('page', currentPage);
+    url.searchParams.append('pageSize', itemsPerPage);
+    
+    if (searchTerm) {
+      url.searchParams.append('search', searchTerm);
+    }
+    
+    fetch(url)
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          allComplaints = data.data;
+          totalItems = data.pagination.total;
+          renderTable();
+          updatePagination();
+        } else {
+          throw new Error(data.message || 'Failed to fetch complaints');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        tableBody.innerHTML = `<tr><td colspan="12" style="text-align: center; color: red;">Error loading data: ${error.message}</td></tr>`;
+        paginationInfo.textContent = 'Error loading data';
+      });
+  }
+  
+  // Render the table with complaint data
+  function renderTable() {
+    tableBody.innerHTML = '';
+    
+    if (allComplaints.length === 0) {
+      tableBody.innerHTML = `<tr><td colspan="12" style="text-align: center;">No complaints found</td></tr>`;
+      return;
+    }
+    
+    allComplaints.forEach((complaint, index) => {
+      const row = document.createElement('tr');
+      row.dataset.complaintId = complaint.complaint_id;
+      
+      // Format date/time
+      const launchedAt = new Date(complaint.launched_at);
+      const dateStr = launchedAt.toISOString().split('T')[0];
+      const timeStr = launchedAt.toTimeString().split(' ')[0].substring(0, 5);
+      
+      // Determine status class and action options
+      let statusClass = '';
+      let actionOptions = '';
+      const status = complaint.status.toLowerCase();
+      
+      switch(status) {
+        case 'deffered':
+          statusClass = 'status-deffered';
+          actionOptions = `
+            <a href="#" class="complaint-details-btn"><i class="fas fa-info-circle"></i> Complaint Details</a>
+            <a href="#" class="change-skillman-btn"><i class="fas fa-user-edit"></i> Change Skillman</a>
+            <a href="#" class="mark-complaint-btn"><i class="fas fa-check"></i> Mark Complaint</a>
+            <a href="#" class="print-complaint-btn"><i class="fas fa-print"></i> Print Complaint</a>
+          `;
+          break;
+        case 'completed':
+          statusClass = 'status-completed';
+          actionOptions = `
+            <a href="#" class="complaint-details-btn"><i class="fas fa-info-circle"></i> Complaint Details</a>
+            <a href="#" class="print-complaint-btn"><i class="fas fa-print"></i> Print Complaint</a>
+          `;
+          break;
+        case 'un-assigned':
+          statusClass = 'status-un-assigned';
+          actionOptions = `
+            <a href="#" class="complaint-details-btn"><i class="fas fa-info-circle"></i> Complaint Details</a>
+            <a href="#" class="assign-skillman-btn"><i class="fas fa-user-plus"></i> Assign Skillman</a>
+            <a href="#" class="mark-complaint-btn"><i class="fas fa-check"></i> Mark Complaint</a>
+            <a href="#" class="print-complaint-btn"><i class="fas fa-print"></i> Print Complaint</a>
+          `;
+          break;
+        case 'in-progress':
+          statusClass = 'status-in-progress';
+          actionOptions = `
+            <a href="#" class="complaint-details-btn"><i class="fas fa-info-circle"></i> Complaint Details</a>
+            <a href="#" class="change-skillman-btn"><i class="fas fa-user-edit"></i> Change Skillman</a>
+            <a href="#" class="mark-complaint-btn"><i class="fas fa-check"></i> Mark Complaint</a>
+            <a href="#" class="print-complaint-btn"><i class="fas fa-print"></i> Print Complaint</a>
+          `;
+          break;
+      }
+      
+      // Create category by combining nature and type
+      const category = complaint.nature && complaint.type 
+        ? `${complaint.nature} / ${complaint.type}`
+        : 'N/A';
+      
+      row.innerHTML = `
+        <td>${index + 1}</td>
+        <td>${dateStr}<br>${timeStr}</td>
+        <td>${complaint.complaint_id}</td>
+        <td>${complaint.category || 'N/A'}</td>
+        <td>${category}</td>
+        <td>${complaint.location_colony_name || 'N/A'}</td>
+        <td>${complaint.location_building_number || 'N/A'}</td>
+        <td>${complaint.receiver_name || 'N/A'}</td>
+        <td class="editable-cell">
+          <div class="static-value" data-field="skillman">${complaint.skillman_name || 'Unassigned'}</div>
+          <select class="editable-select" style="display:none;" data-field="skillman">
+            <option value="Un-Assigned">Un-Assigned</option>
+          </select>
+        </td>
+        <td>${complaint.customer_name || 'N/A'}</td>
+        <td class="editable-cell">
+          <span class="status-badge ${statusClass}">${complaint.status}</span>
+          <select class="editable-select" style="display:none;" data-field="status">
+            <option value="Un-Assigned">Un-Assigned</option>
+          </select>
+        </td>
+        <td class="action-cell">
+          <div class="action-dropdown">
+            <button class="action-dropdown-btn">Actions <i class="fas fa-caret-down"></i></button>
+            <div class="action-dropdown-content">
+              ${actionOptions}
+            </div>
+          </div>
+        </td>
+      `;
+      
+      tableBody.appendChild(row);
+    });
+    
+    // Add event listeners to the new rows
+    initializeRowEventListeners();
+
+    initializeActionDropdowns();
+  }
+
+  
+function initializeActionDropdowns() {
+  // Close all dropdowns when clicking outside
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.action-dropdown')) {
+      document.querySelectorAll('.action-dropdown-content').forEach(dropdown => {
+        dropdown.style.display = 'none';
+      });
+    }
+  });
+
+  // Toggle dropdown on button click
+  document.querySelectorAll('.action-dropdown-btn').forEach(button => {
+    button.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const dropdownContent = this.nextElementSibling;
+      
+      // Hide all others
+      document.querySelectorAll('.action-dropdown-content').forEach(dc => {
+        if (dc !== dropdownContent) dc.style.display = 'none';
+      });
+
+      // Toggle this one
+      dropdownContent.style.display = 
+        dropdownContent.style.display === 'block' ? 'none' : 'block';
+    });
+  });
+}
+  
+  // Update pagination controls
+  function updatePagination() {
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    const startItem = (currentPage - 1) * itemsPerPage + 1;
+    const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+    
+    paginationInfo.textContent = `Showing ${startItem} to ${endItem} of ${totalItems} entries`;
+    
+    // Clear existing pagination buttons
+    paginationControls.innerHTML = '';
+    
+    // Previous button
+    const prevBtn = document.createElement('button');
+    prevBtn.className = `page-btn prev-btn ${currentPage === 1 ? 'disabled' : ''}`;
+    prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+    paginationControls.appendChild(prevBtn);
+    
+    // Page buttons
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+    
+    if (startPage > 1) {
+      const firstBtn = document.createElement('button');
+      firstBtn.className = 'page-btn';
+      firstBtn.textContent = '1';
+      paginationControls.appendChild(firstBtn);
+      
+      if (startPage > 2) {
+        const ellipsis = document.createElement('span');
+        ellipsis.textContent = '...';
+        ellipsis.style.padding = '8px 12px';
+        paginationControls.appendChild(ellipsis);
+      }
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+      const pageBtn = document.createElement('button');
+      pageBtn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+      pageBtn.textContent = i;
+      paginationControls.appendChild(pageBtn);
+    }
+    
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) {
+        const ellipsis = document.createElement('span');
+        ellipsis.textContent = '...';
+        ellipsis.style.padding = '8px 12px';
+        paginationControls.appendChild(ellipsis);
+      }
+      
+      const lastBtn = document.createElement('button');
+      lastBtn.className = 'page-btn';
+      lastBtn.textContent = totalPages;
+      paginationControls.appendChild(lastBtn);
+    }
+    
+    // Next button
+    const nextBtn = document.createElement('button');
+    nextBtn.className = `page-btn next-btn ${currentPage === totalPages ? 'disabled' : ''}`;
+    nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+    paginationControls.appendChild(nextBtn);
+  }
+  
+  // Initialize event listeners for table rows
+  function initializeRowEventListeners() {
+    document.querySelectorAll('tr[data-complaint-id]').forEach(row => {
+      const complaintId = row.dataset.complaintId;
+      
+      // Assign Skillman button
+      row.querySelector('.assign-skillman-btn')?.addEventListener('click', function(e) {
+        e.preventDefault();
+        openSkillmanModal(complaintId);
       });
       
-      document.getElementById('per-page-select').addEventListener('change', function() {
-        // In a real application, this would reload the table with pagination
-        alert(`Showing ${this.value} entries per page`);
+      // Change Skillman button
+      row.querySelector('.change-skillman-btn')?.addEventListener('click', function(e) {
+        e.preventDefault();
+        openSkillmanModal(complaintId);
+      });
+      
+      // Complaint details button
+      row.querySelector('.complaint-details-btn')?.addEventListener('click', function(e) {
+        e.preventDefault();
+        console.log(`Viewing details for complaint #${complaintId}`);
+      });
+      
+      // Print complaint button
+      row.querySelector('.print-complaint-btn')?.addEventListener('click', function(e) {
+        e.preventDefault();
+        console.log(`Printing complaint #${complaintId}`);
+      });
+      
+      // Mark complaint button
+      row.querySelector('.mark-complaint-btn')?.addEventListener('click', function(e) {
+        e.preventDefault();
+        const confirmed = confirm(`Do you want to mark the complaint #${complaintId} as 'Completed'? This action cannot be undone.`);
+        if (confirmed) {
+          markComplaintCompleted(complaintId, row);
+        }
       });
     });
+  }
+  
+  // Function to mark complaint as completed
+  function markComplaintCompleted(complaintId, row) {
+    const statusCell = row.querySelector('td:nth-child(11)');
+    const statusBadge = statusCell.querySelector('.status-badge');
+    
+    const originalStatus = statusBadge.textContent;
+    const originalStatusClass = statusBadge.className;
+    
+    statusBadge.textContent = 'Updating...';
+    statusBadge.className = 'status-badge status-in-progress';
+    
+    fetch(`${SERVER_URL}/api/complaints/update-status`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        complaint_id: complaintId,
+        status: 'Completed'
+      })
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (data.success) {
+        statusBadge.textContent = 'Completed';
+        statusBadge.className = 'status-badge status-completed';
+        
+        const statusSelect = statusCell.querySelector('.editable-select');
+        if (statusSelect) {
+          statusSelect.value = 'Completed';
+        }
+        
+        const actionDropdown = row.querySelector('.action-dropdown-content');
+        if (actionDropdown) {
+          actionDropdown.innerHTML = `
+            <a href="#" class="complaint-details-btn"><i class="fas fa-info-circle"></i> Complaint Details</a>
+            <a href="#" class="print-complaint-btn"><i class="fas fa-print"></i> Print Complaint</a>
+          `;
+        }
+        
+        alert('Complaint marked as completed successfully!');
+      } else {
+        throw new Error(data.message || 'Failed to update complaint status');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      statusBadge.textContent = originalStatus;
+      statusBadge.className = originalStatusClass;
+      alert('Failed to update complaint status: ' + error.message);
+    });
+  }
+  
+  // ========== Skillman Modal Functionality ==========
+  const modalBackdrop = document.getElementById('modalBackdrop');
+  const closeBtn = document.getElementById('closeBtn');
+  const cancelBtn = document.getElementById('cancelBtn');
+  const assignBtn = document.getElementById('assignBtn');
+  
+  // Dropdown Elements
+  const primaryDropdown = {
+    toggle: document.getElementById('primarySkillmanToggle'),
+    menu: document.getElementById('primarySkillmanMenu'),
+    search: document.getElementById('primarySkillmanSearch'),
+    items: document.getElementById('primarySkillmanItems'),
+    text: document.getElementById('primarySkillmanText')
+  };
+  
+  const helperDropdown = {
+    toggle: document.getElementById('helperSkillmanToggle'),
+    menu: document.getElementById('helperSkillmanMenu'),
+    search: document.getElementById('helperSkillmanSearch'),
+    items: document.getElementById('helperSkillmanItems'),
+    text: document.getElementById('helperSkillmanText')
+  };
+  
+  const helperTags = document.getElementById('helperTags');
+  
+  // Data
+  let allSkillmen = [];
+  let selectedPrimary = null;
+  let selectedHelpers = [];
+  let currentComplaintId = null;
+  let currentComplaintData = null;
+  
+  // Initialize modal
+  function initModal() {
+    setupModalEventListeners();
+  }
+  
+  // Fetch skillmen from backend API
+// Update the fetchSkillmenForModal function
+async function fetchSkillmenForModal() {
+  try {
+    document.getElementById('primarySkillmanItems').innerHTML = '<div class="dropdown-item">Loading skillmen...</div>';
+    
+    const response = await fetch('http://localhost:3000/api/skillmen');
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch skillmen');
+    }
+    
+    const data = await response.json();
+    
+    allSkillmen = data.map(skillman => ({
+      id: skillman.id || skillman._id,
+      name: skillman.name,
+      phone: skillman.phoneNumber || 'N/A',
+      location: skillman.area || 'N/A',
+      skill: skillman.designation || 'N/A'
+    }));
+    
+    renderPrimaryDropdown();
+  } catch (error) {
+    console.error('Error fetching skillmen:', error);
+    document.getElementById('primarySkillmanItems').innerHTML = '<div class="dropdown-item error">Error loading skillmen</div>';
+    allSkillmen = [];
+  }
+}
+  
+  // Fetch complaint data to pre-populate modal
+  async function fetchComplaintData(complaintId) {
+    try {
+      const response = await fetch(`${SERVER_URL}/api/complaints/${complaintId}`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch complaint data');
+      }
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        currentComplaintData = data.data;
+        
+        if (currentComplaintData.priority) {
+          const priorityRadio = document.querySelector(`input[name="priority"][value="${currentComplaintData.priority.toLowerCase()}"]`);
+          if (priorityRadio) priorityRadio.checked = true;
+        }
+        
+        if (currentComplaintData.primarySkillmanId) {
+          const primarySkillman = allSkillmen.find(s => s.id === currentComplaintData.primarySkillmanId);
+          if (primarySkillman) {
+            selectPrimarySkillman(primarySkillman);
+          }
+        }
+        
+        if (currentComplaintData.helperSkillmenIds && currentComplaintData.helperSkillmenIds.length > 0) {
+          currentComplaintData.helperSkillmenIds.forEach(skillmanId => {
+            const helper = allSkillmen.find(s => s.id === skillmanId);
+            if (helper) {
+              addHelperSkillman(helper);
+            }
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching complaint data:', error);
+    }
+  }
+  
+  // Render dropdown items
+  function renderDropdowns() {
+    renderPrimaryDropdown();
+    renderHelperDropdown();
+  }
+  
+  function renderPrimaryDropdown(searchTerm = '') {
+    primaryDropdown.items.innerHTML = '';
+    
+    const filtered = filterSkillmen(searchTerm);
+    
+    if (filtered.length === 0) {
+      primaryDropdown.items.innerHTML = '<div class="dropdown-item">No skillmen found</div>';
+    } else {
+      filtered.forEach(skillman => {
+        const item = document.createElement('div');
+        item.className = 'dropdown-item' + 
+          (selectedPrimary && selectedPrimary.id === skillman.id ? ' selected' : '');
+        
+        item.innerHTML = `
+          <div class="skillman-info">
+            <div class="skillman-name">${skillman.name}</div>
+            <div class="skillman-details">
+              <span>${skillman.phone}</span>
+              <span>${skillman.location}</span>
+              <span>${skillman.skill}</span>
+            </div>
+          </div>
+        `;
+        
+        item.addEventListener('click', () => {
+          selectPrimarySkillman(skillman);
+          toggleDropdown(primaryDropdown);
+        });
+        primaryDropdown.items.appendChild(item);
+      });
+    }
+  }
+  
+  function renderHelperDropdown(searchTerm = '') {
+    helperDropdown.items.innerHTML = '';
+    
+    const filtered = filterSkillmen(searchTerm).filter(skillman => 
+      !selectedHelpers.some(h => h.id === skillman.id)
+    );
+    
+    if (filtered.length === 0) {
+      helperDropdown.items.innerHTML = '<div class="dropdown-item">No helpers found</div>';
+    } else {
+      filtered.forEach(skillman => {
+        const item = document.createElement('div');
+        item.className = 'dropdown-item';
+        
+        item.innerHTML = `
+          <div class="skillman-info">
+            <div class="skillman-name">${skillman.name}</div>
+            <div class="skillman-details">
+              <span>${skillman.phone}</span>
+              <span>${skillman.location}</span>
+              <span>${skillman.skill}</span>
+            </div>
+          </div>
+        `;
+        
+        item.addEventListener('click', () => {
+          addHelperSkillman(skillman);
+          toggleDropdown(helperDropdown);
+        });
+        helperDropdown.items.appendChild(item);
+      });
+    }
+  }
+  
+  function filterSkillmen(searchTerm) {
+    if (!searchTerm) return allSkillmen;
+    const term = searchTerm.toLowerCase();
+    return allSkillmen.filter(skillman => 
+      skillman.name.toLowerCase().includes(term) ||
+      (skillman.phone && skillman.phone.toLowerCase().includes(term)) ||
+      (skillman.location && skillman.location.toLowerCase().includes(term)) ||
+      (skillman.skill && skillman.skill.toLowerCase().includes(term))
+    );
+  }
+  
+  // Selection functions
+  function selectPrimarySkillman(skillman) {
+    selectedPrimary = skillman;
+    primaryDropdown.text.textContent = `${skillman.name} (${skillman.phone}), ${skillman.location}, ${skillman.skill}`;
+    renderHelperDropdown();
+  }
+  
+  function addHelperSkillman(skillman) {
+    if (!selectedHelpers.some(h => h.id === skillman.id)) {
+      selectedHelpers.push(skillman);
+      renderHelperTags();
+    }
+  }
+  
+  function removeHelperSkillman(skillmanId) {
+    selectedHelpers = selectedHelpers.filter(h => h.id !== skillmanId);
+    renderHelperTags();
+  }
+  
+  function renderHelperTags() {
+    helperTags.innerHTML = '';
+    
+    if (selectedHelpers.length === 0) {
+      helperTags.innerHTML = '<div class="empty-helpers">No helpers added yet</div>';
+    } else {
+      selectedHelpers.forEach(skillman => {
+        const tag = document.createElement('div');
+        tag.className = 'helper-tag';
+        tag.innerHTML = `
+          ${skillman.name} (${skillman.phone}), ${skillman.location}, ${skillman.skill}
+          <button type="button" data-id="${skillman.id}">
+            <i class="fas fa-times"></i>
+          </button>
+        `;
+        tag.querySelector('button').addEventListener('click', (e) => {
+          e.stopPropagation();
+          removeHelperSkillman(skillman.id);
+        });
+        helperTags.appendChild(tag);
+      });
+    }
+  }
+  
+  // Dropdown toggle function
+  function toggleDropdown(dropdown) {
+    const isActive = dropdown.menu.classList.contains('active');
+    
+    // Close all dropdowns first
+    document.querySelectorAll('.dropdown-menu').forEach(menu => {
+      menu.classList.remove('active');
+    });
+    document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+      toggle.classList.remove('active');
+    });
+    
+    // Toggle this dropdown if it wasn't active
+    if (!isActive) {
+      dropdown.menu.classList.add('active');
+      dropdown.toggle.classList.add('active');
+      
+      // Focus search input when opening
+      if (dropdown.search) {
+        setTimeout(() => dropdown.search.focus(), 10);
+      }
+    }
+  }
+  
+  // Close dropdowns when clicking outside
+  function closeAllDropdowns() {
+    document.querySelectorAll('.dropdown-menu').forEach(menu => {
+      menu.classList.remove('active');
+    });
+    document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+      toggle.classList.remove('active');
+    });
+  }
+  
+  // Setup modal event listeners
+  function setupModalEventListeners() {
+    // Dropdown toggles
+    if(primaryDropdown.toggle) primaryDropdown.toggle.addEventListener('click', () => toggleDropdown(primaryDropdown));
+    if(helperDropdown.toggle) helperDropdown.toggle.addEventListener('click', () => toggleDropdown(helperDropdown));
+    
+    // Search inputs
+    if(primaryDropdown.search) primaryDropdown.search.addEventListener('input', (e) => {
+      renderPrimaryDropdown(e.target.value);
+    });
+    
+    if(helperDropdown.search) helperDropdown.search.addEventListener('input', (e) => {
+      renderHelperDropdown(e.target.value);
+    });
+    
+    // Close dropdowns when clicking outside
+    if (document) document.addEventListener('click', (e) => {
+      if (!e.target.closest('.dropdown')) {
+        closeAllDropdowns();
+      }
+    });
+    
+    // Modal controls
+if (closeBtn) closeBtn.addEventListener('click', closeModal);
+if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+    
+    // Assign button
+    if (assignBtn) assignBtn.addEventListener('click', async () => {
+      const priority = document.querySelector('input[name="priority"]:checked').value;
+      
+      if (!selectedPrimary && selectedHelpers.length === 0) {
+        alert('Please select at least one skillman (primary or helper)');
+        return;
+      }
+      
+      try {
+        assignBtn.disabled = true;
+        assignBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Assigning...';
+        
+        const assignmentData = {
+          complaintId: currentComplaintId,
+          priority,
+          primarySkillmanId: selectedPrimary?.id || null,
+          helperSkillmenIds: selectedHelpers.map(h => h.id)
+        };
+        
+        const response = await fetch(`${SERVER_URL}/api/complaints/assign-skillman`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(assignmentData)
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to assign skillman');
+        }
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          const row = document.querySelector(`tr[data-complaint-id="${currentComplaintId}"]`);
+          if (row) {
+            const skillmanCell = row.querySelector('td:nth-child(9)');
+            if (skillmanCell) {
+              const staticValue = skillmanCell.querySelector('.static-value');
+              if (staticValue) {
+                staticValue.textContent = selectedPrimary ? 
+                  `${selectedPrimary.name} (${selectedPrimary.phone})` : 
+                  selectedHelpers.map(h => h.name).join(', ');
+              }
+            }
+            
+            const statusBadge = row.querySelector('.status-badge');
+            if (statusBadge && statusBadge.textContent === 'Un-Assigned') {
+              statusBadge.textContent = 'In-Progress';
+              statusBadge.className = 'status-badge status-in-progress';
+              
+              const statusSelect = row.querySelector('.editable-select[data-field="status"]');
+              if (statusSelect) {
+                statusSelect.value = 'In-Progress';
+              }
+              
+              const actionDropdown = row.querySelector('.action-dropdown-content');
+              if (actionDropdown) {
+                actionDropdown.innerHTML = `
+                  <a href="#" class="complaint-details-btn"><i class="fas fa-info-circle"></i> Complaint Details</a>
+                  <a href="#" class="change-skillman-btn"><i class="fas fa-user-edit"></i> Change Skillman</a>
+                  <a href="#" class="mark-complaint-btn"><i class="fas fa-check"></i> Mark Complaint</a>
+                  <a href="#" class="print-complaint-btn"><i class="fas fa-print"></i> Print Complaint</a>
+                `;
+              }
+            }
+          }
+          
+          closeModal();
+          alert('Skillman assigned successfully!');
+          fetchComplaints();
+        } else {
+          throw new Error(result.message || 'Failed to assign skillman');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error assigning skillman: ' + error.message);
+      } finally {
+        assignBtn.disabled = false;
+        assignBtn.textContent = 'Assign Skillman';
+      }
+    });
+  }
+  
+  // Modal functions
+  function openModal(complaintId) {
+    currentComplaintId = complaintId;
+    modalBackdrop.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    
+    resetModalForm();
+    
+    Promise.all([
+      fetchSkillmenForModal(),
+      fetchComplaintData(complaintId)
+    ]).catch(error => {
+      console.error('Error loading modal data:', error);
+    });
+  }
+  
+  function closeModal() {
+    modalBackdrop.classList.remove('active');
+    document.body.style.overflow = '';
+    resetModalForm();
+  }
+  
+// Reset modal form
+function resetModalForm() {
+  selectedPrimary = null;
+  document.getElementById('primarySkillmanText').textContent = 'Select a skillman';
+  document.getElementById('primarySkillmanSearch').value = '';
+  closeAllDropdowns();
+}
+  
+  // Function to open modal from action buttons
+// Modify the openSkillmanModal function
+function openSkillmanModal(complaintId, changeMode = false) {
+  currentComplaintId = complaintId;
+  isChangeMode = changeMode;
+
+  // Update modal title
+  document.getElementById('modalTitle').textContent =
+    changeMode ? 'Change Skillman' : 'Assign Skillman';
+
+  // Show/hide current skillman section based on mode
+  const currentSection = document.getElementById('currentSkillmanSection');
+  currentSection.style.display = changeMode ? 'block' : 'none';
+
+  // Show modal
+  document.getElementById('modalBackdrop').classList.add('active');
+  document.body.style.overflow = 'hidden';
+
+  // Reset form and fetch data
+  resetModalForm();
+
+  // Fetch previous skillman and display
+  fetchPreviousSkillman(complaintId);
+
+  fetchSkillmenForModal().then(() => {
+    if (changeMode) {
+      fetchCurrentSkillman(complaintId);
+    }
+  });
+}
+
+
+async function fetchPreviousSkillman(complaintId) {
+  const previousDiv = document.getElementById('previousSkillman');
+  previousDiv.innerHTML = 'Loading previous skillman...';
+
+  try {
+    const response = await fetch(`http://localhost:3000/api/complaints/${complaintId}/previous-skillman`);
+    const data = await response.json();
+
+    if (data.success) {
+      if (Array.isArray(data.skillman) && data.skillman.length > 0) {
+        // Show all previous skillmen with subdivision and designation
+        previousDiv.innerHTML = data.skillman.map(skillman => `
+          <div class="skillman-info">
+            <div class="skillman-name">${skillman.name}</div>
+            <div class="skillman-details">
+              <span> ${skillman.phone || ''}</span>
+              <span> ${skillman.area || ''}</span>
+              <span> ${skillman.designation || ''}</span>
+            </div>
+          </div>
+        `).join('');
+      } else {
+        previousDiv.textContent = 'No Skillman Assigned';
+      }
+    } else {
+      previousDiv.textContent = 'No Skillman Assigned';
+    }
+  } catch (error) {
+    previousDiv.textContent = 'Failed to load previous skillman';
+  }
+}
+
+
+
+// New function to fetch current skillman
+// Update the fetchCurrentSkillman function
+function fetchCurrentSkillman(complaintId) {
+  fetch(`http://localhost:3000/api/complaints/${complaintId}`)
+    .then(response => response.json())
+    .then(data => {
+      if (data.success && data.data.skillman_id) {
+        const skillman = allSkillmen.find(s => s.id === data.data.skillman_id);
+        if (skillman) {
+          // Display current skillman info
+          const currentInfo = document.getElementById('currentSkillmanInfo');
+          currentInfo.innerHTML = `
+            <div class="skillman-name">${skillman.name}</div>
+            <div class="skillman-details">
+              <span><i class="fas fa-phone"></i> ${skillman.phone}</span>
+              <span><i class="fas fa-map-marker-alt"></i> ${skillman.location}</span>
+              <span><i class="fas fa-briefcase"></i> ${skillman.skill}</span>
+            </div>
+          `;
+          
+          // Select the current skillman in dropdown
+          selectPrimarySkillman(skillman);
+        }
+      }
+    })
+    .catch(error => console.error('Error fetching current skillman:', error));
+}
+
+// Simplified selectPrimarySkillman function
+function selectPrimarySkillman(skillman) {
+  selectedPrimary = skillman;
+  document.getElementById('primarySkillmanText').textContent = 
+    `${skillman.name} (${skillman.phone}), ${skillman.location}, ${skillman.skill}`;
+}
+
+
+
+document.getElementById('assignBtn').addEventListener('click', async () => {
+  if (!selectedPrimary) {
+    alert('Please select a skillman');
+    return;
+  }
+
+  try {
+    const response = await fetch('http://localhost:3000/api/complaints/assign-skillman', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        complaintId: currentComplaintId,
+        skillmanId: selectedPrimary.id,
+        isChange: isChangeMode
+      })
+    });
+
+    const data = await response.json();
+    
+    if (data.success) {
+      // Update the table row
+      const row = document.querySelector(`tr[data-complaint-id="${currentComplaintId}"]`);
+      if (row) {
+        const skillmanCell = row.querySelector('td:nth-child(9)');
+        if (skillmanCell) {
+          const staticValue = skillmanCell.querySelector('.static-value');
+          if (staticValue) {
+            staticValue.textContent = `${selectedPrimary.name}`;
+          }
+        }
+        
+        // Update status if it was unassigned
+        const statusBadge = row.querySelector('.status-badge');
+        if (statusBadge && statusBadge.textContent === 'Un-Assigned') {
+          statusBadge.textContent = 'In-Progress';
+          statusBadge.className = 'status-badge status-in-progress';
+        }
+      }
+      
+      closeModal();
+      alert('Skillman assigned successfully!');
+    } else {
+      throw new Error(data.message || 'Failed to assign skillman');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Error assigning skillman: ' + error.message);
+  }
+});
+
+// Close modal function
+function closeModal() {
+  document.getElementById('modalBackdrop').classList.remove('active');
+  document.body.style.overflow = '';
+  resetModalForm();
+}
+
+// Initialize modal event listeners
+document.getElementById('closeBtn').addEventListener('click', closeModal);
+document.getElementById('cancelBtn').addEventListener('click', closeModal);
+
+
+
+
+  
+  // Initialize the modal
+  initModal();
+  
+  // Expose to global scope for button click handlers
+  window.openSkillmanModal = openSkillmanModal;
+
+
+
+  
+});
+
+// Update the initializeRowEventListeners function to use the modal
+function initializeRowEventListeners() {
+  document.querySelectorAll('tr[data-complaint-id]').forEach(row => {
+    const complaintId = row.dataset.complaintId;
+    
+    // Assign Skillman button - simple mode
+    row.querySelector('.assign-skillman-btn')?.addEventListener('click', function(e) {
+      e.preventDefault();
+      openSkillmanModal(complaintId, false);
+    });
+    
+    // Change Skillman button - shows current skillman
+    row.querySelector('.change-skillman-btn')?.addEventListener('click', function(e) {
+      e.preventDefault();
+      openSkillmanModal(complaintId, true);
+    });
+    
+    // Other existing event listeners...
+    initializeActionButtonListeners(row);
+  });
+}
+// End of Skillman Modal JS
+
+
+
+
+
+
+
+function initializeActionButtonListeners(row) {
+  const dropdownBtn = row.querySelector('.action-dropdown-btn');
+  const dropdownContent = row.querySelector('.action-dropdown-content');
+
+  if (dropdownBtn && dropdownContent) {
+    dropdownBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+
+      // Hide all other dropdowns
+      document.querySelectorAll('.action-dropdown-content').forEach(dc => {
+        if (dc !== dropdownContent) dc.style.display = 'none';
+      });
+
+      // Toggle this dropdown
+      dropdownContent.style.display = dropdownContent.style.display === 'block' ? 'none' : 'block';
+    });
+  }
+}
+
+// Hide dropdown when clicking outside
+document.addEventListener('click', function() {
+  document.querySelectorAll('.action-dropdown-content').forEach(dc => {
+    dc.style.display = 'none';
+  });
+});
+
+
+
+
+document.querySelectorAll('.priority-box').forEach(box => {
+  box.addEventListener('click', function() {
+    const priority = this.dataset.priority;
+    switch (priority) {
+      case 'immediate':
+        window.location.href = 'immediate-complaints.html';
+        break;
+      case 'urgent':
+        window.location.href = 'urgent-complaints.html';
+        break;
+      case 'routine':
+        window.location.href = 'routine-complaints.html';
+        break;
+      case 'deferred':
+        window.location.href = 'deferred-complaints.html';
+        break;
+      default:
+        // Optionally handle unknown
+        break;
+    }
+  });
+});
+
+
+
+// Add a negative offset (e.g., -20px) to move it a little left
+if (typeof globalDropdown !== 'undefined' && globalDropdown) {
+  globalDropdown.style.left = `${rect.left - 20}px`;
+  globalDropdown.style.top = `${rect.top - 40}px`;
+}
+
+
+
+
+
+
+
+
+
+
+
+// Function to initialize click-based action dropdowns
+function initializeActionDropdowns() {
+  // Close all dropdowns when clicking anywhere on the page
+  document.addEventListener('click', function(e) {
+    // If click is outside any dropdown
+    if (!e.target.closest('.action-dropdown')) {
+      document.querySelectorAll('.action-dropdown-content').forEach(dropdown => {
+        dropdown.style.display = 'none';
+      });
+    }
+  });
+
+  // Set up click handlers for each dropdown button
+  document.querySelectorAll('.action-dropdown-btn').forEach(button => {
+    button.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const dropdown = this.closest('.action-dropdown');
+      const content = dropdown.querySelector('.action-dropdown-content');
+      
+      // Hide all other dropdowns first
+      document.querySelectorAll('.action-dropdown-content').forEach(dc => {
+        if (dc !== content) dc.style.display = 'none';
+      });
+
+      // Toggle this dropdown
+      content.style.display = content.style.display === 'block' ? 'none' : 'block';
+    });
+  });
+
+  // Close dropdown when clicking on a dropdown item
+  document.querySelectorAll('.action-dropdown-content a').forEach(item => {
+    item.addEventListener('click', function() {
+      this.closest('.action-dropdown-content').style.display = 'none';
+    });
+  });
+}
+
+// Call this function after rendering your table
+initializeActionDropdowns();
+
+
+
+
+
+// Filter Control
+/*/ Add these variables at the top with your other declarations
+let receivers = [];
+let colonies = [];
+let categories = [];
+let currentFilters = {
+  receiver: '',
+  colony: '',
+  category: '',
+  status: ''
+};*/
+
+// Add this after your fetchComplaints() function
+async function fetchFilterOptions() {
+  try {
+    // Fetch receivers
+    const receiversResponse = await fetch('http://localhost:3000/api/receivers');
+    if (!receiversResponse.ok) throw new Error('Failed to fetch receivers');
+    receivers = await receiversResponse.json();
+    populateDropdown('receiver-filter', receivers);
+    
+    // Fetch colonies
+    const coloniesResponse = await fetch('http://localhost:3000/api/colonies');
+    if (!coloniesResponse.ok) throw new Error('Failed to fetch colonies');
+    colonies = await coloniesResponse.json();
+    populateDropdown('colony-filter', colonies);
+    
+  } catch (error) {
+    console.error('Error fetching filter options:', error);
+    alert('Failed to load filter options. Please try again later.');
+    // You might want to show a user-friendly error message here
+  }
+}
+
+function populateDropdown(dropdownId, options) {
+  const dropdown = document.getElementById(dropdownId);
+  if (!dropdown) {
+    console.error(`Dropdown element with ID '${dropdownId}' not found`);
+    return;
+  }
+
+  // Save the first option (usually "All" or "Select")
+  const firstOption = dropdown.options.length > 0 ? dropdown.options[0] : null;
+  
+  // Clear all options
+  dropdown.innerHTML = '';
+  
+  // Restore first option if it existed
+  if (firstOption) {
+    dropdown.appendChild(firstOption);
+  } else {
+    // Add default option if none existed
+    const defaultOption = document.createElement('option');
+    defaultOption.value = '';
+    defaultOption.textContent = 'All Colonies';
+    dropdown.appendChild(defaultOption);
+  }
+  
+  // Add new options
+  options.forEach(option => {
+    const opt = document.createElement('option');
+    // Handle both object {id, name} and string cases
+    opt.value = option.id || option;
+    opt.textContent = option.name || option;
+    dropdown.appendChild(opt);
+  });
+}
+  
+  // Reset filters button
+  // Replace this:
+  document.getElementById('reset-filters').addEventListener('click', function() {
+    document.getElementById('receiver-filter').value = '';
+    document.getElementById('colony-filter').value = '';
+    document.getElementById('category-filter').value = '';
+    document.getElementById('status-filter').value = '';
+    
+    currentFilters = {
+      receiver: '',
+      colony: '',
+      category: '',
+      status: ''
+    };
+    
+    currentPage = 1;
+    fetchComplaints();
+  });
+
+  // With this:
+  document.getElementById('apply-filters').addEventListener('click', function() {
+    currentFilters.receiver = document.getElementById('receiver-filter').value;
+    currentFilters.colony = document.getElementById('colony-filter').value;
+    currentFilters.category = document.getElementById('category-filter').value;
+    currentFilters.status = document.getElementById('status-filter').value;
+    
+    currentPage = 1;
+    fetchComplaints();
+  });
+
+// Modify your fetchComplaints function to include filters
+function fetchComplaints() {
+  const searchTerm = searchInput.value.trim();
+  const url = new URL('http://localhost:3000/api/complaints');
+  url.searchParams.append('page', currentPage);
+  url.searchParams.append('pageSize', itemsPerPage);
+  
+  if (searchTerm) {
+    url.searchParams.append('search', searchTerm);
+  }
+  
+  // Add filter parameters
+  if (currentFilters.receiver) {
+    url.searchParams.append('receiver', currentFilters.receiver);
+  }
+  if (currentFilters.colony) {
+    url.searchParams.append('colony', currentFilters.colony);
+  }
+  if (currentFilters.category) {
+    url.searchParams.append('category', currentFilters.category);
+  }
+  if (currentFilters.status) {
+    url.searchParams.append('status', currentFilters.status);
+  }
+  
+  // Rest of your fetchComplaints function remains the same...
+  fetch(url)
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        allComplaints = data.data;
+        totalItems = data.pagination.total;
+        renderTable();
+        updatePagination();
+      } else {
+        throw new Error(data.message || 'Failed to fetch complaints');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      tableBody.innerHTML = `<tr><td colspan="12" style="text-align: center; color: red;">Error loading data: ${error.message}</td></tr>`;
+      paginationInfo.textContent = 'Error loading data';
+    });
+}
+
+
+
+
   </script>
 </body>
 </html>
