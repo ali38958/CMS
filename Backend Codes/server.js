@@ -1,6 +1,8 @@
 const express = require('express');
 const sql = require('mssql');
 const cors = require('cors');
+const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 
 // Database configuration
 const dbConfig = {
@@ -33,6 +35,175 @@ async function testConnection() {
     throw err;
   }
 }
+
+
+
+
+
+//APIs for login
+
+// 🔐 Generate a random token (256-bit = 64 hex chars)
+function generateToken() {
+  return crypto.randomBytes(32).toString('hex');
+}
+
+// 📌 Login route
+app.post('/login', async (req, res) => {
+  const { id, password } = req.body;
+
+  if (!id || !password) {
+    return res.status(400).json({ error: 'ID and password are required' });
+  }
+
+  let pool;
+  try {
+    pool = await sql.connect(dbConfig);
+
+    // Fetch user
+    const result = await pool.request()
+      .input('id', sql.VarChar(20), id)
+      .query('SELECT * FROM dbo.Users WHERE id = @id');
+
+    const user = result.recordset[0];
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Check password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ error: 'Invalid password' });
+    }
+    console.log(`User ${user.name} logged in successfully`);
+    // Generate and store token
+    const token = generateToken();
+    await pool.request()
+      .input('id', sql.VarChar(20), id)
+      .input('token', sql.VarChar(255), token)
+      .query('UPDATE dbo.Users SET token = @token WHERE id = @id');
+
+    return res.status(200).json({ token });
+
+  } catch (err) {
+    console.error('❌ Login error:', err.message);
+    return res.status(500).json({ error: 'Internal server error' });
+  } finally {
+    //but don't close the connection here
+    //if (pool) await pool.close();
+  }
+});
+
+
+
+
+
+// Token verification endpoint
+app.post('/verify-token', async (req, res) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    console.log('No token provided');
+    return res.status(401).json({ success: false, message: 'No token provided' });
+  }
+
+  try {
+    await sql.connect(dbConfig);
+    console.log('Connected to database');
+
+    const result = await sql.query`
+      SELECT id, name FROM Users WHERE token = ${token}
+    `;
+
+    if (result.recordset.length > 0) {
+      console.log('Token verified for user:', result.recordset[0].name);
+      return res.json({ 
+        success: true, 
+        user: {
+          id: result.recordset[0].id,
+          name: result.recordset[0].name
+        }
+      });
+    } else {
+      console.log('Invalid or expired token');
+      return res.status(401).json({ success: false, message: 'Invalid or expired token' });
+    }
+  } catch (err) {
+    console.error('Database error:', err);
+    return res.status(500).json({ success: false, message: 'Database error' });
+  } finally {
+    //no need to close the connection here
+    //sql.close();
+  }
+});
+
+
+
+// Token verification endpoint with sending receiver name
+app.post('/verify-token-get-receiver', async (req, res) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    console.log('No token provided');
+    return res.status(401).json({ success: false, message: 'No token provided' });
+  }
+
+  try {
+    await sql.connect(dbConfig);
+    console.log('Connected to database');
+
+    // Single query to get both user info and receiver name from the same table
+    const result = await sql.query`
+      SELECT id, name, receiver FROM Users WHERE token = ${token}
+    `;
+
+    if (result.recordset.length > 0) {
+      const user = result.recordset[0];
+      console.log('Token verified for user:', user.name);
+      
+      return res.json({ 
+        success: true, 
+        user: {
+          id: user.id,
+          name: user.name
+        },
+        receiver: {
+          name: user.receiver || 'Administrator' // Fallback to 'Administrator' if receiver is null
+        }
+      });
+    } else {
+      console.log('Invalid or expired token');
+      return res.status(401).json({ success: false, message: 'Invalid or expired token' });
+    }
+  } catch (err) {
+    console.error('Database error:', err);
+    return res.status(500).json({ success: false, message: 'Database error' });
+  } finally {
+    //no need to close the connection here
+    //sql.close();
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // API endpoint to get address data
 app.get('/api/addresses', async (req, res) => {
@@ -656,39 +827,12 @@ app.get('/api/skillmen', async (req, res) => {
   }
 });
 
-app.post('/api/assign-skillman', async (req, res) => {
-  try {
-    const { priority, primarySkillman, helperSkillmen } = req.body;
-    
-    // Validate request
-    if (!primarySkillman || !primarySkillman.id) {
-      return res.status(400).json({ error: 'Primary skillman is required' });
-    }
-    
-    // Here you would typically:
-    // 1. Create a new complaint assignment record
-    // 2. Link the primary skillman and helpers to the complaint
-    // 3. Update any relevant statuses
-    
-    // For now, we'll just return a success response
-    const response = {
-      success: true,
-      message: 'Skillman assigned successfully',
-      data: {
-        complaintId: Math.floor(Math.random() * 1000), // Mock complaint ID
-        assignedAt: new Date().toISOString(),
-        primarySkillman,
-        helperSkillmen,
-        priority
-      }
-    };
-    
-    res.json(response);
-  } catch (err) {
-    console.error('Error assigning skillman:', err);
-    res.status(500).json({ error: 'Failed to assign skillman' });
-  }
-});
+
+
+
+
+
+
 
 // Additional API for getting skillmen by area (optional)
 app.get('/api/skillmen/area/:area', async (req, res) => {
@@ -1336,6 +1480,603 @@ app.put('/editColony', async (req, res) => {
     res.status(500).json({ message: 'Error updating colony' });
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+//Generate Complaint ID based on category and current month/year
+async function generateComplaintId(category, pool) {
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const year = String(now.getFullYear()).slice(-2);
+  
+  // Map category to code
+  const categoryCodes = {
+    'E&M-I': '1',
+    'E&M-II': '2',
+    'B&R-I': '3',
+    'B&R-II': '4',
+    'B&R-III': '5',
+    'F&S-I': '6'
+  };
+  
+  const categoryCode = categoryCodes[category] || '0';
+  
+  // Get count of existing complaints for this month+category
+  const result = await pool.request()
+    .query(`
+      SELECT COUNT(*) AS complaintCount 
+      FROM Complaints
+      WHERE MONTH(launched_at) = ${now.getMonth() + 1}
+        AND YEAR(launched_at) = ${now.getFullYear()}
+    `);
+
+  const newNumber = (result.recordset[0].complaintCount || 0) + 1;
+  return `HT-${month}-${year}-${categoryCode}-${newNumber}`;
+}
+
+// POST endpoint for creating complaints
+// POST endpoint for creating complaints
+app.post('/complaints', async (req, res) => {
+  let pool;
+  try {
+    const {
+      customerId,
+      locationId,
+      category,
+      categoryType,
+      description,
+      priority,
+      receiver,
+      primarySkillmanId,
+      helperSkillmenIds = []
+    } = req.body;
+
+    // Parse category and nature
+    const [categoryName, nature] = category.name.includes('->') ? 
+      category.name.split('->') : [category.name, ''];
+
+    // Determine status
+    let status;
+    if (priority === 'deferred') {
+      status = 'Deffered';
+    } else {
+      status = (primarySkillmanId || helperSkillmenIds.length > 0) 
+        ? 'In-Progress' 
+        : 'Un-Assigned';
+    }
+
+    pool = await sql.connect(dbConfig);
+    const complaintId = await generateComplaintId(categoryName, pool);
+    const launchedAt = new Date();
+
+    // Insert complaint with all required fields
+    await pool.request()
+      .input('complaint_id', sql.VarChar(25), complaintId)
+      .input('customer_id', sql.Int, customerId)
+      .input('location_id', sql.Int, locationId)
+      .input('nature', sql.VarChar(50), nature.trim())
+      .input('category', sql.VarChar(10), categoryName.trim())
+      .input('type', sql.VarChar(75), categoryType.name)
+      .input('description', sql.VarChar(300), description)
+      .input('priority', sql.VarChar(15), priority)
+      .input('launched_at', sql.DateTime, launchedAt)
+      .input('receiver_id', sql.VarChar(20), receiver.id)
+      .input('skillman_id', sql.Int, primarySkillmanId || null)
+      .input('status', sql.NVarChar(20), status)
+      .query(`
+        INSERT INTO Complaints (
+          complaint_id, customer_id, location_id, nature, category, 
+          type, description, priority, launched_at, receiver_id, 
+          skillman_id, status
+        ) VALUES (
+          @complaint_id, @customer_id, @location_id, @nature, @category,
+          @type, @description, @priority, @launched_at, @receiver_id, 
+          @skillman_id, @status
+        )
+      `);
+
+    // Insert helpers if any
+    if (helperSkillmenIds.length > 0) {
+      for (const helperId of helperSkillmenIds) {
+        await pool.request()
+          .input('complaint_id', sql.VarChar(25), complaintId)
+          .input('skillman_id', sql.Int, helperId)
+          .query(`
+            INSERT INTO ComplaintsHelpers (complaint_id, skillman_id)
+            VALUES (@complaint_id, @skillman_id)
+          `);
+      }
+    }
+
+    // Update skillmen statuses if any are assigned
+    const assignedSkillmen = [];
+    if (primarySkillmanId) assignedSkillmen.push(primarySkillmanId);
+    assignedSkillmen.push(...helperSkillmenIds);
+    //console.log('Priority:'+ priority);
+
+    if (assignedSkillmen.length > 0) {
+      if (priority !== 'deferred') {
+        for (const skillmanId of assignedSkillmen) {
+          await pool.request()
+            .input('skillmanId', sql.Int, skillmanId)
+            .query(`
+              UPDATE Skillmen 
+              SET status = 'In-Progress' 
+              WHERE id = @skillmanId AND status = 'Active'
+            `);
+        }
+      }
+    }
+
+    res.status(201).json({
+      success: true,
+      message: 'Complaint created successfully',
+      complaintId,
+      status,
+      launchedAt: launchedAt.toISOString()
+    });
+
+  } catch (error) {
+    console.error('Error creating complaint:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to create complaint',
+      error: error.message
+    });
+  } finally {
+    if (pool) {
+      try {
+        // await pool.close();
+      } catch (err) {
+        console.error('Error closing connection:', err);
+      }
+    }
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+// All complaint's API endpoints
+
+// Complaints endpoint with pagination
+app.get('/api/complaints', async (req, res) => {
+  try {
+    const { page = 1, pageSize = 10 } = req.query;
+    const offset = (page - 1) * pageSize;
+
+    await sql.connect(dbConfig);
+
+    const query = `
+      SELECT 
+        c.complaint_id,
+        c.nature,
+        c.category,
+        c.type,
+        c.description,
+        c.priority,
+        c.launched_at,
+        c.status,
+        cust.full_name AS customer_name,
+        cust.phone_number AS customer_phone,
+        cust.email AS customer_email,
+        loc.building_number AS location_building_number,
+        loc.building_type AS location_building_type,
+        loc.resdl AS location_resdl,
+        loc.colony_number AS location_colony_number,
+        col.Name AS location_colony_name,
+        loc.area AS location_area,
+        u.name AS receiver_name,
+        s.name AS skillman_name
+      FROM Complaints c
+      LEFT JOIN Customers cust ON c.customer_id = cust.customer_id
+      LEFT JOIN Location loc ON c.location_id = loc.location_id
+      LEFT JOIN Colonies col ON loc.colony_number = col.ColonyNumber
+      LEFT JOIN Users u ON c.receiver_id = u.id
+      LEFT JOIN Skillmen s ON c.skillman_id = s.id
+      ORDER BY c.launched_at DESC
+      OFFSET ${offset} ROWS
+      FETCH NEXT ${pageSize} ROWS ONLY
+    `;
+
+    const result = await sql.query(query);
+
+    // Get total count for pagination info
+    const countResult = await sql.query('SELECT COUNT(*) AS total FROM Complaints');
+    const total = countResult.recordset[0].total;
+
+
+
+    res.json({
+      success: true,
+      data: result.recordset,
+      pagination: {
+        total,
+        page: parseInt(page),
+        pageSize: parseInt(pageSize),
+        totalPages: Math.ceil(total / pageSize)
+      }
+    });
+  } catch (err) {
+    console.error('Error fetching complaints:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch complaints',
+      error: err.message
+    });
+  } finally {
+    //sql.close();
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// API endpoint to update complaint status// API endpoint to update complaint status
+app.post('/api/complaints/update-status', async (req, res) => {
+  try {
+    const { complaint_id, status } = req.body;
+
+    // Validate input
+    if (!complaint_id || !status) {
+      return res.status(400).json({
+        success: false,
+        message: 'complaint_id and status are required'
+      });
+    }
+
+    // Check if status is valid
+    const validStatuses = ['In-Progress', 'Completed', 'Deffered', 'Un-Assigned'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid status value'
+      });
+    }
+
+    await sql.connect(dbConfig);
+
+    // Get complaint + helper info
+    const checkResult = await sql.query`
+      SELECT c.complaint_id, c.skillman_id, ch.skillman_id AS helper_id
+      FROM Complaints c
+      LEFT JOIN ComplaintsHelpers ch ON c.complaint_id = ch.complaint_id
+      WHERE c.complaint_id = ${complaint_id}
+    `;
+
+    if (checkResult.recordset.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Complaint not found'
+      });
+    }
+
+    const skillmanId = checkResult.recordset[0].skillman_id;
+    const helperIds = checkResult.recordset.map(r => r.helper_id).filter(id => id !== null);
+
+    // Always update complaint status to Completed
+    await sql.query`
+      UPDATE Complaints
+      SET status = 'Completed'
+      WHERE complaint_id = ${complaint_id}
+    `;
+
+    // If status is NOT Deffered → set skillman and helpers to Active
+    if (status !== 'Deffered') {
+      if (skillmanId) {
+        await sql.query`
+          UPDATE Skillmen
+          SET status = 'Active'
+          WHERE id = ${skillmanId}
+        `;
+      }
+      if (helperIds.length > 0) {
+        await sql.query`
+          UPDATE Skillmen
+          SET status = 'Active'
+          WHERE id IN (${helperIds})
+        `;
+      }
+    }
+
+    res.json({
+      success: true,
+      message: 'Complaint status updated to Completed successfully'
+    });
+
+  } catch (error) {
+    console.error('Error updating complaint status:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message
+    });
+  }
+});
+
+
+
+
+
+
+
+
+app.get('/api/complaints/:complaintId/previous-skillman', async (req, res) => {
+  const { complaintId } = req.params;
+  try {
+    // Connect to DB if not already connected
+    // await sql.connect(dbConfig); // Not needed if using pool
+
+    // Get the skillman_id from Complaints
+    const complaintResult = await pool.request()
+      .input('complaintId', sql.VarChar(25), complaintId)
+      .query(`
+        SELECT skillman_id 
+        FROM Complaints 
+        WHERE complaint_id = @complaintId
+      `);
+
+    if (complaintResult.recordset.length === 0) {
+      return res.status(404).json({ success: false, message: 'Complaint not found' });
+    }
+
+    const skillmanId = complaintResult.recordset[0].skillman_id;
+
+    if (!skillmanId) {
+      // No skillman assigned
+      return res.json({ success: true, skillman: null });
+    }
+
+    // Fetch skillman details
+    const skillmanResult = await pool.request()
+      .input('id', sql.Int, skillmanId)
+      .query(`
+        SELECT 
+          id, 
+          name, 
+          phoneNumber AS phone, 
+          designation, 
+          subdivision AS area
+        FROM Skillmen
+        WHERE id = @id
+      `);
+
+    if (skillmanResult.recordset.length === 0) {
+      // Skillman not found (shouldn't happen)
+      return res.json({ success: true, skillman: null });
+    }
+
+    // Return as array for consistency
+    res.json({ success: true, skillman: skillmanResult.recordset });
+  } catch (err) {
+    console.error('Error fetching previous skillman:', err);
+    res.status(500).json({ success: false, message: 'Failed to fetch previous skillman' });
+  }
+});
+
+
+
+
+
+
+
+app.post('/api/complaints/assign-skillman', async (req, res) => {
+  const { complaintId, skillmanId } = req.body;
+
+  if (!complaintId || !skillmanId) {
+    return res.status(400).json({ success: false, message: 'complaintId and skillmanId are required' });
+  }
+
+  try {
+    // 1. Get the previous skillman assigned to this complaint
+    const prevResult = await pool.request()
+      .input('complaintId', sql.VarChar(25), complaintId)
+      .query(`
+        SELECT skillman_id FROM Complaints WHERE complaint_id = @complaintId
+      `);
+
+    if (prevResult.recordset.length === 0) {
+      return res.status(404).json({ success: false, message: 'Complaint not found' });
+    }
+
+    const prevSkillmanId = prevResult.recordset[0].skillman_id;
+
+    // 2. Set previous skillman status to 'Active' (if there was one and it's different from the new one)
+    if (prevSkillmanId && prevSkillmanId !== skillmanId) {
+      await pool.request()
+        .input('prevSkillmanId', sql.Int, prevSkillmanId)
+        .query(`
+          UPDATE Skillmen
+          SET status = 'Active'
+          WHERE id = @prevSkillmanId
+        `);
+    }
+
+    // 3. Update the complaint's skillman and set status to 'In-Progress'
+    const result = await pool.request()
+      .input('complaintId', sql.VarChar(25), complaintId)
+      .input('skillmanId', sql.Int, skillmanId)
+      .query(`
+        UPDATE Complaints
+        SET skillman_id = @skillmanId, status = 'In-Progress'
+        WHERE complaint_id = @complaintId
+      `);
+
+    // 4. Set new skillman's status to 'In-Progress'
+    await pool.request()
+      .input('skillmanId', sql.Int, skillmanId)
+      .query(`
+        UPDATE Skillmen
+        SET status = 'In-Progress'
+        WHERE id = @skillmanId
+      `);
+
+    if (result.rowsAffected[0] > 0) {
+      res.json({ success: true, message: 'Skillman assigned successfully' });
+    } else {
+      res.status(404).json({ success: false, message: 'Complaint not found or not updated' });
+    }
+  } catch (error) {
+    console.error('Error assigning skillman:', error);
+    res.status(500).json({ success: false, message: 'Failed to assign skillman' });
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+// APIs to retrieve complaints based on priority
+app.get('/api/complaints-by-priority', async (req, res) => {
+  try {
+    const { page = 1, pageSize = 10, priority } = req.query;
+    const offset = (page - 1) * pageSize;
+
+    if (!priority) {
+      return res.status(400).json({ success: false, message: 'Priority is required' });
+    }
+
+    await sql.connect(dbConfig);
+
+    const query = `
+      SELECT 
+        c.complaint_id,
+        c.nature,
+        c.category,
+        c.type,
+        c.description,
+        c.priority,
+        c.launched_at,
+        c.status,
+        cust.full_name AS customer_name,
+        cust.phone_number AS customer_phone,
+        cust.email AS customer_email,
+        loc.building_number AS location_building_number,
+        loc.building_type AS location_building_type,
+        loc.resdl AS location_resdl,
+        loc.colony_number AS location_colony_number,
+        col.Name AS location_colony_name,
+        loc.area AS location_area,
+        u.name AS receiver_name,
+        s.name AS skillman_name
+      FROM Complaints c
+      LEFT JOIN Customers cust ON c.customer_id = cust.customer_id
+      LEFT JOIN Location loc ON c.location_id = loc.location_id
+      LEFT JOIN Colonies col ON loc.colony_number = col.ColonyNumber
+      LEFT JOIN Users u ON c.receiver_id = u.id
+      LEFT JOIN Skillmen s ON c.skillman_id = s.id
+      WHERE c.priority = @priority
+      ORDER BY c.launched_at DESC
+      OFFSET @offset ROWS
+      FETCH NEXT @pageSize ROWS ONLY
+    `;
+
+    const request = new sql.Request();
+    request.input('priority', sql.VarChar(20), priority);
+    request.input('offset', sql.Int, offset);
+    request.input('pageSize', sql.Int, parseInt(pageSize));
+
+    const result = await request.query(query);
+
+    // Get total count for pagination info
+    const countQuery = `
+      SELECT COUNT(*) AS total FROM Complaints WHERE priority = @priority
+    `;
+    const countResult = await new sql.Request()
+      .input('priority', sql.VarChar(20), priority)
+      .query(countQuery);
+    const total = countResult.recordset[0].total;
+
+    res.json({
+      success: true,
+      data: result.recordset,
+      pagination: {
+        total,
+        page: parseInt(page),
+        pageSize: parseInt(pageSize),
+        totalPages: Math.ceil(total / pageSize)
+      }
+    });
+  } catch (err) {
+    console.error('Error fetching complaints by priority:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch complaints',
+      error: err.message
+    });
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+app.get('/api/receivers', async (req, res) => {
+  try {
+    // Connect to database
+    await sql.connect(dbConfig);
+
+    // Query distinct receiver names from Users
+    const result = await sql.query(`
+      SELECT DISTINCT id, name
+      FROM Users
+      ORDER BY name
+    `);
+
+    res.json(result.recordset);
+  } catch (error) {
+    console.error('Error fetching receivers:', error);
+    res.status(500).json({ error: 'Failed to fetch receivers' });
+  } finally {
+    //sql.close();
+  }
+});
+
+
 
 
 
