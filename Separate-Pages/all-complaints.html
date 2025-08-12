@@ -1342,21 +1342,21 @@
             <div class="filter-group">
               <label for="receiver-filter">Receiver:</label>
               <select id="receiver-filter" class="form-control filter-select">
-                <option value="">All Receivers</option>
+                <option value="" selected>All Receivers</option>
               </select>
             </div>
             
             <div class="filter-group">
               <label for="colony-filter">Colony:</label>
               <select id="colony-filter" class="form-control filter-select">
-                <option value="">All Colonies</option>
+                <option value="" selected>All Colonies</option>
               </select>
             </div>
             
             <div class="filter-group">
               <label for="category-filter">Category:</label>
               <select id="category-filter" class="form-control filter-select">
-                <option value="">All Categories</option>
+                <option value="" selected>All Categories</option>
                 <option value="B&R-I">B&R-I</option>
                 <option value="B&R-II">B&R-II</option>
                 <option value="B&R-III">B&R-III</option>
@@ -1370,7 +1370,7 @@
             <div class="filter-group">
               <label for="status-filter">Status:</label>
               <select id="status-filter" class="form-control filter-select">
-                <option value="">All Complaints</option>
+                <option value="" selected>All Complaints</option>
                 <option value="In-Progress">In-Progress</option>
                 <option value="Completed">Completed</option>
                 <option value="Un-Assigned">Un-Assigned</option>
@@ -1408,7 +1408,7 @@
           </div>
           
           <div class="search-box">
-            <input type="text" id="complaint-search" class="form-control" placeholder="Search by ID, customer name, or subject">
+            <input type="text" id="complaint-search" class="form-control" placeholder="Search here..." />
             <button class="btn btn-primary" id="search-complaints-btn">
               <i class="fas fa-search"></i>
               Search
@@ -1476,18 +1476,7 @@
 
   <script>
 
-    
-// Add these variables at the top with your other declarations
-let receivers = [];
-let colonies = [];
-let categories = [];
-let currentFilters = {
-  receiver: '',
-  colony: '',
-  category: '',
-  status: ''
-};
-    //need to add the showing entries under the table inside it
+
     // Add this global variable at the top of your script
     let allSkillmen = [];
     document.addEventListener('DOMContentLoaded', function() {
@@ -1504,9 +1493,37 @@ let currentFilters = {
       const paginationControls = document.getElementById('complaints-pagination');
       const searchInput = document.getElementById('complaint-search');
       const searchButton = document.getElementById('search-complaints-btn');
+
+      //Filter elements
+      const receiverFilter = document.getElementById('receiver-filter');
+      const colonyFilter = document.getElementById('colony-filter');
+      const categoryFilter = document.getElementById('category-filter');
+      const statusFilter = document.getElementById('status-filter');
+      const applyFiltersButton = document.getElementById('apply-filters');
+
+      //below line will add action to find button
+      applyFiltersButton.addEventListener('click', function() {
+        let receiver = receiverFilter.value;
+        let colony = colonyFilter.value;
+        let category = categoryFilter.value;
+        let status = statusFilter.value;
+
+        searchInput.value = ''; // Clear search input
+        let filter = {
+          receiver: receiver || '',
+          colony: colony || '',
+          category: category || '',
+          status: status || '',
+          search: searchInput.value.trim() || ''
+        }
+
+
+        currentPage = 1; // Reset to first page on filter change
+        fetchComplaints(filter);
+      });
       
       // Initialize the table
-      fetchComplaints();
+      fetchComplaints(null);
       
       // Event listeners
       perPageSelect.addEventListener('change', function() {
@@ -1516,13 +1533,42 @@ let currentFilters = {
       });
       
       searchButton.addEventListener('click', function() {
-        currentPage = 1;
-        fetchComplaints();
+        let receiver = receiverFilter.value;
+        let colony = colonyFilter.value;
+        let category = categoryFilter.value;
+        let status = statusFilter.value;
+
+        let filter = {
+          receiver: receiver || '',
+          colony: colony || '',
+          category: category || '',
+          status: status || '',
+          search: searchInput.value.trim() || ''
+        }
+
+        currentPage = 1; // Reset to first page on filter change
+        fetchComplaints(filter);
       });
       
       // Handle Enter key in search input
       searchInput.addEventListener('keyup', function(e) {
-        if (e.key === 'Enter') {
+          if (e.key === 'Enter') {
+          let receiver = receiverFilter.value;
+          let colony = colonyFilter.value;
+          let category = categoryFilter.value;
+          let status = statusFilter.value;
+ 
+          let filter = {
+            receiver: receiver || '',
+            colony: colony || '',
+            category: category || '',
+            status: status || '',
+            search: searchInput.value.trim() || ''
+          }
+
+          currentPage = 1; // Reset to first page on filter change
+          fetchComplaints(filter);
+
           currentPage = 1;
           fetchComplaints();
         }
@@ -1548,35 +1594,72 @@ let currentFilters = {
         }
       });
       
-      // Fetch complaints from API
-      function fetchComplaints() {
-        const searchTerm = searchInput.value.trim();
-        const url = new URL('http://localhost:3000/api/complaints');
-        url.searchParams.append('page', currentPage);
-        url.searchParams.append('pageSize', itemsPerPage);
-        
-        if (searchTerm) {
-          url.searchParams.append('search', searchTerm);
-        }
-        
-        fetch(url)
-          .then(response => response.json())
-          .then(data => {
+      
+// Store last applied filters
+let lastAppliedFilters = null;
+
+// Fetch complaints from API
+function fetchComplaints(filters) {
+    // Store the filters for pagination changes
+    if (filters) {
+        lastAppliedFilters = filters;
+    }
+
+    const url = new URL('http://localhost:3000/api/complaints');
+    url.searchParams.append('page', currentPage);
+    url.searchParams.append('pageSize', itemsPerPage);
+    
+    // Add search term if it exists
+    if (filters?.search) {
+        url.searchParams.append('search', filters.search);
+    }
+    
+    // Add filter parameters if they exist
+    if (filters) {
+        if (filters.receiver) url.searchParams.append('receiver', filters.receiver);
+        if (filters.colony) url.searchParams.append('colony', filters.colony);
+        if (filters.category) url.searchParams.append('category', filters.category);
+        if (filters.status) url.searchParams.append('status', filters.status);
+    }
+
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
             if (data.success) {
-              allComplaints = data.data;
-              totalItems = data.pagination.total;
-              renderTable();
-              updatePagination();
+                allComplaints = data.data;
+                totalItems = data.pagination.total;
+                renderTable();
+                updatePagination();
             } else {
-              throw new Error(data.message || 'Failed to fetch complaints');
+                throw new Error(data.message || 'Failed to fetch complaints');
             }
-          })
-          .catch(error => {
+        })
+        .catch(error => {
             console.error('Error:', error);
             tableBody.innerHTML = `<tr><td colspan="12" style="text-align: center; color: red;">Error loading data: ${error.message}</td></tr>`;
             paginationInfo.textContent = 'Error loading data';
-          });
-      }
+        });
+}
+
+document.addEventListener('click', function(e) {
+    // Handle pagination buttons
+    if (e.target.classList.contains('page-btn')) {
+        if (e.target.classList.contains('prev-btn')) {
+            if (currentPage > 1) {
+                currentPage--;
+                fetchComplaints(lastAppliedFilters); // Use lastAppliedFilters
+            }
+        } else if (e.target.classList.contains('next-btn')) {
+            if (currentPage < Math.ceil(totalItems / itemsPerPage)) {
+                currentPage++;
+                fetchComplaints(lastAppliedFilters); // Use lastAppliedFilters
+            }
+        } else if (!isNaN(parseInt(e.target.textContent))) {
+            currentPage = parseInt(e.target.textContent);
+            fetchComplaints(lastAppliedFilters); // Use lastAppliedFilters
+        }
+    }
+});
       
       // Render the table with complaint data
       function renderTable() {
@@ -1754,9 +1837,10 @@ let currentFilters = {
         paginationControls.appendChild(nextBtn);
       }
       
+
+
       // Initialize event listeners for table rows
       function initializeRowEventListeners() {
-
           // Add new event listeners for action buttons
           document.querySelectorAll('.complaint-details-btn').forEach(btn => {
             btn.addEventListener('click', function(e) {
@@ -1808,116 +1892,81 @@ let currentFilters = {
         });
       }
       
-      // Function to update complaint (mock implementation)
-      function updateComplaint(complaintId, field, value) {
-        console.log(`API call to update complaint ${complaintId}: ${field}=${value}`);
-        // In a real application, you would make a fetch request here
-        alert(`${field} updated successfully!`);
-      }
-      
-      // Function to delete complaint (mock implementation)
-      function deleteComplaint(complaintId, row) {
-        console.log(`API call to delete complaint ${complaintId}`);
-        // In a real application, you would make a fetch request here
-        row.remove();
-        alert('Complaint deleted successfully!');
-        // Refresh the data
-        fetchComplaints();
-      }
 
 
-
-      fetchFilterOptions();
-
-      
-
-  const findBtn = document.getElementById('apply-filters');
-  if (findBtn) {
-    findBtn.addEventListener('click', function () {
-      const receiver = document.getElementById('receiver-filter').value;
-      const colony = document.getElementById('colony-filter').value;
-      const category = document.getElementById('category-filter').value;
-      const status = document.getElementById('status-filter').value;
-
-      console.log('Receiver:', receiver);
-      console.log('Colony:', colony);
-      console.log('Category:', category);
-      console.log('Status:', status);
-    });
-  }
 
     });
 
     
 
 
-function markComplaintCompleted(complaintId, row) {
-  // Show loading state
-  const statusCell = row.querySelector('td:nth-child(11)'); // Status is in the 11th column
-  const statusBadge = statusCell.querySelector('.status-badge');
-  
-  // Store original status for potential rollback
-  const originalStatus = statusBadge.textContent;
-  const originalStatusClass = statusBadge.className;
-  
-  statusBadge.textContent = 'Updating...';
-  statusBadge.className = 'status-badge status-in-progress';
-  
-  // Make API call to update status
-  fetch('http://localhost:3000/api/complaints/update-status', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      complaint_id: complaintId,
-      status: 'Completed'
-    })
-  })
-  .then(response => {
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
+    function markComplaintCompleted(complaintId, row) {
+      // Show loading state
+      const statusCell = row.querySelector('td:nth-child(11)'); // Status is in the 11th column
+      const statusBadge = statusCell.querySelector('.status-badge');
+      
+      // Store original status for potential rollback
+      const originalStatus = statusBadge.textContent;
+      const originalStatusClass = statusBadge.className;
+      
+      statusBadge.textContent = 'Updating...';
+      statusBadge.className = 'status-badge status-in-progress';
+      
+      // Make API call to update status
+      fetch('http://localhost:3000/api/complaints/update-status', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          complaint_id: complaintId,
+          status: 'Completed'
+        })
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.success) {
+          // Update UI to show completed status
+          statusBadge.textContent = 'Completed';
+          statusBadge.className = 'status-badge status-completed';
+          
+          // Update the status dropdown value
+          const statusSelect = statusCell.querySelector('.editable-select');
+          if (statusSelect) {
+            statusSelect.value = 'Completed';
+          }
+          
+          // Refresh the action dropdown options
+          const actionDropdown = row.querySelector('.action-dropdown-content');
+          if (actionDropdown) {
+            actionDropdown.innerHTML = `
+              <a href="#" class="complaint-details-btn"><i class="fas fa-info-circle"></i> Complaint Details</a>
+              <a href="#" class="print-complaint-btn"><i class="fas fa-print"></i> Print Complaint</a>
+            `;
+            
+            // Re-attach event listeners to the new buttons
+            initializeActionButtonListeners(row);
+          }
+          
+          // Show success message
+          alert('Complaint marked as completed successfully!');
+        } else {
+          throw new Error(data.message || 'Failed to update complaint status');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        // Revert to original status
+        statusBadge.textContent = originalStatus;
+        statusBadge.className = originalStatusClass;
+        alert('Failed to update complaint status: ' + error.message);
+      });
     }
-    return response.json();
-  })
-  .then(data => {
-    if (data.success) {
-      // Update UI to show completed status
-      statusBadge.textContent = 'Completed';
-      statusBadge.className = 'status-badge status-completed';
-      
-      // Update the status dropdown value
-      const statusSelect = statusCell.querySelector('.editable-select');
-      if (statusSelect) {
-        statusSelect.value = 'Completed';
-      }
-      
-      // Refresh the action dropdown options
-      const actionDropdown = row.querySelector('.action-dropdown-content');
-      if (actionDropdown) {
-        actionDropdown.innerHTML = `
-          <a href="#" class="complaint-details-btn"><i class="fas fa-info-circle"></i> Complaint Details</a>
-          <a href="#" class="print-complaint-btn"><i class="fas fa-print"></i> Print Complaint</a>
-        `;
-        
-        // Re-attach event listeners to the new buttons
-        initializeActionButtonListeners(row);
-      }
-      
-      // Show success message
-      alert('Complaint marked as completed successfully!');
-    } else {
-      throw new Error(data.message || 'Failed to update complaint status');
-    }
-  })
-  .catch(error => {
-    console.error('Error:', error);
-    // Revert to original status
-    statusBadge.textContent = originalStatus;
-    statusBadge.className = originalStatusClass;
-    alert('Failed to update complaint status: ' + error.message);
-  });
-}
 
 
 
@@ -1946,22 +1995,22 @@ function markComplaintCompleted(complaintId, row) {
 
 
   function initializeRowEventListeners() {
-  // Add event listeners to all rows
-  document.querySelectorAll('tr[data-complaint-id]').forEach(row => {
-    initializeActionButtonListeners(row);
+    // Add event listeners to all rows
+    document.querySelectorAll('tr[data-complaint-id]').forEach(row => {
+      initializeActionButtonListeners(row);
 
 
-    // Mark complaint button
-    row.querySelector('.mark-complaint-btn')?.addEventListener('click', function(e) {
-      e.preventDefault();
-      const complaintId = row.dataset.complaintId;
-      const confirmed = confirm(`Do you want to mark the complaint #${complaintId} as 'Completed'? This action cannot be undone.`);
-      if (confirmed) {
-        markComplaintCompleted(complaintId, row);
-      }
+      // Mark complaint button
+      row.querySelector('.mark-complaint-btn')?.addEventListener('click', function(e) {
+        e.preventDefault();
+        const complaintId = row.dataset.complaintId;
+        const confirmed = confirm(`Do you want to mark the complaint #${complaintId} as 'Completed'? This action cannot be undone.`);
+        if (confirmed) {
+          markComplaintCompleted(complaintId, row);
+        }
+      });
     });
-  });
-}
+  }
 
 
 
@@ -2467,7 +2516,7 @@ async function fetchSkillmenForModal() {
   // Render dropdown items
   function renderDropdowns() {
     renderPrimaryDropdown();
-    renderHelperDropdown();
+    //renderHelperDropdown();
   }
   
   function renderPrimaryDropdown(searchTerm = '') {
@@ -2502,7 +2551,7 @@ async function fetchSkillmenForModal() {
       });
     }
   }
-  
+  /*
   function renderHelperDropdown(searchTerm = '') {
     helperDropdown.items.innerHTML = '';
     
@@ -2535,7 +2584,7 @@ async function fetchSkillmenForModal() {
         helperDropdown.items.appendChild(item);
       });
     }
-  }
+  }*/
   
   function filterSkillmen(searchTerm) {
     if (!searchTerm) return allSkillmen;
@@ -2629,16 +2678,16 @@ async function fetchSkillmenForModal() {
   function setupModalEventListeners() {
     // Dropdown toggles
     if(primaryDropdown.toggle) primaryDropdown.toggle.addEventListener('click', () => toggleDropdown(primaryDropdown));
-    if(helperDropdown.toggle) helperDropdown.toggle.addEventListener('click', () => toggleDropdown(helperDropdown));
+    //if(helperDropdown.toggle) helperDropdown.toggle.addEventListener('click', () => toggleDropdown(helperDropdown));
     
     // Search inputs
     if(primaryDropdown.search) primaryDropdown.search.addEventListener('input', (e) => {
       renderPrimaryDropdown(e.target.value);
     });
-    
+    /*
     if(helperDropdown.search) helperDropdown.search.addEventListener('input', (e) => {
       renderHelperDropdown(e.target.value);
-    });
+    });*/
     
     // Close dropdowns when clicking outside
     if (document) document.addEventListener('click', (e) => {
@@ -2944,6 +2993,7 @@ document.getElementById('cancelBtn').addEventListener('click', closeModal);
 
 
 
+      fetchFilterOptions();
   
 });
 
@@ -3090,18 +3140,6 @@ initializeActionDropdowns();
 
 
 
-// Filter Control
-/*/ Add these variables at the top with your other declarations
-let receivers = [];
-let colonies = [];
-let categories = [];
-let currentFilters = {
-  receiver: '',
-  colony: '',
-  category: '',
-  status: ''
-};*/
-
 // Add this after your fetchComplaints() function
 async function fetchFilterOptions() {
   try {
@@ -3158,80 +3196,7 @@ function populateDropdown(dropdownId, options) {
   });
 }
   
-  // Reset filters button
-  // Replace this:
-  document.getElementById('reset-filters').addEventListener('click', function() {
-    document.getElementById('receiver-filter').value = '';
-    document.getElementById('colony-filter').value = '';
-    document.getElementById('category-filter').value = '';
-    document.getElementById('status-filter').value = '';
-    
-    currentFilters = {
-      receiver: '',
-      colony: '',
-      category: '',
-      status: ''
-    };
-    
-    currentPage = 1;
-    fetchComplaints();
-  });
 
-  // With this:
-  document.getElementById('apply-filters').addEventListener('click', function() {
-    currentFilters.receiver = document.getElementById('receiver-filter').value;
-    currentFilters.colony = document.getElementById('colony-filter').value;
-    currentFilters.category = document.getElementById('category-filter').value;
-    currentFilters.status = document.getElementById('status-filter').value;
-    
-    currentPage = 1;
-    fetchComplaints();
-  });
-
-// Modify your fetchComplaints function to include filters
-function fetchComplaints() {
-  const searchTerm = searchInput.value.trim();
-  const url = new URL('http://localhost:3000/api/complaints');
-  url.searchParams.append('page', currentPage);
-  url.searchParams.append('pageSize', itemsPerPage);
-  
-  if (searchTerm) {
-    url.searchParams.append('search', searchTerm);
-  }
-  
-  // Add filter parameters
-  if (currentFilters.receiver) {
-    url.searchParams.append('receiver', currentFilters.receiver);
-  }
-  if (currentFilters.colony) {
-    url.searchParams.append('colony', currentFilters.colony);
-  }
-  if (currentFilters.category) {
-    url.searchParams.append('category', currentFilters.category);
-  }
-  if (currentFilters.status) {
-    url.searchParams.append('status', currentFilters.status);
-  }
-  
-  // Rest of your fetchComplaints function remains the same...
-  fetch(url)
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        allComplaints = data.data;
-        totalItems = data.pagination.total;
-        renderTable();
-        updatePagination();
-      } else {
-        throw new Error(data.message || 'Failed to fetch complaints');
-      }
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      tableBody.innerHTML = `<tr><td colspan="12" style="text-align: center; color: red;">Error loading data: ${error.message}</td></tr>`;
-      paginationInfo.textContent = 'Error loading data';
-    });
-}
 
   </script>
 </body>
