@@ -179,6 +179,69 @@
       --success: #4caf50;
     }
 
+    
+    /* Notification Styles */
+    .notification-area {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1100;
+      max-width: 350px;
+      width: 100%;
+    }
+
+    .notification {
+      padding: 15px 20px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+      animation: slideIn 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+    }
+
+    .notification::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 4px;
+      width: 100%;
+      background: rgba(255,255,255,0.5);
+      animation: progress 3s linear;
+    }
+
+    .notification.success {
+      background: #4CAF50;
+    }
+
+    .notification.error {
+      background: #F44336;
+    }
+
+    .notification.warning {
+      background: #FF9800;
+    }
+
+    .notification.info {
+      background: #2196F3;
+    }
+
+    @keyframes progress {
+      from { width: 100%; }
+      to { width: 0%; }
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
     /* Complaints Section */
     .complaints-section-container {
       display: grid;
@@ -332,7 +395,7 @@
       color: var(--primary);
       font-weight: 700;
       padding: 10px 12px;
-      text-align: left;
+      text-align: center;
       font-size: 14px;
     }
     
@@ -343,6 +406,7 @@
       border-left: 1px solid #f3f3f3; /* vertical line color */
       cursor: default;
       vertical-align: top;
+      height: 60px;
 
     }
     
@@ -354,12 +418,7 @@
     td:nth-last-child(-n+2) {
       width: 120px; /* Fixed size */
     }
-
-    td {
-      height: 60px;
-    }
     
-
     tfoot {
       height: 120px;
       font-size: 18px;
@@ -414,22 +473,7 @@
     
     .editable-cell .static-value:hover {
       background: rgba(136, 28, 28, 0.1);
-    }
-    
-    .editable-select {
-      width: 100%;
-      padding: 4px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      background: white;
-      outline: none;
-      font-size: 13px;
-    }
-    
-    .editable-select:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 2px rgba(136, 28, 28, 0.2);
-    }
+    } 
     
     .action-cell {
       display: flex;
@@ -509,7 +553,7 @@
       border: 1px solid rgba(0,0,0,0.1);
     }
 
-    #launch-complaints,#natures {
+    #launch-complaints,#natures, #delay-complaints {
         text-decoration: none;
         color: inherit;
     }
@@ -1221,6 +1265,8 @@
   </style>
 </head>
 <body>
+  <!-- Notification Container (place this in your HTML) -->
+  <div class="notification-area" id="notification-area"></div>
 
 
 <!-- Skillman Assignment Modal -->
@@ -1325,6 +1371,10 @@
           <i class="fas fa-list"></i>
           All Complaints
         </div>
+        <a href="delay-complaints.html" class="complaints-option" id="delay-complaints">
+          <i class="fas fa-hourglass-half"></i>
+          Delay Complaints
+        </a>
         <a href="natures.html" class="complaints-option" id="natures">
           <i class="fas fa-chart-pie"></i>
           Natures
@@ -1475,6 +1525,38 @@
   </div>
 
   <script>
+
+
+    function showNotification(message, type = 'success', duration = 3000) {
+  const notificationArea = document.getElementById('notification-area');
+  
+  // Create notification element
+  const notification = document.createElement('div');
+  notification.className = `notification ${type}`;
+  
+  // Set icon based on type
+  let icon;
+  switch(type) {
+    case 'success': icon = 'fa-check-circle'; break;
+    case 'error': icon = 'fa-exclamation-circle'; break;
+    case 'warning': icon = 'fa-exclamation-triangle'; break;
+    default: icon = 'fa-info-circle';
+  }
+  
+  notification.innerHTML = `
+    <i class="fas ${icon}"></i>
+    ${message}
+  `;
+  
+  // Add to notification area
+  notificationArea.appendChild(notification);
+  
+  // Auto-remove after duration
+  setTimeout(() => {
+    notification.style.opacity = '0';
+    setTimeout(() => notification.remove(), 300);
+  }, duration);
+}
 
 
     // Add this global variable at the top of your script
@@ -1639,6 +1721,7 @@ function fetchComplaints(filters) {
             tableBody.innerHTML = `<tr><td colspan="12" style="text-align: center; color: red;">Error loading data: ${error.message}</td></tr>`;
             paginationInfo.textContent = 'Error loading data';
         });
+        
 }
 
 document.addEventListener('click', function(e) {
@@ -1733,22 +1816,11 @@ document.addEventListener('click', function(e) {
             <td>${complaint.receiver_name || 'N/A'}</td>
             <td class="editable-cell">
               <div class="static-value" data-field="skillman">${complaint.skillman_name || 'Unassigned'}</div>
-              <select class="editable-select" style="display:none;" data-field="skillman">
-                <option value="John Davis">John Davis</option>
-                <option value="Mark Wilson">Mark Wilson</option>
-                <option value="Lisa Thompson">Lisa Thompson</option>
-                <option value="Mike Chen">Mike Chen</option>
               </select>
             </td>
             <td>${complaint.customer_name || 'N/A'}</td>
             <td class="editable-cell">
-              <span class="status-badge ${statusClass}">${complaint.status}</span>
-              <select class="editable-select" style="display:none;" data-field="status">
-                <option value="In-Progress">In-Progress</option>
-                <option value="Completed">Completed</option>
-                <option value="Deffered">Deffered</option>
-                <option value="Un-Assigned">Un-Assigned</option>
-              </select>
+              <div class="status-badge ${statusClass}">${complaint.status}</div>
             </td>
             <td class="action-cell">
               <div class="action-dropdown">
@@ -1892,9 +1964,6 @@ document.addEventListener('click', function(e) {
         });
       }
       
-
-
-
     });
 
     
@@ -1954,9 +2023,11 @@ document.addEventListener('click', function(e) {
           }
           
           // Show success message
-          alert('Complaint marked as completed successfully!');
+          //alert('Complaint marked as completed successfully!');
+          showNotification('Complaint marked as completed successfully!', 'success', 3000);
         } else {
           throw new Error(data.message || 'Failed to update complaint status');
+          showNotification('Failed to update complaint status: ' + (data.message || 'Unknown error'), 'error', 3000);
         }
       })
       .catch(error => {
@@ -1964,12 +2035,10 @@ document.addEventListener('click', function(e) {
         // Revert to original status
         statusBadge.textContent = originalStatus;
         statusBadge.className = originalStatusClass;
-        alert('Failed to update complaint status: ' + error.message);
+        //alert('Failed to update complaint status: ' + error.message);
+        showNotification('Failed to update complaint status: ' + error.message, 'error', 3000);
       });
     }
-
-
-
 
 
   function initializeActionButtonListeners(row) {
@@ -1989,9 +2058,6 @@ document.addEventListener('click', function(e) {
       // Implement print functionality
     });
   }
-
-
-
 
 
   function initializeRowEventListeners() {
@@ -2077,32 +2143,40 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Fetch complaints from API
   function fetchComplaints() {
-    const searchTerm = searchInput.value.trim();
-    const url = new URL(`${SERVER_URL}/api/complaints`);
-    url.searchParams.append('page', currentPage);
-    url.searchParams.append('pageSize', itemsPerPage);
-    
-    if (searchTerm) {
-      url.searchParams.append('search', searchTerm);
+    try {
+      showNotification('Loading complaints...', 'info', 2000);
+      const searchTerm = searchInput.value.trim();
+      const url = new URL(`${SERVER_URL}/api/complaints`);
+      url.searchParams.append('page', currentPage);
+      url.searchParams.append('pageSize', itemsPerPage);
+      
+      if (searchTerm) {
+        url.searchParams.append('search', searchTerm);
+      }
+      
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            allComplaints = data.data;
+            totalItems = data.pagination.total;
+            renderTable();
+            updatePagination();
+          } else {
+            throw new Error(data.message || 'Failed to fetch complaints');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          tableBody.innerHTML = `<tr><td colspan="12" style="text-align: center; color: red;">Error loading data: ${error.message}</td></tr>`;
+          paginationInfo.textContent = 'Error loading data';
+          showNotification('Error loading Data');
+        });
+    } catch (error) {
+      showNotification('Error: '+ error)
+    } finally {
+      showNotification('Successfully loaded Complaints', 'success');
     }
-    
-    fetch(url)
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          allComplaints = data.data;
-          totalItems = data.pagination.total;
-          renderTable();
-          updatePagination();
-        } else {
-          throw new Error(data.message || 'Failed to fetch complaints');
-        }
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        tableBody.innerHTML = `<tr><td colspan="12" style="text-align: center; color: red;">Error loading data: ${error.message}</td></tr>`;
-        paginationInfo.textContent = 'Error loading data';
-      });
   }
   
   // Render the table with complaint data
@@ -2179,18 +2253,12 @@ document.addEventListener('DOMContentLoaded', function() {
         <td>${complaint.location_colony_name || 'N/A'}</td>
         <td>${complaint.location_building_number || 'N/A'}</td>
         <td>${complaint.receiver_name || 'N/A'}</td>
-        <td class="editable-cell">
-          <div class="static-value" data-field="skillman">${complaint.skillman_name || 'Unassigned'}</div>
-          <select class="editable-select" style="display:none;" data-field="skillman">
-            <option value="Un-Assigned">Un-Assigned</option>
-          </select>
+        <td>
+          <div class="static-value" data-field="skillman">${complaint.skillman_name || 'Unassigned'}</div> 
         </td>
         <td>${complaint.customer_name || 'N/A'}</td>
-        <td class="editable-cell">
-          <span class="status-badge ${statusClass}">${complaint.status}</span>
-          <select class="editable-select" style="display:none;" data-field="status">
-            <option value="Un-Assigned">Un-Assigned</option>
-          </select>
+        <td>
+          <span class="status-badge ${statusClass}">${complaint.status}</span> 
         </td>
         <td class="action-cell">
           <div class="action-dropdown">
@@ -2393,7 +2461,8 @@ function initializeActionDropdowns() {
           `;
         }
         
-        alert('Complaint marked as completed successfully!');
+        //alert('Complaint marked as completed successfully!');
+        showNotification('Complaint marked as completed successfully!', 'success', 3000);
       } else {
         throw new Error(data.message || 'Failed to update complaint status');
       }
@@ -2402,7 +2471,8 @@ function initializeActionDropdowns() {
       console.error('Error:', error);
       statusBadge.textContent = originalStatus;
       statusBadge.className = originalStatusClass;
-      alert('Failed to update complaint status: ' + error.message);
+      //alert('Failed to update complaint status: ' + error.message);
+      showNotification('Failed to update complaint status: ' + error.message, 'error', 3000);
     });
   }
   
@@ -2470,6 +2540,8 @@ async function fetchSkillmenForModal() {
     console.error('Error fetching skillmen:', error);
     document.getElementById('primarySkillmanItems').innerHTML = '<div class="dropdown-item error">Error loading skillmen</div>';
     allSkillmen = [];
+  } finally {
+    showNotification('Skillmen fetched successfully','success');
   }
 }
   
@@ -2480,6 +2552,7 @@ async function fetchSkillmenForModal() {
       
       if (!response.ok) {
         throw new Error('Failed to fetch complaint data');
+        showNotification('Failed to fetch complaint data', 'error')
       }
       
       const data = await response.json();
@@ -2551,40 +2624,6 @@ async function fetchSkillmenForModal() {
       });
     }
   }
-  /*
-  function renderHelperDropdown(searchTerm = '') {
-    helperDropdown.items.innerHTML = '';
-    
-    const filtered = filterSkillmen(searchTerm).filter(skillman => 
-      !selectedHelpers.some(h => h.id === skillman.id)
-    );
-    
-    if (filtered.length === 0) {
-      helperDropdown.items.innerHTML = '<div class="dropdown-item">No helpers found</div>';
-    } else {
-      filtered.forEach(skillman => {
-        const item = document.createElement('div');
-        item.className = 'dropdown-item';
-        
-        item.innerHTML = `
-          <div class="skillman-info">
-            <div class="skillman-name">${skillman.name}</div>
-            <div class="skillman-details">
-              <span>${skillman.phone}</span>
-              <span>${skillman.location}</span>
-              <span>${skillman.skill}</span>
-            </div>
-          </div>
-        `;
-        
-        item.addEventListener('click', () => {
-          addHelperSkillman(skillman);
-          toggleDropdown(helperDropdown);
-        });
-        helperDropdown.items.appendChild(item);
-      });
-    }
-  }*/
   
   function filterSkillmen(searchTerm) {
     if (!searchTerm) return allSkillmen;
@@ -2684,10 +2723,6 @@ async function fetchSkillmenForModal() {
     if(primaryDropdown.search) primaryDropdown.search.addEventListener('input', (e) => {
       renderPrimaryDropdown(e.target.value);
     });
-    /*
-    if(helperDropdown.search) helperDropdown.search.addEventListener('input', (e) => {
-      renderHelperDropdown(e.target.value);
-    });*/
     
     // Close dropdowns when clicking outside
     if (document) document.addEventListener('click', (e) => {
@@ -2705,7 +2740,8 @@ if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
       const priority = document.querySelector('input[name="priority"]:checked').value;
       
       if (!selectedPrimary && selectedHelpers.length === 0) {
-        alert('Please select at least one skillman (primary or helper)');
+        //alert('Please select at least one skillman (primary or helper)');
+        showNotification('Please select at least one skillman (primary or helper)', 'error', 3000);
         return;
       }
       
@@ -2730,6 +2766,7 @@ if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
         
         if (!response.ok) {
           throw new Error('Failed to assign skillman');
+          showNotification('Failed to assign skillman','error');
         }
         
         const result = await response.json();
@@ -2770,14 +2807,17 @@ if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
           }
           
           closeModal();
-          alert('Skillman assigned successfully!');
+          //alert('Skillman assigned successfully!');
+          showNotification('Skillman assigned successfully!', 'success', 3000);
           fetchComplaints();
         } else {
           throw new Error(result.message || 'Failed to assign skillman');
+          showNotification(result.message || 'Failed to assign skillman', 'error');
         }
       } catch (error) {
         console.error('Error:', error);
-        alert('Error assigning skillman: ' + error.message);
+        //alert('Error assigning skillman: ' + error.message);
+        showNotification('Error assigning skillman: ' + error.message, 'error', 3000);
       } finally {
         assignBtn.disabled = false;
         assignBtn.textContent = 'Assign Skillman';
@@ -2798,6 +2838,7 @@ if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
       fetchComplaintData(complaintId)
     ]).catch(error => {
       console.error('Error loading modal data:', error);
+      showNotification('Error loading modal data:'+ error, 'error')
     });
   }
   
@@ -2876,6 +2917,7 @@ async function fetchPreviousSkillman(complaintId) {
     }
   } catch (error) {
     previousDiv.textContent = 'Failed to load previous skillman';
+    showNotification('Failed to load previous skillman', 'error')
   }
 }
 
@@ -2920,7 +2962,8 @@ function selectPrimarySkillman(skillman) {
 
 document.getElementById('assignBtn').addEventListener('click', async () => {
   if (!selectedPrimary) {
-    alert('Please select a skillman');
+    //alert('Please select a skillman');
+    showNotification('Please select a skillman', 'error', 3000);
     return;
   }
 
@@ -2960,13 +3003,15 @@ document.getElementById('assignBtn').addEventListener('click', async () => {
       }
       
       closeModal();
-      alert('Skillman assigned successfully!');
+      //alert('Skillman assigned successfully!');
+      showNotification('Skillman assigned successfully!', 'success', 3000);
     } else {
       throw new Error(data.message || 'Failed to assign skillman');
     }
   } catch (error) {
     console.error('Error:', error);
-    alert('Error assigning skillman: ' + error.message);
+    //alert('Error assigning skillman: ' + error.message);
+    showNotification('Error assigning skillman: ' + error.message, 'error', 3000);
   }
 });
 
@@ -3157,7 +3202,8 @@ async function fetchFilterOptions() {
     
   } catch (error) {
     console.error('Error fetching filter options:', error);
-    alert('Failed to load filter options. Please try again later.');
+    //alert('Failed to load filter options. Please try again later.');
+    showNotification('Failed to load filter options. Please try again later.', 'error', 3000);
     // You might want to show a user-friendly error message here
   }
 }
@@ -3166,6 +3212,7 @@ function populateDropdown(dropdownId, options) {
   const dropdown = document.getElementById(dropdownId);
   if (!dropdown) {
     console.error(`Dropdown element with ID '${dropdownId}' not found`);
+    showNotification(`Dropdown element with ID '${dropdownId}' not found`, 'error');
     return;
   }
 
