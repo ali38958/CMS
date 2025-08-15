@@ -326,7 +326,7 @@
     
     .form-control {
       width: 100%;
-      padding: 14px 18px;
+      
       border-radius: var(--border-radius);
       border: 1px solid rgba(0,0,0,0.1);
       background: rgba(248, 249, 250, 0.5);
@@ -1438,6 +1438,7 @@
       });
       
       // Update report title with selected year
+      const year = document.getElementById('summary-year').value;
       document.querySelector('.summary-subtitle').textContent = `${year} Annual Performance Overview`;
     }
   
