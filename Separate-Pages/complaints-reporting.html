@@ -324,16 +324,15 @@
       color: var(--dark);
     }
     
-  .form-control {
-  width: 100%;
-  
-  border-radius: var(--border-radius);
-  border: 1px solid rgba(0,0,0,0.1);
-  background: #f8f9fa; /* Changed to solid color */
-  color: #212529; /* Added text color */
-  font-size: px;
-  transition: all 0.3s;
-}
+    .form-control {
+      width: 100%;
+      padding: 14px 18px;
+      border-radius: var(--border-radius);
+      border: 1px solid rgba(0,0,0,0.1);
+      background: rgba(248, 249, 250, 0.5);
+      font-size: 16px;
+      transition: all 0.3s;
+    }
     
     .form-control:focus {
       outline: none;
@@ -574,6 +573,16 @@
     
     tr:nth-child(even) {
       background-color: #f9f9f9;
+    }
+    
+    /* Chart container */
+    .chart-container {
+      margin-top: 30px;
+      height: 300px;
+      background: white;
+      border-radius: var(--border-radius);
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     }
     
     /* Report Visualization */
@@ -1189,16 +1198,6 @@
                       <td>28%</td>
                     </tr>
                     <tr>
-                      <td>Urgent</td>
-                      <td>158</td>
-                      <td>28%</td>
-                    </tr>
-                    <tr>
-                      <td>Urgent</td>
-                      <td>158</td>
-                      <td>28%</td>
-                    </tr>
-                    <tr>
                       <td>Major</td>
                       <td>202</td>
                       <td>36%</td>
@@ -1254,7 +1253,9 @@
               </div>
             </div>
             
-            
+            <div class="chart-container">
+              <canvas id="complaintsChart"></canvas>
+            </div>
           </div>
         </div>
       </div>
@@ -1262,6 +1263,9 @@
   </div>
 
   <script>
+    // Base API URL
+    const API_BASE_URL = 'http://localhost:3000/api';
+    
     // Notification system
     function showNotification(message, type) {
       const notification = document.getElementById('notification');
@@ -1275,14 +1279,175 @@
         notification.classList.remove('show');
       }, 3000);
     }
-
+  
+    // Function to fetch data from API
+    async function fetchData(endpoint, params = {}) {
+      try {
+        // Convert params object to query string
+        const queryString = new URLSearchParams(params).toString();
+        const url = `${API_BASE_URL}/${endpoint}?${queryString}`;
+        
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        return await response.json();
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        showNotification('Failed to fetch data from server', 'error');
+        return null;
+      }
+    }
+  
+    // Function to populate default report data
+    async function loadDefaultReportData(params) {
+      showNotification('Loading report data...', 'warning');
+      
+      const data = await fetchData('complaints', params);
+      
+      if (data) {
+        // In a real app, we would process and display this data
+        console.log('Default report data:', data);
+        showNotification('Report data loaded successfully', 'success');
+      }
+    }
+  
+    // Function to populate sector report data
+    async function loadSectorReportData(params) {
+      showNotification('Loading sector data...', 'warning');
+      
+      const data = await fetchData('complaints/sector', params);
+      
+      if (data) {
+        // Process and display sector data
+        console.log('Sector report data:', data);
+        showNotification('Sector data loaded successfully', 'success');
+        
+        // Update the sector table in the UI
+        updateSectorTable(data);
+      }
+    }
+  
+    // Function to populate sub-division report data
+    async function loadSubDivReportData(params) {
+      showNotification('Loading sub-division data...', 'warning');
+      
+      const data = await fetchData('complaints/subdivision', params);
+      
+      if (data) {
+        // Process and display sub-division data
+        console.log('Sub-division report data:', data);
+        showNotification('Sub-division data loaded successfully', 'success');
+        
+        // Update the sub-division table in the UI
+        updateSubDivTable(data);
+      }
+    }
+  
+    // Function to populate summary report data
+    async function loadSummaryReportData(year) {
+      showNotification('Loading summary data...', 'warning');
+      
+      const data = await fetchData('complaints/summary', { year });
+      
+      if (data) {
+        // Process and display summary data
+        console.log('Summary report data:', data);
+        showNotification('Summary data loaded successfully', 'success');
+        
+        // Update the summary tables in the UI
+        updateSummaryTables(data);
+      }
+    }
+  
+    // Function to update sector table with data
+    function updateSectorTable(data) {
+      const tableBody = document.querySelector('#sector-report-form table tbody');
+      tableBody.innerHTML = '';
+      
+      data.sectors.forEach(sector => {
+        const row = document.createElement('tr');
+        
+        row.innerHTML = `
+          <td>${sector.name}</td>
+          <td>${sector.total}</td>
+          <td>${sector.resolved}</td>
+          <td>${sector.pending}</td>
+          <td>${Math.round((sector.resolved / sector.total) * 100)}%</td>
+        `;
+        
+        tableBody.appendChild(row);
+      });
+    }
+  
+    // Function to update sub-division table with data
+    function updateSubDivTable(data) {
+      const tableBody = document.querySelector('#subdiv-report-form table tbody');
+      tableBody.innerHTML = '';
+      
+      data.subdivisions.forEach(subdiv => {
+        const row = document.createElement('tr');
+        
+        row.innerHTML = `
+          <td>${subdiv.name}</td>
+          <td>${subdiv.inprogress}</td>
+          <td>${subdiv.completed}</td>
+          <td>${subdiv.sna}</td>
+          <td>${subdiv.deferred}</td>
+          <td>${subdiv.total}</td>
+        `;
+        
+        tableBody.appendChild(row);
+      });
+    }
+  
+    // Function to update summary tables with data
+    function updateSummaryTables(data) {
+      // Update nature table
+      const natureTableBody = document.querySelector('#summary-results .data-tables table:first-of-type tbody');
+      natureTableBody.innerHTML = '';
+      
+      data.natures.forEach(nature => {
+        const row = document.createElement('tr');
+        
+        row.innerHTML = `
+          <td>${nature.name}</td>
+          <td>${nature.total}</td>
+          <td>${nature.percentage}%</td>
+        `;
+        
+        natureTableBody.appendChild(row);
+      });
+      
+      // Update colony table
+      const colonyTableBody = document.querySelector('#summary-results .data-tables table:last-of-type tbody');
+      colonyTableBody.innerHTML = '';
+      
+      data.colonies.forEach(colony => {
+        const row = document.createElement('tr');
+        
+        row.innerHTML = `
+          <td>${colony.name}</td>
+          <td>${colony.total}</td>
+          <td>${colony.percentage}%</td>
+        `;
+        
+        colonyTableBody.appendChild(row);
+      });
+      
+      // Update report title with selected year
+      document.querySelector('.summary-subtitle').textContent = `${year} Annual Performance Overview`;
+    }
+  
     document.addEventListener('DOMContentLoaded', function() {
       // Logout button functionality
       document.querySelector('.logout-btn').addEventListener('click', function() {
         showNotification('Logging out... Redirecting to login page.', 'success');
         setTimeout(() => {
           // In a real app, this would redirect to the login page
-          alert('You have been logged out');
+          window.location.href = '/login';
         }, 1500);
       });
       
@@ -1337,19 +1502,59 @@
       // Initialize the first radio as selected
       document.querySelector('.radio-item').classList.add('selected'); 
       
+      // Form submission handlers
+      document.querySelector('#default-report-form form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = {
+          colony: this.colony.value,
+          building: this.building.value,
+          category: this.category.value,
+          nature: this.nature.value,
+          status: this.status.value,
+          priority: this.priority.value,
+          fromDate: this['from-date'].value,
+          toDate: this['to-date'].value
+        };
+        
+        loadDefaultReportData(formData);
+      });
+      
+      document.querySelector('#sector-report-form .btn-primary').addEventListener('click', function() {
+        const fromDate = document.getElementById('sector-from-date').value;
+        const toDate = document.getElementById('sector-to-date').value;
+        
+        loadSectorReportData({ fromDate, toDate });
+      });
+      
+      document.querySelector('#subdiv-report-form .btn-primary').addEventListener('click', function() {
+        const fromDate = document.getElementById('subdiv-from-date').value;
+        const toDate = document.getElementById('subdiv-to-date').value;
+        const category = document.getElementById('subdiv-category').value;
+        
+        loadSubDivReportData({ fromDate, toDate, category });
+      });
       
       // Generate summary report button
       document.getElementById('generate-summary').addEventListener('click', function() {
-        showNotification('Summary report generated for selected year', 'success');
+        const year = document.getElementById('summary-year').value;
+        loadSummaryReportData(year);
       });
       
       // Print summary report button
       document.getElementById('print-summary').addEventListener('click', function() {
         showNotification('Printing summary report...', 'success');
         setTimeout(() => {
-          alert('Print dialog would open here in a real application');
+          window.print();
         }, 500);
       });
+      
+      // Load initial data for default report
+      const initialParams = {
+        fromDate: formattedDate,
+        toDate: formattedDate
+      };
+      loadDefaultReportData(initialParams);
     });
   </script>
 </body>
