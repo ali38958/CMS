@@ -1,5 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (!document.querySelector('link[href*="font-awesome"]')) {
+        const faLink = document.createElement('link');
+        faLink.rel = 'stylesheet';
+        faLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
+        document.head.appendChild(faLink);
+      }
+    });
+  </script>
+
   <script>  
     setTimeout(() => {
       console.log("2 seconds later...");
@@ -78,6 +89,9 @@
       box-sizing: border-box;
       font-family: Arial, sans-serif;
       box-sizing: border-box;
+      scrollbar-width: thin;
+      scroll-behavior: smooth;
+      scrollbar-color: rgb(138, 119, 119) transparent;
     }
 
     body {
@@ -244,6 +258,67 @@
       --success: #4caf50;
     }
 
+    /* Notification Styles */
+    .notification-area {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1100;
+      max-width: 350px;
+      width: 100%;
+    }
+
+    .notification {
+      padding: 15px 20px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+      animation: slideIn 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+    }
+
+    .notification::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 4px;
+      width: 100%;
+      background: rgba(255,255,255,0.5);
+      animation: progress 3s linear;
+    }
+
+    .notification.success {
+      background: #4CAF50;
+    }
+
+    .notification.error {
+      background: #F44336;
+    }
+
+    .notification.warning {
+      background: #FF9800;
+    }
+
+    .notification.info {
+      background: #2196F3;
+    }
+
+    @keyframes progress {
+      from { width: 100%; }
+      to { width: 0%; }
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
     /* Complaints Section */
     .complaints-section-container {
       display: grid;
@@ -295,7 +370,7 @@
       overflow: hidden;
     }
     
-    #all-complaints, #natures {
+    #all-complaints, #natures, #delay-complaints {
       text-decoration: none;
       color: inherit;
     }
@@ -1265,6 +1340,9 @@ label {
   </style>
 </head>
 <body>
+  <!-- Notification Container (place this in your HTML) -->
+  <div class="notification-area" id="notification-area"></div>
+  
   <!-- ===== NEW MODAL HTML ===== -->
   <div class="modal-backdrop" id="customerModal">
     <div class="modal-container">
@@ -1544,6 +1622,10 @@ label {
           <i class="fas fa-list"></i>
           All Complaints
         </a>
+        <a href="delay-complaints.html" class="complaints-option" id="delay-complaints">
+          <i class="fas fa-hourglass-half"></i>
+          Delay Complaints
+        </a>
         <a href="natures.html" class="complaints-option" id="natures">
           <i class="fas fa-chart-pie"></i>
           Natures
@@ -1622,6 +1704,46 @@ label {
   </div>
 
   <script>
+    // Javascript for notification area
+    /**
+ * Show a notification message
+ * @param {string} message - The message to display
+ * @param {string} type - Type of notification (success, error, warning, info)
+ * @param {number} duration - Duration in milliseconds (default: 5000)
+ */
+function showNotification(message, type = 'success', duration = 3000) {
+  const notificationArea = document.getElementById('notification-area');
+  
+  // Create notification element
+  const notification = document.createElement('div');
+  notification.className = `notification ${type}`;
+  
+  // Set icon based on type
+  let icon;
+  switch(type) {
+    case 'success': icon = 'fa-check-circle'; break;
+    case 'error': icon = 'fa-exclamation-circle'; break;
+    case 'warning': icon = 'fa-exclamation-triangle'; break;
+    default: icon = 'fa-info-circle';
+  }
+  
+  notification.innerHTML = `
+    <i class="fas ${icon}"></i>
+    ${message}
+  `;
+  
+  // Add to notification area
+  notificationArea.appendChild(notification);
+  
+  // Auto-remove after duration
+  setTimeout(() => {
+    notification.style.opacity = '0';
+    setTimeout(() => notification.remove(), 300);
+  }, duration);
+}
+
+
+
 
 
     const SERVER_URL = 'http://localhost:3000';
@@ -1809,7 +1931,8 @@ saveAddressBtn.addEventListener('click', async function () {
   const customerInfo = getCustomerInfo();
   
   if (!customerInfo) {
-    alert('Please search for a customer first');
+    //alert('Please search for a customer first');
+    showNotification('Please search for a customer first', 'error');
     return;
   }
 
@@ -1823,7 +1946,8 @@ saveAddressBtn.addEventListener('click', async function () {
 
     // Validate all required fields
     if (!buildingNo || !colony || !apartmentType || !area || !residentialStatus) {
-      alert('Please fill in all new building fields');
+      //alert('Please fill in all new building fields');
+      showNotification('Please fill in all new building fields', 'error');
       return;
     }
 
@@ -1857,13 +1981,15 @@ saveAddressBtn.addEventListener('click', async function () {
       if (data.locations && data.locations.length > 0) {
         populateLocationSelect(data.locations);
       } else {
-        alert('No locations returned from server');
+        //alert('No locations returned from server');
+        showNotification('No locations returned from server', 'warning');
       }
       
       closeAddressModal();
     } catch (err) {
       console.error('Failed to assign new building:', err);
-      alert('Error assigning new building. Please try again.');
+      //alert('Error assigning new building. Please try again.');
+      showNotification('Error assigning new building. Please try again.', 'error');
     }
 
   } else {
@@ -1871,7 +1997,8 @@ saveAddressBtn.addEventListener('click', async function () {
     const selectedRow = document.querySelector('.address-table tbody tr.selected');
     
     if (!selectedRow) {
-      alert('Please select an address from the table');
+      //alert('Please select an address from the table');
+      showNotification('Please select an address from the table', 'error');
       return;
     }
 
@@ -1903,13 +2030,15 @@ saveAddressBtn.addEventListener('click', async function () {
       if (data.locations && data.locations.length > 0) {
         populateLocationSelect(data.locations);
       } else {
-        alert('No locations returned from server');
+        //alert('No locations returned from server');
+        showNotification('No locations returned from server', 'warning');
       }
       
       closeAddressModal();
     } catch (err) {
       console.error('Failed to assign existing address:', err);
-      alert('Error assigning address. Please try again.');
+      //alert('Error assigning address. Please try again.');
+      showNotification('Error assigning address. Please try again.', 'error');
     }
   }
 });
@@ -2046,7 +2175,8 @@ document.getElementById('customer-search').addEventListener('keydown', function(
         const searchTerm = this.value.trim();
         
         if (!searchTerm) {
-            alert('Please enter a name or phone number');
+            //alert('Please enter a name or phone number');
+            showNotification('Please enter a name or phone number', 'error');
             return;
         }
         
@@ -2167,7 +2297,8 @@ findBtn.addEventListener('click', async function () {
   const userStatus = document.getElementById('user-status');
 
   if (!searchTerm) {
-    alert('Please enter a name or phone number.');
+    //alert('Please enter a name or phone number.');
+    showNotification('Please enter a name or phone number.', 'error');
     return;
   }
 
@@ -2277,14 +2408,17 @@ findBtn.addEventListener('click', async function () {
       
       try {
         const result = await saveCustomer(customerData);
-        alert(result.message || 'Customer saved successfully!');
+        //alert(result.messages || 'Customer saved successfully!');
+        // Replacement notification code
+        showNotification(result.message || 'Customer saved successfully!', 'success');
         
         // Update the search field with the new customer's info
         customerSearch.value = customerData.name;
         
         closeModal();
       } catch (error) {
-        alert(error.message || 'Failed to save customer. Please try again.');
+        //alert(error.message || 'Failed to save customer. Please try again.');
+        showNotification(error.message || 'Failed to save customer. Please try again.', 'error');
       } finally {
         // Reset button state
         saveBtn.disabled = false;
@@ -2738,7 +2872,8 @@ assignBtn.addEventListener('click', async () => {
         closeModal();
     } catch (error) {
         console.error('Error:', error);
-        alert('Error processing assignment. Please try again.');
+        //alert('Error processing assignment. Please try again.');
+        showNotification('Error processing assignment. Please try again.', 'error');
     }
 });
 
@@ -2807,7 +2942,8 @@ if (launchForm) {
         
         // Validate required fields
         if (!customerId || !location || !categorySelect.value || !categoryTypeSelect.value || !description) {
-            alert('Please fill in all required fields');
+            //alert('Please fill in all required fields');
+            showNotification('Please fill in all required fields', 'error');
             return;
         }
         
@@ -2909,16 +3045,18 @@ if (launchForm) {
             
             const result = await response.json();
             console.log('Successful response from server:', result);
-            alert('Complaint launched successfully!');
-            window.location.reload(); // Reload to reset the state
-            
+            //alert('Complaint launched successfully!');
+            showNotificationAndRefreshPage('Complaint launched successfully!', 'success');
+
+            //window.location.reload(); // Reload to reset the state
             // Reset the form
             launchForm.reset();
             
         } catch (error) {
             console.error('Error launching complaint:', error);
             console.error('Error stack:', error.stack);
-            alert(error.message || 'Failed to launch complaint. Please try again.');
+            //alert(error.message || 'Failed to launch complaint. Please try again.');
+            showNotification(error.message || 'Failed to launch complaint. Please try again.', 'error');
         } finally {
             // Reset button state
             const launchButton = document.querySelector('.launch-button');
@@ -2930,6 +3068,41 @@ if (launchForm) {
     });
 }
 
+
+
+function showNotificationAndRefreshPage(message, type = 'success', duration = 3000) {
+  const notificationArea = document.getElementById('notification-area');
+  
+  // Create notification element
+  const notification = document.createElement('div');
+  notification.className = `notification ${type}`;
+  
+  // Set icon based on type
+  let icon;
+  switch(type) {
+    case 'success': icon = 'fa-check-circle'; break;
+    case 'error': icon = 'fa-exclamation-circle'; break;
+    case 'warning': icon = 'fa-exclamation-triangle'; break;
+    default: icon = 'fa-info-circle';
+  }
+  
+  notification.innerHTML = `
+    <i class="fas ${icon}"></i>
+    ${message}
+  `;
+  
+  // Add to notification area
+  notificationArea.appendChild(notification);
+  
+  // Auto-remove after duration
+  setTimeout(() => {
+    notification.style.opacity = '0';
+    setTimeout(() => notification.remove(), 3000);
+  }, duration);
+
+  // Refresh the page after showing notification
+  //window.location.reload();
+}
 
 </script>
 </body>
