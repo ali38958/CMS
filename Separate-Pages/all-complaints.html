@@ -178,7 +178,6 @@
       --nav-hover: rgba(136, 28, 28, 0.08);
       --success: #4caf50;
     }
-
     
     /* Notification Styles */
     .notification-area {
@@ -366,15 +365,16 @@
     .search-box {
       display: flex;
       margin-bottom: 30px;
+      height: 45px; /*Changes made later*/
     }
     
     .search-box input {
       flex: 1;
-      border-radius: 12px 0 0 12px;
+      border-radius: 8px 0 0 8px;
     }
     
     .search-box button {
-      border-radius: 0 12px 12px 0;
+      border-radius: 0 8px 8px 0;
     }
     
     /* Table-specific styles */
@@ -1249,12 +1249,16 @@
 .filter-select {
   width: 100%;
   padding: 10px 12px;
+  height: 45px;
+  border-radius: 7px;
 }
 
-#reset-filters {
-  height: 42px;
+
+#apply-filters {
+  height: 45px;
   align-self: flex-end;
   margin-bottom: 1px;
+  border-radius: 7px;
 }
 
 @media (max-width: 768px) {
@@ -1528,35 +1532,35 @@
 
 
     function showNotification(message, type = 'success', duration = 3000) {
-  const notificationArea = document.getElementById('notification-area');
-  
-  // Create notification element
-  const notification = document.createElement('div');
-  notification.className = `notification ${type}`;
-  
-  // Set icon based on type
-  let icon;
-  switch(type) {
-    case 'success': icon = 'fa-check-circle'; break;
-    case 'error': icon = 'fa-exclamation-circle'; break;
-    case 'warning': icon = 'fa-exclamation-triangle'; break;
-    default: icon = 'fa-info-circle';
-  }
-  
-  notification.innerHTML = `
-    <i class="fas ${icon}"></i>
-    ${message}
-  `;
-  
-  // Add to notification area
-  notificationArea.appendChild(notification);
-  
-  // Auto-remove after duration
-  setTimeout(() => {
-    notification.style.opacity = '0';
-    setTimeout(() => notification.remove(), 300);
-  }, duration);
-}
+      const notificationArea = document.getElementById('notification-area');
+      
+      // Create notification element
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      
+      // Set icon based on type
+      let icon;
+      switch(type) {
+        case 'success': icon = 'fa-check-circle'; break;
+        case 'error': icon = 'fa-exclamation-circle'; break;
+        case 'warning': icon = 'fa-exclamation-triangle'; break;
+        default: icon = 'fa-info-circle';
+      }
+      
+      notification.innerHTML = `
+        <i class="fas ${icon}"></i>
+        ${message}
+      `;
+      
+      // Add to notification area
+      notificationArea.appendChild(notification);
+      
+      // Auto-remove after duration
+      setTimeout(() => {
+        notification.style.opacity = '0';
+        setTimeout(() => notification.remove(), 300);
+      }, duration);
+    }
 
 
     // Add this global variable at the top of your script
@@ -1682,6 +1686,7 @@ let lastAppliedFilters = null;
 
 // Fetch complaints from API
 function fetchComplaints(filters) {
+  const authToken = localStorage.getItem('authToken');
     // Store the filters for pagination changes
     if (filters) {
         lastAppliedFilters = filters;
@@ -1704,7 +1709,11 @@ function fetchComplaints(filters) {
         if (filters.status) url.searchParams.append('status', filters.status);
     }
 
-    fetch(url)
+    fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${authToken}`,
+                    'Content-Type': 'application/json'
+                }})
         .then(response => response.json())
         .then(data => {
             if (data.success) {
@@ -1980,11 +1989,13 @@ document.addEventListener('click', function(e) {
       
       statusBadge.textContent = 'Updating...';
       statusBadge.className = 'status-badge status-in-progress';
-      
+
+      const authToken = localStorage.getItem('authToken');
       // Make API call to update status
       fetch('http://localhost:3000/api/complaints/update-status', {
         method: 'POST',
         headers: {
+          'Authorization': `Bearer ${authToken}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -2144,6 +2155,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Fetch complaints from API
   function fetchComplaints() {
     try {
+      const authToken = localStorage.getItem('authToken');
       showNotification('Loading complaints...', 'info', 2000);
       const searchTerm = searchInput.value.trim();
       const url = new URL(`${SERVER_URL}/api/complaints`);
@@ -2154,7 +2166,11 @@ document.addEventListener('DOMContentLoaded', function() {
         url.searchParams.append('search', searchTerm);
       }
       
-      fetch(url)
+      fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${authToken}`,
+                    'Content-Type': 'application/json'
+                }})
         .then(response => response.json())
         .then(data => {
           if (data.success) {
@@ -2162,6 +2178,7 @@ document.addEventListener('DOMContentLoaded', function() {
             totalItems = data.pagination.total;
             renderTable();
             updatePagination();
+            showNotification('Successfully loaded Complaints', 'success');
           } else {
             throw new Error(data.message || 'Failed to fetch complaints');
           }
@@ -2170,13 +2187,11 @@ document.addEventListener('DOMContentLoaded', function() {
           console.error('Error:', error);
           tableBody.innerHTML = `<tr><td colspan="12" style="text-align: center; color: red;">Error loading data: ${error.message}</td></tr>`;
           paginationInfo.textContent = 'Error loading data';
-          showNotification('Error loading Data');
+          showNotification('Error loading Data', 'error');
         });
     } catch (error) {
       showNotification('Error: '+ error)
-    } finally {
-      showNotification('Successfully loaded Complaints', 'success');
-    }
+    } 
   }
   
   // Render the table with complaint data
@@ -2418,6 +2433,7 @@ function initializeActionDropdowns() {
   
   // Function to mark complaint as completed
   function markComplaintCompleted(complaintId, row) {
+    const authToken = localStorage.getItem('authToken');
     const statusCell = row.querySelector('td:nth-child(11)');
     const statusBadge = statusCell.querySelector('.status-badge');
     
@@ -2426,10 +2442,11 @@ function initializeActionDropdowns() {
     
     statusBadge.textContent = 'Updating...';
     statusBadge.className = 'status-badge status-in-progress';
-    
+
     fetch(`${SERVER_URL}/api/complaints/update-status`, {
       method: 'POST',
       headers: {
+        'Authorization': `Bearer ${authToken}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -2517,14 +2534,22 @@ function initializeActionDropdowns() {
 // Update the fetchSkillmenForModal function
 async function fetchSkillmenForModal() {
   try {
+    const authToken = localStorage.getItem('authToken');
     document.getElementById('primarySkillmanItems').innerHTML = '<div class="dropdown-item">Loading skillmen...</div>';
     
-    const response = await fetch('http://localhost:3000/api/skillmen');
+    const response = await fetch('http://localhost:3000/api/skillmen', {
+                headers: {
+                    'Authorization': `Bearer ${authToken}`,
+                    'Content-Type': 'application/json'
+                }});
     
     if (!response.ok) {
       throw new Error('Failed to fetch skillmen');
     }
     
+    if(response.ok) {
+      showNotification('Successfully loaded Complaints', 'success');
+    }
     const data = await response.json();
     
     allSkillmen = data.map(skillman => ({
@@ -2540,15 +2565,18 @@ async function fetchSkillmenForModal() {
     console.error('Error fetching skillmen:', error);
     document.getElementById('primarySkillmanItems').innerHTML = '<div class="dropdown-item error">Error loading skillmen</div>';
     allSkillmen = [];
-  } finally {
-    showNotification('Skillmen fetched successfully','success');
   }
 }
   
   // Fetch complaint data to pre-populate modal
   async function fetchComplaintData(complaintId) {
+    const authToken = localStorage.getItem('authToken');
     try {
-      const response = await fetch(`${SERVER_URL}/api/complaints/${complaintId}`);
+      const response = await fetch(`${SERVER_URL}/api/complaints/${complaintId}`, {
+                headers: {
+                    'Authorization': `Bearer ${authToken}`,
+                    'Content-Type': 'application/json'
+                }});
       
       if (!response.ok) {
         throw new Error('Failed to fetch complaint data');
@@ -2746,6 +2774,7 @@ if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
       }
       
       try {
+        const authToken = localStorage.getItem('authToken');
         assignBtn.disabled = true;
         assignBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Assigning...';
         
@@ -2755,10 +2784,10 @@ if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
           primarySkillmanId: selectedPrimary?.id || null,
           helperSkillmenIds: selectedHelpers.map(h => h.id)
         };
-        
         const response = await fetch(`${SERVER_URL}/api/complaints/assign-skillman`, {
           method: 'POST',
           headers: {
+            'Authorization': `Bearer ${authToken}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(assignmentData)
@@ -2893,7 +2922,12 @@ async function fetchPreviousSkillman(complaintId) {
   previousDiv.innerHTML = 'Loading previous skillman...';
 
   try {
-    const response = await fetch(`http://localhost:3000/api/complaints/${complaintId}/previous-skillman`);
+    const authToken = localStorage.getItem('authToken');
+    const response = await fetch(`http://localhost:3000/api/complaints/${complaintId}/previous-skillman`, {
+                                                                                                      headers: {
+                                                                                                          'Authorization': `Bearer ${authToken}`,
+                                                                                                          'Content-Type': 'application/json'
+                                                                                                      }});
     const data = await response.json();
 
     if (data.success) {
@@ -2926,7 +2960,12 @@ async function fetchPreviousSkillman(complaintId) {
 // New function to fetch current skillman
 // Update the fetchCurrentSkillman function
 function fetchCurrentSkillman(complaintId) {
-  fetch(`http://localhost:3000/api/complaints/${complaintId}`)
+  const authToken = localStorage.getItem('authToken');
+  fetch(`http://localhost:3000/api/complaints/${complaintId}`, {
+                headers: {
+                    'Authorization': `Bearer ${authToken}`,
+                    'Content-Type': 'application/json'
+                }})
     .then(response => response.json())
     .then(data => {
       if (data.success && data.data.skillman_id) {
@@ -2968,9 +3007,11 @@ document.getElementById('assignBtn').addEventListener('click', async () => {
   }
 
   try {
+    const authToken = localStorage.getItem('authToken');
     const response = await fetch('http://localhost:3000/api/complaints/assign-skillman', {
       method: 'POST',
       headers: {
+        'Authorization': `Bearer ${authToken}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -3188,14 +3229,23 @@ initializeActionDropdowns();
 // Add this after your fetchComplaints() function
 async function fetchFilterOptions() {
   try {
+    const authToken = localStorage.getItem('authToken');
     // Fetch receivers
-    const receiversResponse = await fetch('http://localhost:3000/api/receivers');
+    const receiversResponse = await fetch('http://localhost:3000/api/receivers', {
+                headers: {
+                    'Authorization': `Bearer ${authToken}`,
+                    'Content-Type': 'application/json'
+                }});
     if (!receiversResponse.ok) throw new Error('Failed to fetch receivers');
     receivers = await receiversResponse.json();
     populateDropdown('receiver-filter', receivers);
     
     // Fetch colonies
-    const coloniesResponse = await fetch('http://localhost:3000/api/colonies');
+    const coloniesResponse = await fetch('http://localhost:3000/api/colonies', {
+                headers: {
+                    'Authorization': `Bearer ${authToken}`,
+                    'Content-Type': 'application/json'
+                }});
     if (!coloniesResponse.ok) throw new Error('Failed to fetch colonies');
     colonies = await coloniesResponse.json();
     populateDropdown('colony-filter', colonies);
