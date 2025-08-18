@@ -1837,8 +1837,13 @@ buildingSearch.addEventListener('input', function() {
 
     // Function to fetch colonies
     function fetchColonies() {
+      const authToken = localStorage.getItem('authToken');
       colonySelect.innerHTML = '<option value="">Loading colonies...</option>';
-      fetch(SERVER_URL+'/api/colonies')
+      fetch(SERVER_URL+'/api/colonies', {
+                headers: {
+                    'Authorization': `Bearer ${authToken}`,
+                    'Content-Type': 'application/json'
+                }})
         .then(response => response.json())
         .then(data => {
           colonySelect.innerHTML = '<option value="">Select Colony</option>';
@@ -1853,8 +1858,13 @@ buildingSearch.addEventListener('input', function() {
 
     // Function to fetch apartment types
     function fetchApartmentTypes() {
+      const authToken = localStorage.getItem('authToken');
       apartmentTypeSelect.innerHTML = '<option value="">Loading apartment types...</option>';
-      fetch(SERVER_URL+'/api/apartment-types')
+      fetch(SERVER_URL+'/api/apartment-types', {
+                headers: {
+                    'Authorization': `Bearer ${authToken}`,
+                    'Content-Type': 'application/json'
+                }})
         .then(response => response.json())
         .then(data => {
           apartmentTypeSelect.innerHTML = '<option value="">Select Apartment Type</option>';
@@ -1963,15 +1973,17 @@ saveAddressBtn.addEventListener('click', async function () {
     };
 
     try {
+      const authToken = localStorage.getItem('authToken');
       // Send data to backend
       const response = await fetch(SERVER_URL+'/api/assign-location', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
 
       if (!response.ok) {
         throw new Error('Failed to assign location');
+        showNotification('Failed to assign location', 'error');
       }
 
       const data = await response.json();
@@ -2012,15 +2024,17 @@ saveAddressBtn.addEventListener('click', async function () {
     };
 
     try {
+      const authToken = localStorage.getItem('authToken');
       // Send data to backend
       const response = await fetch(SERVER_URL+'/api/assign-location', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
 
       if (!response.ok) {
         throw new Error('Failed to assign location');
+        showNotification('Failed to assign location', 'error');
       }
 
       const data = await response.json();
@@ -2079,13 +2093,21 @@ const categoryTypeSelect = document.getElementById('category-type');
 // Fetch categories from API
 async function fetchCategories() {
     try {
-        const response = await fetch(SERVER_URL+'/api/categories');
+      const authToken = localStorage.getItem('authToken');
+        const response = await fetch(SERVER_URL+'/api/categories', {
+        headers: { 
+          'Authorization': `Bearer ${authToken}`, 
+          'Content-Type': 'application/json' }
+        });
+
         if (!response.ok) {
             throw new Error('Failed to fetch categories');
+            showNotification('Failed to fetch categories');
         }
         return await response.json();
     } catch (error) {
         console.error('Error fetching categories:', error);
+        showNotification('Error fetching categories:'+ error, 'error')
         return [];
     }
 }
@@ -2093,13 +2115,20 @@ async function fetchCategories() {
 // Fetch category types based on selected category ID
 async function fetchCategoryTypes(categoryId) {
     try {
-        const response = await fetch(SERVER_URL+`/api/categories/${categoryId}/types`);
+      const authToken = localStorage.getItem('authToken');
+        const response = await fetch(SERVER_URL+`/api/categories/${categoryId}/types`, {
+        headers: { 
+          'Authorization': `Bearer ${authToken}`, 
+          'Content-Type': 'application/json' }
+        });
         if (!response.ok) {
             throw new Error('Failed to fetch category types');
+            showNotification('Failed to fetch category types', 'error')
         }
         return await response.json();
     } catch (error) {
         console.error('Error fetching category types:', error);
+        showNotification('Error fetching category types:'+ error, 'error')
         return [];
     }
 }
@@ -2167,37 +2196,6 @@ categoryTypeSelect.disabled = true;
 
 
 
-  //Enter functionality for Customer Search
-  // Handle Enter key in customer search field
-document.getElementById('customer-search').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') {
-        e.preventDefault();
-        const searchTerm = this.value.trim();
-        
-        if (!searchTerm) {
-            //alert('Please enter a name or phone number');
-            showNotification('Please enter a name or phone number', 'error');
-            return;
-        }
-        
-        // Open the modal
-        const modal = document.getElementById('customerModal');
-        modal.classList.add('active');
-        document.body.style.overflow = 'hidden';
-        
-        // Determine if the input contains numbers
-        const hasNumbers = /\d/.test(searchTerm);
-        
-        // Set the value in the appropriate field
-        if (hasNumbers) {
-            document.getElementById('customer-phone').value = searchTerm;
-            document.getElementById('customer-name').focus();
-        } else {
-            document.getElementById('customer-name').value = searchTerm;
-            document.getElementById('customer-email').focus();
-        }
-    }
-});
 
 // Add Enter key navigation in modal fields
 document.getElementById('customer-name').addEventListener('keydown', function(e) {
@@ -2309,55 +2307,72 @@ findBtn.addEventListener('click', async function () {
   locationSelect.disabled = true;
   assignButton.disabled = true;
 
-  try {
-    const response = await fetch(SERVER_URL+`/api/customers/search?q=${encodeURIComponent(searchTerm)}`);
-    
-    if (!response.ok) {
-      throw new Error('Failed to search customer');
+try {
+  const authToken = localStorage.getItem('authToken');
+  
+  const response = await fetch(SERVER_URL+`/api/customers/search?q=${encodeURIComponent(searchTerm)}`, {
+    headers: {
+      'Authorization': `Bearer ${authToken}`,
+      'Content-Type': 'application/json'
     }
-
-    const result = await response.json();
-    console.log('Search result:', result); // For debugging
-
-    if (result && result.exists) {
-      // ✅ User exists
-      customerId = result.customer.id; // Store the customer ID
-      console.log('Stored customer ID:', customerId); // Optional debug log
-      
-      userStatus.textContent = '✅ User found';
-      userStatus.style.color = 'green';
-
-      // Populate location dropdown
-      if (result.locations && result.locations.length > 0) {
-        populateLocationSelect(result.locations);
-      } else {
-        locationSelect.innerHTML = '<option value="">No locations found</option>';
-      }
-
-      // Enable location and assign button
-      locationSelect.disabled = false;
-      assignButton.disabled = false;
-    } else {
-      // ❌ User not found - open modal
-      modal.classList.add('active');
-      document.body.style.overflow = 'hidden';
-    }
-  } catch (error) {
-    console.error('Search error:', error);
-    userStatus.textContent = '❌ Error searching user';
-    userStatus.style.color = 'red';
-    locationSelect.innerHTML = '<option value="">Error loading locations</option>';
+  });
+  
+  if (!response.ok) {
+    throw new Error('Failed to search customer');
+    showNotification('Failed to search customer');
   }
+
+  const result = await response.json();
+  console.log('Search result:', result); // For debugging
+
+  if (result && result.exists) {
+    // ✅ User exists
+    customerId = result.customer.id; // Store the customer ID
+    console.log('Stored customer ID:', customerId); // Optional debug log
+    showNotification('Customer search successful', 'success');
+    
+    userStatus.textContent = '✅ User found';
+    userStatus.style.color = 'green';
+
+    // Populate location dropdown
+    if (result.locations && result.locations.length > 0) {
+      populateLocationSelect(result.locations);
+    } else {
+      locationSelect.innerHTML = '<option value="">No locations found</option>';
+    }
+
+    // Enable location and assign button
+    locationSelect.disabled = false;
+    assignButton.disabled = false;
+  } else {
+    // ❌ User not found - open modal
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    if (/\d/.test(customerSearch.value)) {
+      customerPhone.value = customerSearch.value;
+    } else {
+      customerName.value = customerSearch.value;
+    }
+
+  }
+} catch (error) {
+  console.error('Search error:', error);
+  userStatus.textContent = '❌ Error searching user';
+  userStatus.style.color = 'red';
+  locationSelect.innerHTML = '<option value="">Error loading locations</option>';
+}
 });
 
 
     // API functions
     async function saveCustomer(customerData) {
       try {
+        const authToken = localStorage.getItem('authToken');
         // Replace with your actual API endpoint
         const response = await fetch(SERVER_URL+'/api/customers', {
           method: 'POST',
           headers: {
+            'Authorization': `Bearer ${authToken}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(customerData)
@@ -2367,30 +2382,17 @@ findBtn.addEventListener('click', async function () {
         
         if (!response.ok) {
           throw new Error(result.message || 'Failed to save customer');
+          showNotification(result.message || 'Failed to save customer', 'error');
         }
         
         return result;
       } catch (error) {
         console.error('Error:', error);
         throw error;
+        showNotification(error, 'error');
       }
     }
 
-    async function searchCustomer(searchTerm) {
-      try {
-        // Replace with your actual search endpoint
-        const response = await fetch(SERVER_URL+`/api/customers/search?q=${encodeURIComponent(searchTerm)}`);
-        
-        if (!response.ok) {
-          throw new Error('Search failed');
-        }
-        
-        return await response.json();
-      } catch (error) {
-        console.error('Search error:', error);
-        throw error;
-      }
-    }
 
     // Save customer with API call
     saveBtn.addEventListener('click', async function() {
@@ -2616,14 +2618,21 @@ document.addEventListener('DOMContentLoaded', function() {
     // Fetch skillmen from backend API
     async function fetchSkillmen() {
       try {
+        const authToken = localStorage.getItem('authToken');
         // Show loading state
         primaryDropdown.items.innerHTML = '<div class="dropdown-item">Loading skillmen...</div>';
         helperDropdown.items.innerHTML = '<div class="dropdown-item">Loading skillmen...</div>';
         
-        const response = await fetch(SERVER_URL+'/api/skillmen');
+        const response = await fetch(SERVER_URL+'/api/skillmen', {
+          headers: {
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json'
+          }
+        });
         
         if (!response.ok) {
           throw new Error('Failed to fetch skillmen');
+          showNotification('Failed to fetch skillmen', 'error');
         }
         
         const data = await response.json();
@@ -3023,12 +3032,14 @@ if (launchForm) {
             console.log('Request method: POST');
             console.log('Request headers:', {
                 'Content-Type': 'application/json'
-            });
-            
+            }); 
+
+            const authToken = localStorage.getItem('authToken');
             // Send complaint to backend
             const response = await fetch(SERVER_URL+'/complaints', {
                 method: 'POST',
                 headers: {
+                    'Authorization': `Bearer ${authToken}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(complaintData)
@@ -3040,7 +3051,9 @@ if (launchForm) {
             if (!response.ok) {
                 const errorResponse = await response.text();
                 console.error('Error response from server:', errorResponse);
+                showNotification('Error response from server:'+ errorResponse, 'error');
                 throw new Error('Failed to launch complaint');
+                showNotification('Failed to launch complaint', 'error');
             }
             
             const result = await response.json();
