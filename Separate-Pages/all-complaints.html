@@ -1723,12 +1723,14 @@ function fetchComplaints(filters) {
                 updatePagination();
             } else {
                 throw new Error(data.message || 'Failed to fetch complaints');
+                showNotification(data.message || 'Failed to fetch complaints', 'error');
             }
         })
         .catch(error => {
             console.error('Error:', error);
             tableBody.innerHTML = `<tr><td colspan="12" style="text-align: center; color: red;">Error loading data: ${error.message}</td></tr>`;
             paginationInfo.textContent = 'Error loading data';
+            showNotification('Erro loading data', 'error')
         });
         
 }
@@ -2006,6 +2008,7 @@ document.addEventListener('click', function(e) {
       .then(response => {
         if (!response.ok) {
           throw new Error('Network response was not ok');
+          showNotification('Network response was not ok','error');
         }
         return response.json();
       })
@@ -2181,6 +2184,7 @@ document.addEventListener('DOMContentLoaded', function() {
             showNotification('Successfully loaded Complaints', 'success');
           } else {
             throw new Error(data.message || 'Failed to fetch complaints');
+            showNotification(data.message || 'Failed to fetch complaints', 'error');
           }
         })
         .catch(error => {
@@ -2190,7 +2194,7 @@ document.addEventListener('DOMContentLoaded', function() {
           showNotification('Error loading Data', 'error');
         });
     } catch (error) {
-      showNotification('Error: '+ error)
+      showNotification('Error: '+ error, 'error')
     } 
   }
   
@@ -2457,6 +2461,7 @@ function initializeActionDropdowns() {
     .then(response => {
       if (!response.ok) {
         throw new Error('Network response was not ok');
+        showNotification('Network response was not ok', 'error');
       }
       return response.json();
     })
@@ -2545,6 +2550,7 @@ async function fetchSkillmenForModal() {
     
     if (!response.ok) {
       throw new Error('Failed to fetch skillmen');
+      showNotification('Failed to fetch skillmen', 'error');
     }
     
     if(response.ok) {
@@ -2563,6 +2569,7 @@ async function fetchSkillmenForModal() {
     renderPrimaryDropdown();
   } catch (error) {
     console.error('Error fetching skillmen:', error);
+    showNotification('Error fetching skillmen:'+ error, 'error')
     document.getElementById('primarySkillmanItems').innerHTML = '<div class="dropdown-item error">Error loading skillmen</div>';
     allSkillmen = [];
   }
@@ -2611,6 +2618,7 @@ async function fetchSkillmenForModal() {
       }
     } catch (error) {
       console.error('Error fetching complaint data:', error);
+      showNotification('Error fetching complaint data:'+ error, 'error');
     }
   }
   
