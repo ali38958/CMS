@@ -2102,7 +2102,7 @@ async function fetchCategories() {
 
         if (!response.ok) {
             throw new Error('Failed to fetch categories');
-            showNotification('Failed to fetch categories');
+            showNotification('Failed to fetch categories', 'error');
         }
         return await response.json();
     } catch (error) {
@@ -2150,6 +2150,7 @@ async function populateCategories() {
     } catch (error) {
         categorySelect.innerHTML = '<option value="">Error loading categories</option>';
         console.error('Error populating categories:', error);
+        showNotification('Error populating categories:'+ error, 'error')
     }
 }
 
@@ -2178,6 +2179,7 @@ async function populateCategoryTypes(categoryId) {
     } catch (error) {
         categoryTypeSelect.innerHTML = '<option value="">Error loading types</option>';
         console.error('Error populating category types:', error);
+        showNotification('Error populating category types:'+ error);
     }
 }
 
@@ -2319,7 +2321,7 @@ try {
   
   if (!response.ok) {
     throw new Error('Failed to search customer');
-    showNotification('Failed to search customer');
+    showNotification('Failed to search customer', 'error');
   }
 
   const result = await response.json();
