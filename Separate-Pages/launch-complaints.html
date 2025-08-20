@@ -50,6 +50,8 @@
 
         if (data.success) {
           console.log('Token verification successful for user:', data.user.name);
+
+          localStorage.setItem('UserId', data.user.name);
           
           // Store user data in localStorage
           localStorage.setItem('currentUser', JSON.stringify(data.user));
@@ -64,18 +66,21 @@
           
         } else {
           console.log('Token verification failed:', data.message || 'No error message provided');
-          alert('Authentication failed: ' + (data.message || 'Invalid token'));
+          //alert('Authentication failed: ' + (data.message || 'Invalid token'));
+          showNotification('Authentication failed: ' + (data.message || 'Invalid token'), 'error');
           window.location.href = 'login.html';
         }
       } catch (error) {
         console.error('Error during token verification:', error);
-        alert('Authentication failed: ' + error.message);
+        //alert('Authentication failed: ' + error.message);
+        showNotification('Authentication failed: ' + error.message, 'error')
         window.location.href = 'login.html';
       }
     }
 
     // Call the function when the page loads
     document.addEventListener('DOMContentLoaded', verifyAuthToken);
+
   </script>
 <head>
   <meta charset="UTF-8" />
@@ -206,6 +211,7 @@
     .user h2 {
       font-size: 16px;
       white-space: nowrap;
+      cursor: default;
     }
 
     .logout-btn {
@@ -1577,8 +1583,8 @@ label {
     </div>
 
     <div class="user">
-      <h2>CH HAND</h2>
-      <button class="logout-btn">Logout</button>
+      <h2 id="user-id">Unknown</h2>
+      <button class="logout-btn" id="logout-btn">Logout</button>
     </div>
   </header>
 
@@ -1704,6 +1710,13 @@ label {
   </div>
 
   <script>
+
+    let USER_ID = localStorage.getItem('UserId');
+    
+    document.getElementById("user-id").textContent = USER_ID;
+
+    localStorage.removeItem('UserId');
+    
     // Javascript for notification area
     /**
  * Show a notification message
@@ -1747,9 +1760,45 @@ function showNotification(message, type = 'success', duration = 3000) {
 
 
     const SERVER_URL = 'http://localhost:3000';
+
+  document.addEventListener('DOMContentLoaded', function() {
+
+    // DOM Elements
+    const logoutBtn = document.getElementById('logout-btn');
+    
+    logoutBtn.addEventListener('click', async () => {
+      try {
+        const authToken = localStorage.getItem('authToken');
+        const response = await fetch(SERVER_URL+'/logout', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${authToken}`,'Content-Type': 'application/json' }
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          console.log('Logout success:', data);
+          alert('Logged out successfully!');
+          // 👇 you can add more procedural lines here
+          // e.g., redirect:
+          window.location.href = 'login.html';
+        } else {
+          console.error('Logout failed:', data);
+          alert('Logout failed!');
+        }
+
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Something went wrong!');
+      }
+    });
+    
+  });
+
+
+
     let currentAddressData = [];
     let customerId = null; // To store the selected customer ID
-
   // Assign Address Modal Functionality
   document.addEventListener('DOMContentLoaded', function() {
     // DOM Elements
@@ -3119,6 +3168,9 @@ function showNotificationAndRefreshPage(message, type = 'success', duration = 30
   //window.location.reload();
 }
 
+
+
+showNotification('Form loaded successfully', 'success', 1000);
 </script>
 </body>
 </html>
