@@ -191,6 +191,45 @@ app.post('/verify-token-get-receiver', async (req, res) => {
 
 
 
+// Logout functionality
+app.post('/logout', async (req, res) => {
+  
+  // Verify Authorization header exists
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized - No token provided' });
+  }
+  const token = authHeader.split(' ')[1];
+
+  try {
+    await sql.connect(dbConfig);
+
+    const result = await sql.query`
+      UPDATE Users SET token = NULL WHERE token = ${token}
+    `;
+
+    if (result.rowsAffected[0] > 0) {
+      console.log('User logged out successfully');
+      return res.json({ success: true, message: 'Logged out successfully' });
+    } else {
+      console.log('Invalid token, no user updated');
+      return res.status(400).json({ success: false, message: 'Invalid token' });
+    }
+
+  } catch (err) {
+    console.error('Error during logout:', err);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  } finally {
+    // Close the DB connection if needed
+    if (sql.connected) {
+      //await sql.close();
+    }
+  }
+});
+
+
+
+
 
 
 
