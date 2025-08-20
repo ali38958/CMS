@@ -1,4 +1,75 @@
 <!DOCTYPE html>
+  <script>  
+    setTimeout(() => {
+      console.log("2 seconds later...");
+    }, 2000); // 2000 milliseconds = 2 seconds
+    
+    // Variables to store user data
+    let complaintReceiverName = '';
+    let complaintReceiverId = null;
+
+    async function verifyAuthToken() {
+      const authToken = localStorage.getItem('authToken');
+      
+      if (!authToken) {
+        console.log('No authToken found in localStorage');
+        alert('Authentication failed: No token found');
+        window.location.href = 'login.html';
+        return;
+      }
+
+      try {
+        console.log('Attempting to verify authToken...');
+        
+        const response = await fetch('http://localhost:3000/verify-token-get-receiver', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('API Response:', data);
+
+        if (data.success) {
+          console.log('Token verification successful for user:', data.user.name);
+
+          localStorage.setItem('UserId', data.user.name);
+          
+          // Store user data in localStorage
+          localStorage.setItem('currentUser', JSON.stringify(data.user));
+          
+          // Store user ID in variable
+          complaintReceiverId = data.user.id;
+          console.log('Current user ID:', complaintReceiverId);
+          
+          // Store receiver name
+          complaintReceiverName = data.receiver?.name || 'Unknown';
+          console.log('Complaint receiver name:', complaintReceiverName);
+          
+        } else {
+          console.log('Token verification failed:', data.message || 'No error message provided');
+          //alert('Authentication failed: ' + (data.message || 'Invalid token'));
+          showNotification('Authentication failed: ' + (data.message || 'Invalid token'), 'error');
+          window.location.href = 'login.html';
+        }
+      } catch (error) {
+        console.error('Error during token verification:', error);
+        //alert('Authentication failed: ' + error.message);
+        showNotification('Authentication failed: ' + error.message, 'error')
+        window.location.href = 'login.html';
+      }
+    }
+
+    // Call the function when the page loads
+    document.addEventListener('DOMContentLoaded', verifyAuthToken);
+
+  </script>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -1144,7 +1215,7 @@
   display: flex;
   gap: 24px;
   margin-bottom: 28px;
-  justify-content: flex-end;
+  justify-content: center;
 }
 
 .priority-box {
@@ -1330,8 +1401,8 @@
     </div>
 
     <div class="user">
-      <h2>CH HAND</h2>
-      <button class="logout-btn">Logout</button>
+      <h2 id="user-id">Unknown</h2>
+      <button class="logout-btn" id="logout-btn">Logout</button>
     </div>
   </header>
 
@@ -1391,6 +1462,30 @@
             <h2 class="panel-title">All Complaints</h2>
           </div>
 
+          
+          <div class="priority-filters">
+            <div class="priority-box" data-priority="immediate" id="box-immediate">
+              <div class="priority-icon immediate"><i class="fas fa-bolt"></i></div>
+              <div class="priority-label">Immediate</div>
+              <div class="priority-desc">Critical action</div>
+            </div>
+            <div class="priority-box" data-priority="urgent" id="box-urgent">
+              <div class="priority-icon urgent"><i class="fas fa-exclamation-triangle"></i></div>
+              <div class="priority-label">Urgent</div>
+              <div class="priority-desc">Needs quick response</div>
+            </div>
+            <div class="priority-box" data-priority="routine" id="box-routine">
+              <div class="priority-icon routine"><i class="fas fa-clock"></i></div>
+              <div class="priority-label">Routine</div>
+              <div class="priority-desc">Standard workflow</div>
+            </div>
+            <div class="priority-box" data-priority="deferred" id="box-deferred">
+              <div class="priority-icon deferred"><i class="fas fa-calendar-alt"></i></div>
+              <div class="priority-label">Deferred</div>
+              <div class="priority-desc">Can be scheduled</div>
+            </div>
+          </div>
+
           <!-- Filter Controls-->
           <div class="filter-controls">
             <div class="filter-group">
@@ -1416,7 +1511,7 @@
                 <option value="B&R-III">B&R-III</option>
                 <option value="E&M-I">E&M-I</option>
                 <option value="E&M-II">E&M-II</option>
-                <option value="F&S-I">F&S-I</option>
+                <!--option value="F&S-I">F&S-I</option-->
                 <option value="-">-</option>
               </select>
             </div>
@@ -1435,30 +1530,6 @@
             <button id="apply-filters" class="btn btn-primary">
               <i class="fas fa-search"></i> Find
             </button>
-          </div>
-
-          
-          <div class="priority-filters">
-            <div class="priority-box" data-priority="immediate" id="box-immediate">
-              <div class="priority-icon immediate"><i class="fas fa-bolt"></i></div>
-              <div class="priority-label">Immediate</div>
-              <div class="priority-desc">Critical action</div>
-            </div>
-            <div class="priority-box" data-priority="urgent" id="box-urgent">
-              <div class="priority-icon urgent"><i class="fas fa-exclamation-triangle"></i></div>
-              <div class="priority-label">Urgent</div>
-              <div class="priority-desc">Needs quick response</div>
-            </div>
-            <div class="priority-box" data-priority="routine" id="box-routine">
-              <div class="priority-icon routine"><i class="fas fa-clock"></i></div>
-              <div class="priority-label">Routine</div>
-              <div class="priority-desc">Standard workflow</div>
-            </div>
-            <div class="priority-box" data-priority="deferred" id="box-deferred">
-              <div class="priority-icon deferred"><i class="fas fa-calendar-alt"></i></div>
-              <div class="priority-label">Deferred</div>
-              <div class="priority-desc">Can be scheduled</div>
-            </div>
           </div>
           
           <div class="search-box">
@@ -1485,10 +1556,10 @@
 
             <div class="pagination-controls" id="complaints-pagination">
               <button class="page-btn prev-btn disabled">
-                <i class="fas fa-chevron-left"></i>
+                <i class="fas fa-chevron-left"></i> Prev
               </button>
               <button class="page-btn active">1</button>
-              <button class="page-btn next-btn disabled">
+              <button class="page-btn next-btn disabled">Next
                 <i class="fas fa-chevron-right"></i>
               </button>
             </div>
@@ -1530,6 +1601,12 @@
 
   <script>
 
+    let USER_ID = localStorage.getItem('UserId');
+    
+    document.getElementById("user-id").textContent = USER_ID;
+
+    localStorage.removeItem('UserId');
+
 
     function showNotification(message, type = 'success', duration = 3000) {
       const notificationArea = document.getElementById('notification-area');
@@ -1561,6 +1638,42 @@
         setTimeout(() => notification.remove(), 300);
       }, duration);
     }
+
+    const SERVER_URL = 'http://localhost:3000';
+    
+  document.addEventListener('DOMContentLoaded', function() {
+
+    // DOM Elements
+    const logoutBtn = document.getElementById('logout-btn');
+    
+    logoutBtn.addEventListener('click', async () => {
+      try {
+        const authToken = localStorage.getItem('authToken');
+        const response = await fetch(SERVER_URL+'/logout', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${authToken}`,'Content-Type': 'application/json' }
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          console.log('Logout success:', data);
+          alert('Logged out successfully!');
+          // 👇 you can add more procedural lines here
+          // e.g., redirect:
+          window.location.href = 'login.html';
+        } else {
+          console.error('Logout failed:', data);
+          alert('Logout failed!');
+        }
+
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Something went wrong!');
+      }
+    });
+    
+  });
 
 
     // Add this global variable at the top of your script
@@ -1692,7 +1805,7 @@ function fetchComplaints(filters) {
         lastAppliedFilters = filters;
     }
 
-    const url = new URL('http://localhost:3000/api/complaints');
+    const url = new URL(SERVER_URL+'/api/complaints');
     url.searchParams.append('page', currentPage);
     url.searchParams.append('pageSize', itemsPerPage);
     
@@ -1994,7 +2107,7 @@ document.addEventListener('click', function(e) {
 
       const authToken = localStorage.getItem('authToken');
       // Make API call to update status
-      fetch('http://localhost:3000/api/complaints/update-status', {
+      fetch(SERVER_URL+'/api/complaints/update-status', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${authToken}`,
@@ -2341,7 +2454,7 @@ function initializeActionDropdowns() {
     // Previous button
     const prevBtn = document.createElement('button');
     prevBtn.className = `page-btn prev-btn ${currentPage === 1 ? 'disabled' : ''}`;
-    prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+    prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i> Prev';
     paginationControls.appendChild(prevBtn);
     
     // Page buttons
@@ -2391,7 +2504,7 @@ function initializeActionDropdowns() {
     // Next button
     const nextBtn = document.createElement('button');
     nextBtn.className = `page-btn next-btn ${currentPage === totalPages ? 'disabled' : ''}`;
-    nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+    nextBtn.innerHTML = 'Next <i class="fas fa-chevron-right"></i>';
     paginationControls.appendChild(nextBtn);
   }
   
@@ -2542,7 +2655,7 @@ async function fetchSkillmenForModal() {
     const authToken = localStorage.getItem('authToken');
     document.getElementById('primarySkillmanItems').innerHTML = '<div class="dropdown-item">Loading skillmen...</div>';
     
-    const response = await fetch('http://localhost:3000/api/skillmen', {
+    const response = await fetch(SERVER_URL+'/api/skillmen', {
                 headers: {
                     'Authorization': `Bearer ${authToken}`,
                     'Content-Type': 'application/json'
@@ -2931,11 +3044,11 @@ async function fetchPreviousSkillman(complaintId) {
 
   try {
     const authToken = localStorage.getItem('authToken');
-    const response = await fetch(`http://localhost:3000/api/complaints/${complaintId}/previous-skillman`, {
-                                                                                                      headers: {
-                                                                                                          'Authorization': `Bearer ${authToken}`,
-                                                                                                          'Content-Type': 'application/json'
-                                                                                                      }});
+    const response = await fetch(SERVER_URL+`/api/complaints/${complaintId}/previous-skillman`, {
+      headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json'
+      }});
     const data = await response.json();
 
     if (data.success) {
@@ -2969,7 +3082,7 @@ async function fetchPreviousSkillman(complaintId) {
 // Update the fetchCurrentSkillman function
 function fetchCurrentSkillman(complaintId) {
   const authToken = localStorage.getItem('authToken');
-  fetch(`http://localhost:3000/api/complaints/${complaintId}`, {
+  fetch(SERVER_URL+`/api/complaints/${complaintId}`, {
                 headers: {
                     'Authorization': `Bearer ${authToken}`,
                     'Content-Type': 'application/json'
@@ -3016,7 +3129,7 @@ document.getElementById('assignBtn').addEventListener('click', async () => {
 
   try {
     const authToken = localStorage.getItem('authToken');
-    const response = await fetch('http://localhost:3000/api/complaints/assign-skillman', {
+    const response = await fetch(SERVER_URL+'/api/complaints/assign-skillman', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${authToken}`,
@@ -3239,7 +3352,7 @@ async function fetchFilterOptions() {
   try {
     const authToken = localStorage.getItem('authToken');
     // Fetch receivers
-    const receiversResponse = await fetch('http://localhost:3000/api/receivers', {
+    const receiversResponse = await fetch(SERVER_URL+'/api/receivers', {
                 headers: {
                     'Authorization': `Bearer ${authToken}`,
                     'Content-Type': 'application/json'
@@ -3249,7 +3362,7 @@ async function fetchFilterOptions() {
     populateDropdown('receiver-filter', receivers);
     
     // Fetch colonies
-    const coloniesResponse = await fetch('http://localhost:3000/api/colonies', {
+    const coloniesResponse = await fetch(SERVER_URL+'/api/colonies', {
                 headers: {
                     'Authorization': `Bearer ${authToken}`,
                     'Content-Type': 'application/json'
