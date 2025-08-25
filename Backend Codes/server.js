@@ -154,7 +154,7 @@ app.post('/verify-token-get-receiver', async (req, res) => {
 
   try {
     await sql.connect(dbConfig);
-    console.log('Connected to database');
+    //console.log('Connected to database');
 
     // Single query to get both user info and receiver name from the same table
     const result = await sql.query`
@@ -226,7 +226,6 @@ app.post('/logout', async (req, res) => {
     }
   }
 });
-
 
 
 
@@ -1101,6 +1100,7 @@ app.get('/api/skillmen/area/:area', async (req, res) => {
   }
 });
 
+
 // Additional API for getting skillmen by designation (optional)
 app.get('/api/skillmen/designation/:designation', async (req, res) => {
   // Verify Authorization header exists
@@ -1685,6 +1685,9 @@ app.put('/skillmen/:id', async (req, res) => {
   }
 });
 
+
+
+
 // Designation Endpoints
 app.get('/designations', async (req, res) => {
   // Verify Authorization header exists
@@ -1713,6 +1716,9 @@ app.get('/designations', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+
+
 
 app.post('/designations', async (req, res) => {
   // Verify Authorization header exists
@@ -2696,10 +2702,12 @@ app.post('/api/complaints/assign-skillman', async (req, res) => {
 
 
 // APIs to retrieve complaints based on priority
-app.get('/api/complaints-by-priority', async (req, res) => {
+app.post('/api/complaints-by-priority', async (req, res) => {
   // Verify Authorization header exists
+  console.log("fetched");
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
+
     return res.status(401).json({ error: 'Unauthorized - No token provided' });
   }
 
@@ -2855,7 +2863,7 @@ app.get('/api/receivers', async (req, res) => {
 
 //API for delay complaints
 
-app.get('/api/delay-complaints', async (req, res) => {
+app.post('/api/delay-complaints', async (req, res) => {
   // Verify Authorization header exists
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -3008,6 +3016,458 @@ app.get('/api/delay-complaints', async (req, res) => {
     }
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//APIs for reports
+
+
+// API endpoint to get colonies with their buildings
+app.get('/api/colonies-with-buildings', async (req, res) => {
+  let pool;
+  try {
+    // Connect to the database
+    pool = await sql.connect(dbConfig);
+    
+    // Query to get colonies and their buildings
+    // Using the exact column names from your database schema
+    const query = `
+      SELECT 
+        c.ColonyNumber as id, 
+        c.Name as name,
+        l.location_id as buildingId, 
+        l.building_number as buildingName
+      FROM Colonies c
+      LEFT JOIN Location l ON c.ColonyNumber = l.colony_number
+      ORDER BY c.Name, l.building_number
+    `;
+    
+    // Execute the query
+    const result = await pool.request().query(query);
+    
+    // Log the raw result to check what's coming from the database
+    //console.log('Raw database result:', result.recordset);
+    
+    // Process the data to group buildings by colony
+    const coloniesMap = new Map();
+    
+    result.recordset.forEach(row => {
+      const colonyId = row.id;
+      
+      // If colony doesn't exist in map, add it
+      if (!coloniesMap.has(colonyId)) {
+        coloniesMap.set(colonyId, {
+          id: colonyId,
+          name: row.name,
+          buildings: []
+        });
+      }
+      
+      // Add building to colony if it exists
+      if (row.buildingId && row.buildingName) {
+        coloniesMap.get(colonyId).buildings.push({
+          id: row.buildingId,
+          name: row.buildingName
+        });
+      }
+    });
+    
+    // Convert map to array
+    const colonies = Array.from(coloniesMap.values());
+    
+    // Log the final processed data
+    //console.log('Processed colonies data:', colonies);
+    
+    // Send the response
+    res.json(colonies);
+  } catch (err) {
+    console.error('Database query error:', err);
+    res.status(500).json({ error: 'Failed to fetch colonies and buildings' });
+  } finally {
+    // Close the database connection
+    if (pool) {
+      //await pool.close();
+    }
+  }
+});
+
+
+
+
+// Endpoint to get categories(subdivision) and natures
+// API endpoint to get categories with their natures
+app.get('/api/categories-with-natures', async (req, res) => {
+  let pool;
+  try {
+    // Connect to the database
+    pool = await sql.connect(dbConfig);
+    
+    // Query to get categories and their natures from the Category table
+    const query = `
+      SELECT 
+        subdivision_name as category,
+        nature_name as nature
+      FROM Category
+      ORDER BY subdivision_name, nature_name
+    `;
+    
+    // Execute the query
+    const result = await pool.request().query(query);
+    
+    // Process the data to group natures by category
+    const categoriesMap = new Map();
+    
+    result.recordset.forEach(row => {
+      const categoryName = row.category;
+      
+      // If category doesn't exist in map, add it
+      if (!categoriesMap.has(categoryName)) {
+        categoriesMap.set(categoryName, {
+          name: categoryName,
+          natures: []
+        });
+      }
+      
+      // Add nature to category
+      if (row.nature) {
+        categoriesMap.get(categoryName).natures.push(row.nature);
+      }
+    });
+    
+    // Convert map to array
+    const categories = Array.from(categoriesMap.values());
+    
+    // Send the response
+    res.json(categories);
+  } catch (err) {
+    console.error('Database query error:', err);
+    res.status(500).json({ error: 'Failed to fetch categories and natures' });
+  } finally {
+    // Close the database connection
+    if (pool) {
+      //await pool.close();
+    }
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+// Subdivision Reporting API
+
+// API endpoint for sub division report
+app.post('/api/subdiv-report', async (req, res) => {
+  const { fromDate, toDate, category } = req.body;
+  
+  try {
+    // Connect to the database
+    await sql.connect(dbConfig);
+    
+    // Build the WHERE clause based on the provided filters
+    let whereClause = `WHERE launched_at BETWEEN @fromDate AND @toDate`;
+    if (category && category !== '') {
+      // Handle the special case for '-' category
+      if (category === '-') {
+        whereClause += ` AND (category IS NULL OR category = '-')`;
+      } else {
+        whereClause += ` AND category = @category`;
+      }
+    }
+    
+    // Query for status data (Inprogress, Completed, SNA, Deferred)
+    const statusQuery = `
+      SELECT 
+        COALESCE(category, '-') AS subDivision,
+        COUNT(CASE WHEN status = 'In-Progress' THEN 1 END) AS inprogress,
+        COUNT(CASE WHEN status = 'Completed' THEN 1 END) AS completed,
+        COUNT(CASE WHEN status = 'Un-Assigned' THEN 1 END) AS sna,
+        COUNT(CASE WHEN status = 'Deffered' THEN 1 END) AS deferred,
+        COUNT(*) AS total
+      FROM Complaints
+      ${whereClause}
+      GROUP BY COALESCE(category, '-')
+      ORDER BY COALESCE(category, '-')
+    `;
+    
+    // Query for priority data (Immediate, Urgent, Routine, Deferred)
+    // Note: Using priority deferred, not status deferred
+    const priorityQuery = `
+      SELECT 
+        COALESCE(category, '-') AS subDivision,
+        COUNT(CASE WHEN priority = 'Immediate' THEN 1 END) AS immediate,
+        COUNT(CASE WHEN priority = 'Urgent' THEN 1 END) AS urgent,
+        COUNT(CASE WHEN priority = 'Routine' THEN 1 END) AS routine,
+        COUNT(CASE WHEN priority = 'Deferred' THEN 1 END) AS deferred,
+        COUNT(*) AS total
+      FROM Complaints
+      ${whereClause}
+      GROUP BY COALESCE(category, '-')
+      ORDER BY COALESCE(category, '-')
+    `;
+    
+    // Create request object
+    const request = new sql.Request();
+    
+    // Add parameters to the request
+    request.input('fromDate', sql.DateTime, new Date(fromDate));
+    request.input('toDate', sql.DateTime, new Date(toDate));
+    if (category && category !== '' && category !== '-') {
+      request.input('category', sql.VarChar(10), category);
+    }
+    
+    // Execute both queries in parallel
+    const [statusResult, priorityResult] = await Promise.all([
+      request.query(statusQuery),
+      request.query(priorityQuery)
+    ]);
+    
+    // Send the response
+    res.json({
+      statusData: statusResult.recordset,
+      priorityData: priorityResult.recordset
+    });
+    
+  } catch (error) {
+    console.error('Database error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  } finally {
+    // Close the connection
+    //sql.close && await sql.close();
+  }
+});
+
+
+
+
+
+
+
+
+// API for summary reporting
+
+app.get('/api/summary-report', async (req, res) => {
+  const { year } = req.query;
+  
+  if (!year || isNaN(year)) {
+    return res.status(400).json({ error: 'Valid year parameter is required' });
+  }
+
+  let pool;
+  try {
+    pool = await sql.connect(dbConfig);
+    
+    // Get start and end dates for the year
+    const startDate = `${year}-01-01`;
+    const endDate = `${year}-12-31`;
+
+    // Get all natures and colonies first
+    const [naturesResult, coloniesResult] = await Promise.all([
+      pool.request().query('SELECT name FROM Natures'),
+      pool.request().query('SELECT Name, ColonyNumber FROM Colonies')
+    ]);
+
+    const allNatures = naturesResult.recordset;
+    const allColonies = coloniesResult.recordset;
+
+    // Query for complaints by nature
+    const natureQuery = `
+      SELECT 
+        n.name as nature,
+        COUNT(c.complaint_id) as total,
+        CASE 
+          WHEN (SELECT COUNT(*) FROM Complaints WHERE YEAR(launched_at) = @year) > 0 
+          THEN (COUNT(c.complaint_id) * 100.0 / (SELECT COUNT(*) FROM Complaints WHERE YEAR(launched_at) = @year))
+          ELSE 0 
+        END as percentage
+      FROM Natures n
+      LEFT JOIN Complaints c ON n.name = c.nature AND YEAR(c.launched_at) = @year
+      GROUP BY n.name
+      ORDER BY total DESC, n.name
+    `;
+
+    // Query for complaints by colony
+    const colonyQuery = `
+      SELECT 
+        col.Name as colony,
+        COUNT(c.complaint_id) as total,
+        CASE 
+          WHEN (SELECT COUNT(*) FROM Complaints WHERE YEAR(launched_at) = @year) > 0 
+          THEN (COUNT(c.complaint_id) * 100.0 / (SELECT COUNT(*) FROM Complaints WHERE YEAR(launched_at) = @year))
+          ELSE 0 
+        END as percentage
+      FROM Colonies col
+      LEFT JOIN Location l ON col.ColonyNumber = l.colony_number
+      LEFT JOIN Complaints c ON l.location_id = c.location_id AND YEAR(c.launched_at) = @year
+      GROUP BY col.Name, col.ColonyNumber
+      ORDER BY total DESC, col.Name
+    `;
+
+    const natureRequest = pool.request();
+    natureRequest.input('year', sql.Int, parseInt(year));
+    
+    const colonyRequest = pool.request();
+    colonyRequest.input('year', sql.Int, parseInt(year));
+
+    const [natureComplaints, colonyComplaints] = await Promise.all([
+      natureRequest.query(natureQuery),
+      colonyRequest.query(colonyQuery)
+    ]);
+
+    // Ensure all natures are included (even with 0 complaints)
+    const natureData = allNatures.map(natureItem => {
+      const found = natureComplaints.recordset.find(item => item.nature === natureItem.name);
+      return found || {
+        nature: natureItem.name,
+        total: 0,
+        percentage: 0
+      };
+    });
+
+    // Ensure all colonies are included (even with 0 complaints)
+    const colonyData = allColonies.map(colonyItem => {
+      const found = colonyComplaints.recordset.find(item => item.colony === colonyItem.Name);
+      return found || {
+        colony: colonyItem.Name,
+        total: 0,
+        percentage: 0
+      };
+    });
+
+    res.json({
+      nature: natureData,
+      colony: colonyData
+    });
+
+  } catch (error) {
+    console.error('Database error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  } finally {
+    if (pool) {
+      //await pool.close();
+    }
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Endpoints for Default Reporting
+// Complaints endpoint
+app.get('/complaints-report', async (req, res) => {
+  try {
+    // Extract query parameters
+    const {
+      colony,
+      building,
+      category,
+      nature,
+      status,
+      priority,
+      fromDate,
+      toDate
+    } = req.query;
+
+    // Base query with joins
+    let query = `
+      SELECT 
+        c.complaint_id as id,
+        CAST(c.launched_at as DATE) as date,
+        c.category as subdiv,
+        c.nature,
+        c.type as ntype,
+        col.Name as colony,
+        l.building_number as building,
+        u.receiver as launchedBy,
+        s.name as skillman,
+        cust.full_name as customer,
+        c.priority as ptype,
+        c.status
+      FROM Complaints c
+      LEFT JOIN Location l ON c.location_id = l.location_id
+      LEFT JOIN Colonies col ON l.colony_number = col.ColonyNumber
+      LEFT JOIN Users u ON c.receiver_id = u.id
+      LEFT JOIN Skillmen s ON c.skillman_id = s.id
+      LEFT JOIN Customers cust ON c.customer_id = cust.customer_id
+      WHERE 1=1
+    `;
+
+    // Add filters based on query parameters
+    if (colony) query += ` AND col.ColonyNumber LIKE '%${colony}%'`;
+    if (building) query += ` AND l.building_number LIKE '%${building}%'`;
+    if (category) query += ` AND c.category = '${category}'`;
+    if (nature) query += ` AND c.nature = '${nature}'`;
+    if (status) query += ` AND c.status = '${status}'`;
+    if (priority) query += ` AND c.priority = '${priority}'`;
+    if (fromDate) query += ` AND CAST(c.launched_at as DATE) >= '${fromDate}'`;
+    if (toDate) query += ` AND CAST(c.launched_at as DATE) <= '${toDate}'`;
+
+    // Order by date (most recent first)
+    query += ` ORDER BY c.launched_at DESC`;
+
+    // Execute query
+    const result = await pool.request().query(query);
+    
+    // Send response
+    res.json(result.recordset);
+  } catch (err) {
+    console.error('Error fetching complaints:', err);
+    res.status(500).json({ error: 'Failed to fetch complaints data' });
+  }
+});
+
+
+
+
+
+
+
 
 
 
