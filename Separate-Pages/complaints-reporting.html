@@ -6,17 +6,27 @@
   <title>SCMS Complaints Reporting</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      caret-color: transparent;
+      scrollbar-width: thin;
+      scroll-behavior: smooth;
+      scrollbar-color: rgb(138, 119, 119) transparent;
+      user-select: none;
     }
 
     body {
       background-color: #f5f7fa;
       padding-bottom: 40px;
+      overflow-x: hidden;
     }
 
     /* Header Styles */
@@ -60,10 +70,9 @@
       font-weight: bold;
       transition: all 0.3s ease;
       position: relative;
-      text-align: center;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 12px;
     }
 
     .nav-item:hover {
@@ -78,11 +87,11 @@
       content: "";
       position: absolute;
       bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 60%;
+      left: 0;
+      width: 100%;
       height: 3px;
       background-color: white;
+      border-radius: 0 0 3px 3px;
     }
 
     .logo {
@@ -216,7 +225,7 @@
       --nav-active: rgba(136, 28, 28, 0.15);
       --nav-hover: rgba(136, 28, 28, 0.08);
       --success: #4caf50;
-      --border-radius: 12px;
+      --border-radius: 5px;
     }
 
     /* Complaints Section */
@@ -228,55 +237,49 @@
     }
     
     .complaints-sidebar {
-      background: var(--card-bg);
-      border-radius: var(--border-radius);
+      background: white;
+      border-radius: 8px;
       padding: 25px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-      border: 1px solid rgba(0,0,0,0.05);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
     
     .complaints-option {
       padding: 18px 20px;
       margin-bottom: 15px;
-      border-radius: var(--border-radius);
+      border-radius: 8px;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.3s ease;
       display: flex;
       align-items: center;
       gap: 12px;
-      background: var(--primary-light-2);
-      color: #555;
-      border: 1px solid rgba(0,0,0,0.05);
+      background: #f8f9fa;
+      color: black;
     }
     
     .complaints-option:hover {
-      background: var(--nav-hover);
-      transform: translateX(5px);
-      box-shadow: 0 5px 12px rgba(136,28,28,0.1);
+      background: rgba(0,0,0,0.05);
+      text-decoration: none;
+      color: inherit;
     }
     
     .complaints-option.active {
-      background: var(--nav-active);
-      color: var(--primary);
-      box-shadow: 0 5px 15px rgba(136, 28, 28, 0.1);
-      border-left: 4px solid var(--primary);
+      background: rgba(0,0,0,0.1);
+      color: rgb(136, 28, 28);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
     
     .complaints-option i {
       font-size: 20px;
-      min-width: 24px;
-      text-align: center;
     }
     
     .complaints-content {
-      background: var(--card-bg);
-      border-radius: var(--border-radius);
+      background: white;
+      border-radius: 8px;
       padding: 30px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       position: relative;
       overflow: hidden;
-      border: 1px solid rgba(0,0,0,0.05);
     }
     
     /* Report Section */
@@ -361,9 +364,15 @@
     }
     
     .btn-primary:hover {
-      background: #a33a3a;
+      background: #8b2323;
       transform: translateY(-3px);
       box-shadow: 0 8px 22px rgba(136, 28, 28, 0.35);
+    }
+    /*not working*/
+    .btn-primary:active {
+      background: #701c1c; /* Even darker maroon for pressed state */
+      transform: translateY(0); /* Remove the lift effect when pressed */
+      box-shadow: 0 4px 8px rgba(136, 28, 28); /* Smaller shadow when pressed */
     }
     
     .btn-secondary {
@@ -379,51 +388,41 @@
     }
     
     /* Radio Button Styles */
-    .radio-group {
-      display: flex;
-      gap: 20px;
-      margin-bottom: 25px;
-      flex-wrap: wrap;
-    }
-    
-    .radio-item {
-      display: flex;
-      align-items: center;
-      padding: 15px 20px;
-      background: var(--primary-light-2);
-      border-radius: var(--border-radius);
-      cursor: pointer;
-      transition: all 0.3s;
-      border: 2px solid transparent;
-    }
-    
-    .radio-item:hover {
-      background: var(--nav-hover);
-    }
-    
-    .radio-item.selected {
-      background: var(--nav-active);
-      border-color: var(--primary);
-      box-shadow: 0 5px 15px rgba(136,28,28,0.1);
-    }
-    
-    .radio-item input[type="radio"] {
-      margin-right: 12px;
-      width: 18px;
-      height: 18px;
-      cursor: pointer;
-    }
-    
-    .radio-item label {
-      margin-bottom: 0;
-      font-weight: 600;
-      color: #555;
-      cursor: pointer;
-    }
-    
-    .radio-item.selected label {
-      color: var(--primary);
-    }
+.report-type {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.report-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px 25px;
+  border: 2px solid #ccc;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #555;
+  transition: all 0.3s ease;
+  user-select: none;
+  min-width: 160px;
+  text-align: center;
+}
+
+.report-option:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.report-option.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+
     
     /* Report Form Styles */
     .report-form {
@@ -547,9 +546,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      margin: 20px 0;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-      border-radius: var(--border-radius);
+      /*border-radius: var(--border-radius);*/
       overflow: hidden;
       background: white;
     }
@@ -558,22 +555,25 @@
       background: rgba(136, 28, 28, 0.1);
       color: var(--primary);
       font-weight: 700;
-      padding: 16px;
+      padding: 12px;
       text-align: left;
+      border: 1px solid #ffc4c4; /* vertical line color */
     }
     
     td {
-      padding: 14px 16px;
-      border-bottom: 1px solid rgba(0,0,0,0.05);
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+      height: 40px;
+      border: 1px solid #f3f3f3; /* vertical line color */
     }
-    
     tr:hover {
       background: rgba(136, 28, 28, 0.05);
     }
-    
+    /*
     tr:nth-child(even) {
       background-color: #f9f9f9;
     }
+      */
     
     /* Chart container */
     .chart-container {
@@ -607,6 +607,10 @@
       font-weight: 600;
       color: var(--primary);
     }
+
+    .visual-header .visual-title {
+      margin-top: 30px;
+    }
     
     /* New styles for summary report */
     .summary-action-bar {
@@ -627,6 +631,8 @@
     .year-label {
       font-weight: 600;
       color: var(--dark);
+      width: 100%;
+      text-align: center;
     }
     
     .report-buttons {
@@ -644,7 +650,6 @@
     .data-table {
       background: white;
       border-radius: var(--border-radius);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
       overflow: hidden;
     }
     
@@ -799,11 +804,11 @@
         <i class="fas fa-chart-line"></i>
         Dashboard
       </a>
-      <a href="#" class="nav-item">
+      <a href="launch-complaints.html" class="nav-item">
         <i class="fas fa-ticket-alt"></i>
         Complaints
       </a>
-      <a href="#" class="nav-item">
+      <a href="all-users.html" class="nav-item">
         <i class="fas fa-users"></i>
         Users
       </a>
@@ -854,24 +859,17 @@
         </div>
         
         <!-- Report type selection with radio buttons -->
-        <div class="radio-group">
-          <div class="radio-item" id="default-report">
-            <input type="radio" id="default" name="report-type" value="default" checked>
-            <label for="default">Default Report</label>
-          </div>
-          <div class="radio-item" id="sector-report">
-            <input type="radio" id="sector" name="report-type" value="sector">
-            <label for="sector">Sector Report</label>
-          </div>
-          <div class="radio-item" id="sub-div-report">
-            <input type="radio" id="sub-div" name="report-type" value="sub-div">
-            <label for="sub-div">Sub Division Report</label>
-          </div>
-          <div class="radio-item" id="summary-report">
-            <input type="radio" id="summary" name="report-type" value="summary">
-            <label for="summary">Summary Report</label>
-          </div>
+         <!-- Report type selection -->
+        <div class="report-type">
+          <div class="report-option" data-type="sector">Sector Report</div>
+          <div class="report-option" data-type="sub-div">Sub Division Report</div>
+          <div class="report-option" data-type="summary">Summary Report</div>
         </div>
+
+        
+
+
+
         
         <!-- Default Report Form -->
         <div id="default-report-form" class="report-form">
@@ -882,10 +880,7 @@
                   <label for="colony">Select Colony</label>
                   <select class="form-control" name="colony">
                     <option value="">Select Colony</option>
-                    <option value="colony1">North Colony</option>
-                    <option value="colony2">South Colony</option>
-                    <option value="colony3">East Colony</option>
-                    <option value="colony4">West Colony</option>
+                    <!--Will be populated dynamically-->
                   </select>
                 </div>
               </div>
@@ -894,10 +889,7 @@
                   <label for="building">Select Building</label>
                   <select class="form-control" name="building">
                     <option value="">Select Building</option>
-                    <option value="building1">Building A</option>
-                    <option value="building2">Building B</option>
-                    <option value="building3">Building C</option>
-                    <option value="building4">Building D</option>
+                    <!--Will be populated dynamically-->
                   </select>
                 </div>
               </div>
@@ -909,10 +901,7 @@
                   <label for="category">Complaint Category</label>
                   <select class="form-control" name="category">
                     <option value="">Select Category</option>
-                    <option value="electrical">Electrical</option>
-                    <option value="plumbing">Plumbing</option>
-                    <option value="ac">Air Conditioning</option>
-                    <option value="carpentry">Carpentry</option>
+                    <!--Will be populated dynamically-->
                   </select>
                 </div>
               </div>
@@ -921,10 +910,7 @@
                   <label for="nature">Nature of Complaint</label>
                   <select class="form-control" name="nature">
                     <option value="">Select Nature</option>
-                    <option value="urgent">Urgent</option>
-                    <option value="major">Major</option>
-                    <option value="minor">Minor</option>
-                    <option value="routine">Routine</option>
+                    <!--Will be populated dynamically-->
                   </select>
                 </div>
               </div>
@@ -936,10 +922,10 @@
                   <label for="status">Status</label>
                   <select class="form-control" name="status">
                     <option value="">Select Status</option>
-                    <option value="open">Open</option>
-                    <option value="in-progress">In Progress</option>
-                    <option value="resolved">Resolved</option>
-                    <option value="closed">Closed</option>
+                    <option value="completed">Completed</option>
+                    <option value="in-progress">In-Progress</option>
+                    <option value="un-assigned">Un-Assigned</option>
+                    <option value="deferred">Deferred</option>
                   </select>
                 </div>
               </div>
@@ -948,9 +934,10 @@
                   <label for="priority">Priority</label>
                   <select class="form-control" name="priority">
                     <option value="">Select Priority</option>
-                    <option value="high">High</option>
-                    <option value="medium">Medium</option>
-                    <option value="low">Low</option>
+                    <option value="immediate">Immediate</option>
+                    <option value="urgent">Urgent</option>
+                    <option value="routine">Routine</option>
+                    <option value="deferred">Deferred</option>
                   </select>
                 </div>
               </div>
@@ -972,16 +959,19 @@
             </div>
             
             <div class="form-group">
-              <button class="btn btn-primary">
+              <button class="btn btn-primary" id="generate-report-for-default">
                 <i class="fas fa-download"></i> Export to CSV
               </button>
-              <button class="btn btn-secondary">
+              <button class="btn btn-secondary" id="print-report-for-default">
                 <i class="fas fa-print"></i> Print Report
               </button>
             </div>
           </form>
         </div>
         
+
+
+
         <!-- Sector Report Form -->
         <div id="sector-report-form" class="report-form hidden">
           <div class="row">
@@ -1008,56 +998,12 @@
               </div>
             </div>
           </div>
-          
-          <div class="report-visualization">
-            <div class="visual-header">
-              <h3 class="visual-title">Sector Performance</h3>
-              <span>Q3 2023</span>
-            </div>
-            <table>
-              <thead>
-                <tr>
-                  <th>Sector</th>
-                  <th>Complaints Received</th>
-                  <th>Resolved</th>
-                  <th>Pending</th>
-                  <th>Resolution Rate</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Sector A</td>
-                  <td>42</td>
-                  <td>35</td>
-                  <td>7</td>
-                  <td>83%</td>
-                </tr>
-                <tr>
-                  <td>Sector B</td>
-                  <td>38</td>
-                  <td>32</td>
-                  <td>6</td>
-                  <td>84%</td>
-                </tr>
-                <tr>
-                  <td>Sector C</td>
-                  <td>56</td>
-                  <td>48</td>
-                  <td>8</td>
-                  <td>86%</td>
-                </tr>
-                <tr>
-                  <td>Sector D</td>
-                  <td>29</td>
-                  <td>24</td>
-                  <td>5</td>
-                  <td>83%</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
         </div>
         
+
+
+  
+
         <!-- Sub Division Report Form -->
         <div id="subdiv-report-form" class="report-form hidden">
           <div class="row">
@@ -1081,10 +1027,12 @@
                 <label for="subdiv-category">Select Category</label>
                 <select class="form-control" id="subdiv-category">
                   <option value="">All Categories</option>
-                  <option value="electrical">Electrical</option>
-                  <option value="plumbing">Plumbing</option>
-                  <option value="ac">Air Conditioning</option>
-                  <option value="carpentry">Carpentry</option>
+                  <option value="E&M-I">E&M-I</option>
+                  <option value="E&M-II">E&M-II</option>
+                  <option value="B&R-I">B&R-I</option>
+                  <option value="B&R-II">B&R-II</option>
+                  <option value="B&R-III">B&R-III</option>
+                  <option value="-">-</option>
                 </select>
               </div>
             </div>
@@ -1097,12 +1045,11 @@
             </div>
           </div>
           
-          <div class="report-visualization">
+          <div class="subdivision-table hidden">
             <div class="visual-header">
               <h3 class="visual-title">Sub Division Analysis</h3>
-              <span>Q3 2023</span>
             </div>
-            <table>
+            <table id="subdivision-status-table" style="margin-bottom: 10px;">
               <thead>
                 <tr>
                   <th>Sub Division</th>
@@ -1114,60 +1061,49 @@
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>Electrical</td>
-                  <td>12</td>
-                  <td>25</td>
-                  <td>3</td>
-                  <td>2</td>
-                  <td>42</td>
-                </tr>
-                <tr>
-                  <td>Plumbing</td>
-                  <td>8</td>
-                  <td>30</td>
-                  <td>1</td>
-                  <td>1</td>
-                  <td>40</td>
-                </tr>
-                <tr>
-                  <td>Air Conditioning</td>
-                  <td>5</td>
-                  <td>15</td>
-                  <td>0</td>
-                  <td>0</td>
-                  <td>20</td>
-                </tr>
-                <tr>
-                  <td>Carpentry</td>
-                  <td>7</td>
-                  <td>18</td>
-                  <td>2</td>
-                  <td>1</td>
-                  <td>28</td>
-                </tr>
+                <!--Will be populated dynamically-->
               </tbody>
             </table>
+            <table id="subdivision-priority-table" style="margin-bottom: 10px;">
+              <thead>
+                <tr>
+                  <th>Sub Division</th>
+                  <th>Immediate</th>
+                  <th>Urgent</th>
+                  <th>Routine</th>
+                  <th>Deferred</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!--Will be populated dynamically-->
+              </tbody>
+            </table>
+            <div class="form-group">
+              <button class="btn btn-primary" id="export-subdiv-report">
+                <i class="fas fa-print"></i> Print
+              </button>
+            </div>
           </div>
         </div>
+
+
+
         
+
+
         <!-- Summary Report Section -->
-        <div id="summary-report-form" class="report-form">
+        <div id="summary-report-form" class="report-form hidden">
           <div class="summary-action-bar">
             <div class="year-selection">
               <span class="year-label">Select Year:</span>
-              <select class="form-control" id="summary-year" style="width: 120px;">
-                <option value="2023">2023</option>
-                <option value="2022">2022</option>
-                <option value="2021">2021</option>
-                <option value="2020">2020</option>
-              </select>
+              <input type="text" class="form-control" id="yearPicker" placeholder="YYYY">
             </div>
             <div class="report-buttons">
-              <button class="btn btn-primary" id="generate-summary">
+              <button class="btn btn-primary" id="generate-summary-report">
                 <i class="fas fa-chart-pie"></i> Generate Report
               </button>
-              <button class="btn btn-secondary" id="print-summary">
+              <button class="btn btn-secondary" id="print-summary-report">
                 <i class="fas fa-print"></i> Print Report
               </button>
             </div>
@@ -1176,50 +1112,13 @@
           <div id="summary-results">
             <div class="summary-header">
               <h2 class="summary-title">Complaints Summary Report</h2>
-              <p class="summary-subtitle">2023 Annual Performance Overview</p>
+              <p class="summary-subtitle">YYYY Annual Performance Overview</p>
             </div>
             
             <div class="data-tables">
               <!-- Table 1: Complaints by Nature -->
               <div class="data-table">
-                <div class="table-title">Complaints by Nature</div>
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Nature</th>
-                      <th>Total</th>
-                      <th>Percentage</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>Urgent</td>
-                      <td>158</td>
-                      <td>28%</td>
-                    </tr>
-                    <tr>
-                      <td>Major</td>
-                      <td>202</td>
-                      <td>36%</td>
-                    </tr>
-                    <tr>
-                      <td>Minor</td>
-                      <td>124</td>
-                      <td>22%</td>
-                    </tr>
-                    <tr>
-                      <td>Routine</td>
-                      <td>78</td>
-                      <td>14%</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              
-              <!-- Table 2: Complaints by Colony -->
-              <div class="data-table">
-                <div class="table-title">Complaints by Colony</div>
-                <table>
+                <table id="colony-summary-table">
                   <thead>
                     <tr>
                       <th>Colony</th>
@@ -1228,335 +1127,1165 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td>North Colony</td>
-                      <td>145</td>
-                      <td>26%</td>
-                    </tr>
-                    <tr>
-                      <td>South Colony</td>
-                      <td>132</td>
-                      <td>23%</td>
-                    </tr>
-                    <tr>
-                      <td>East Colony</td>
-                      <td>168</td>
-                      <td>30%</td>
-                    </tr>
-                    <tr>
-                      <td>West Colony</td>
-                      <td>117</td>
-                      <td>21%</td>
-                    </tr>
+                    <!--Will be populated dynamically-->
                   </tbody>
                 </table>
               </div>
-            </div>
-            
-            <div class="chart-container">
-              <canvas id="complaintsChart"></canvas>
+
+              <!-- Table 2: Complaints by Colony -->
+              <div class="data-table">
+                <table id="nature-summary-table">
+                  <thead>
+                    <tr>
+                      <th>Nature</th>
+                      <th>Total</th>
+                      <th>Percentage</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!--Will be populated dynamically-->
+                  </tbody>
+                </table>
+              </div>
+
             </div>
           </div>
         </div>
+
+        
       </div>
     </div>
   </div>
 
   <script>
-    // Base API URL
-    const API_BASE_URL = 'http://localhost:3000/api';
-    
-    // Notification system
-    function showNotification(message, type) {
-      const notification = document.getElementById('notification');
-      const text = document.getElementById('notification-text');
-      
-      text.textContent = message;
-      notification.className = 'notification ' + type;
-      notification.classList.add('show');
-      
-      setTimeout(() => {
-        notification.classList.remove('show');
-      }, 3000);
-    }
-  
-    // Function to fetch data from API
-    async function fetchData(endpoint, params = {}) {
-      try {
-        // Convert params object to query string
-        const queryString = new URLSearchParams(params).toString();
-        const url = `${API_BASE_URL}/${endpoint}?${queryString}`;
-        
-        const response = await fetch(url);
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        return await response.json();
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        showNotification('Failed to fetch data from server', 'error');
-        return null;
-      }
-    }
-  
-    // Function to populate default report data
-    async function loadDefaultReportData(params) {
-      showNotification('Loading report data...', 'warning');
-      
-      const data = await fetchData('complaints', params);
-      
-      if (data) {
-        // In a real app, we would process and display this data
-        console.log('Default report data:', data);
-        showNotification('Report data loaded successfully', 'success');
-      }
-    }
-  
-    // Function to populate sector report data
-    async function loadSectorReportData(params) {
-      showNotification('Loading sector data...', 'warning');
-      
-      const data = await fetchData('complaints/sector', params);
-      
-      if (data) {
-        // Process and display sector data
-        console.log('Sector report data:', data);
-        showNotification('Sector data loaded successfully', 'success');
-        
-        // Update the sector table in the UI
-        updateSectorTable(data);
-      }
-    }
-  
-    // Function to populate sub-division report data
-    async function loadSubDivReportData(params) {
-      showNotification('Loading sub-division data...', 'warning');
-      
-      const data = await fetchData('complaints/subdivision', params);
-      
-      if (data) {
-        // Process and display sub-division data
-        console.log('Sub-division report data:', data);
-        showNotification('Sub-division data loaded successfully', 'success');
-        
-        // Update the sub-division table in the UI
-        updateSubDivTable(data);
-      }
-    }
-  
-    // Function to populate summary report data
-    async function loadSummaryReportData(year) {
-      showNotification('Loading summary data...', 'warning');
-      
-      const data = await fetchData('complaints/summary', { year });
-      
-      if (data) {
-        // Process and display summary data
-        console.log('Summary report data:', data);
-        showNotification('Summary data loaded successfully', 'success');
-        
-        // Update the summary tables in the UI
-        updateSummaryTables(data);
-      }
-    }
-  
-    // Function to update sector table with data
-    function updateSectorTable(data) {
-      const tableBody = document.querySelector('#sector-report-form table tbody');
-      tableBody.innerHTML = '';
-      
-      data.sectors.forEach(sector => {
-        const row = document.createElement('tr');
-        
-        row.innerHTML = `
-          <td>${sector.name}</td>
-          <td>${sector.total}</td>
-          <td>${sector.resolved}</td>
-          <td>${sector.pending}</td>
-          <td>${Math.round((sector.resolved / sector.total) * 100)}%</td>
-        `;
-        
-        tableBody.appendChild(row);
-      });
-    }
-  
-    // Function to update sub-division table with data
-    function updateSubDivTable(data) {
-      const tableBody = document.querySelector('#subdiv-report-form table tbody');
-      tableBody.innerHTML = '';
-      
-      data.subdivisions.forEach(subdiv => {
-        const row = document.createElement('tr');
-        
-        row.innerHTML = `
-          <td>${subdiv.name}</td>
-          <td>${subdiv.inprogress}</td>
-          <td>${subdiv.completed}</td>
-          <td>${subdiv.sna}</td>
-          <td>${subdiv.deferred}</td>
-          <td>${subdiv.total}</td>
-        `;
-        
-        tableBody.appendChild(row);
-      });
-    }
-  
-    // Function to update summary tables with data
-    function updateSummaryTables(data) {
-      // Update nature table
-      const natureTableBody = document.querySelector('#summary-results .data-tables table:first-of-type tbody');
-      natureTableBody.innerHTML = '';
-      
-      data.natures.forEach(nature => {
-        const row = document.createElement('tr');
-        
-        row.innerHTML = `
-          <td>${nature.name}</td>
-          <td>${nature.total}</td>
-          <td>${nature.percentage}%</td>
-        `;
-        
-        natureTableBody.appendChild(row);
-      });
-      
-      // Update colony table
-      const colonyTableBody = document.querySelector('#summary-results .data-tables table:last-of-type tbody');
-      colonyTableBody.innerHTML = '';
-      
-      data.colonies.forEach(colony => {
-        const row = document.createElement('tr');
-        
-        row.innerHTML = `
-          <td>${colony.name}</td>
-          <td>${colony.total}</td>
-          <td>${colony.percentage}%</td>
-        `;
-        
-        colonyTableBody.appendChild(row);
-      });
-      
-      // Update report title with selected year
-      const year = document.getElementById('summary-year').value;
-      document.querySelector('.summary-subtitle').textContent = `${year} Annual Performance Overview`;
-    }
-  
-    document.addEventListener('DOMContentLoaded', function() {
-      // Logout button functionality
-      document.querySelector('.logout-btn').addEventListener('click', function() {
-        showNotification('Logging out... Redirecting to login page.', 'success');
-        setTimeout(() => {
-          // In a real app, this would redirect to the login page
-          window.location.href = '/login';
-        }, 1500);
-      });
-      
-      // Set today's date as default
-      const today = new Date();
-      const formattedDate = today.toISOString().split('T')[0];
-      document.getElementById('from-date').value = formattedDate;
-      document.getElementById('to-date').value = formattedDate;
-      document.getElementById('sector-from-date').value = formattedDate;
-      document.getElementById('sector-to-date').value = formattedDate;
-      document.getElementById('subdiv-from-date').value = formattedDate;
-      document.getElementById('subdiv-to-date').value = formattedDate;
-      
-      // Radio button functionality
-      const radioItems = document.querySelectorAll('.radio-item');
-      const defaultReport = document.getElementById('default-report-form');
-      const sectorReport = document.getElementById('sector-report-form');
-      const subdivReport = document.getElementById('subdiv-report-form');
-      const summaryReport = document.getElementById('summary-report-form');
-      
-      // Function to hide all reports
-      function hideAllReports() {
-        defaultReport.classList.add('hidden');
-        sectorReport.classList.add('hidden');
-        subdivReport.classList.add('hidden');
-        summaryReport.classList.add('hidden');
-      }
-      
-      radioItems.forEach(item => {
-        item.addEventListener('click', function() {
-          // Remove selected class from all items
-          radioItems.forEach(i => i.classList.remove('selected'));
-          // Add selected class to clicked item
-          this.classList.add('selected');
-          // Check the radio input
-          const radioInput = this.querySelector('input[type="radio"]');
-          radioInput.checked = true;
-          // Show/hide sections based on selection
-          hideAllReports();
-          if (radioInput.value === 'default') {
-            defaultReport.classList.remove('hidden');
-          } else if (radioInput.value === 'sector') {
-            sectorReport.classList.remove('hidden');
-          } else if (radioInput.value === 'sub-div') {
-            subdivReport.classList.remove('hidden');
-          } else if (radioInput.value === 'summary') {
-            summaryReport.classList.remove('hidden');
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const options = document.querySelectorAll(".report-option");
+
+      const defaultForm = document.getElementById("default-report-form");
+      const subdivForm = document.getElementById("subdiv-report-form");
+      const summaryForm = document.getElementById("summary-report-form");
+
+      options.forEach(opt => {
+        opt.addEventListener("click", function () {
+          // toggle off if already active
+          if (this.classList.contains("active")) {
+            this.classList.remove("active");
+            hideAll(); 
+            defaultForm.classList.remove("hidden"); // show default when none active
+            resetForm(defaultForm, false); 
+            return;
+          }
+
+          // make sure only one active
+          options.forEach(o => o.classList.remove("active"));
+          this.classList.add("active");
+
+          // handle based on type
+          switch (this.dataset.type) {
+            case "sector":
+              hideAll();
+              defaultForm.classList.remove("hidden");
+              resetForm(defaultForm, true); // disable selects, only dates active
+              break;
+            case "sub-div":
+              hideAll();
+              subdivForm.classList.remove("hidden");
+              break;
+            case "summary":
+              hideAll();
+              summaryForm.classList.remove("hidden");
+              break;
           }
         });
       });
-      
-      // Initialize the first radio as selected
-      document.querySelector('.radio-item').classList.add('selected'); 
-      
-      // Form submission handlers
-      document.querySelector('#default-report-form form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const formData = {
-          colony: this.colony.value,
-          building: this.building.value,
-          category: this.category.value,
-          nature: this.nature.value,
-          status: this.status.value,
-          priority: this.priority.value,
-          fromDate: this['from-date'].value,
-          toDate: this['to-date'].value
-        };
-        
-        loadDefaultReportData(formData);
-      });
-      
-      document.querySelector('#sector-report-form .btn-primary').addEventListener('click', function() {
-        const fromDate = document.getElementById('sector-from-date').value;
-        const toDate = document.getElementById('sector-to-date').value;
-        
-        loadSectorReportData({ fromDate, toDate });
-      });
-      
-      document.querySelector('#subdiv-report-form .btn-primary').addEventListener('click', function() {
-        const fromDate = document.getElementById('subdiv-from-date').value;
-        const toDate = document.getElementById('subdiv-to-date').value;
-        const category = document.getElementById('subdiv-category').value;
-        
-        loadSubDivReportData({ fromDate, toDate, category });
-      });
-      
-      // Generate summary report button
-      document.getElementById('generate-summary').addEventListener('click', function() {
-        const year = document.getElementById('summary-year').value;
-        loadSummaryReportData(year);
-      });
-      
-      // Print summary report button
-      document.getElementById('print-summary').addEventListener('click', function() {
-        showNotification('Printing summary report...', 'success');
-        setTimeout(() => {
-          window.print();
-        }, 500);
-      });
-      
-      // Load initial data for default report
-      const initialParams = {
-        fromDate: formattedDate,
-        toDate: formattedDate
-      };
-      loadDefaultReportData(initialParams);
+
+      function hideAll() {
+        defaultForm.classList.add("hidden");
+        subdivForm.classList.add("hidden");
+        summaryForm.classList.add("hidden");
+      }
+
+      function resetForm(form, sectorMode) {
+        const selects = form.querySelectorAll("select");
+        const dates = form.querySelectorAll('input[type="date"]');
+
+        selects.forEach(s => {
+          s.value = ""; 
+          s.disabled = sectorMode; 
+        });
+
+        dates.forEach(d => {
+          d.disabled = false;
+          d.value = ""; 
+        });
+      }
+
+      // initial state: only default visible
+      hideAll();
+      defaultForm.classList.remove("hidden");
     });
+
+  </script>
+
+
+  <script> 
+
+    // To populate colonies and buildings
+    document.addEventListener('DOMContentLoaded', function() {
+        // API base URL
+        const API_BASE_URL = 'http://localhost:3000';
+        
+        // DOM Elements
+        const colonySelect = document.querySelector('select[name="colony"]');
+        const buildingSelect = document.querySelector('select[name="building"]');
+        
+        // Store the colonies data for later use
+        let coloniesData = [];
+        
+        // Fetch colonies and their buildings from the backend
+        async function fetchColoniesAndBuildings() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/colonies-with-buildings`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch colonies and buildings');
+                }
+                coloniesData = await response.json();
+                
+                // Clear existing options except the first one
+                while (colonySelect.options.length > 1) {
+                    colonySelect.remove(1);
+                }
+                
+                // Add colony options
+                coloniesData.forEach(colony => {
+                    const option = document.createElement('option');
+                    option.value = colony.id;
+                    option.textContent = colony.name;
+                    colonySelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error fetching colonies and buildings:', error);
+                // You might want to show an error message to the user here
+            }
+        }
+        
+        // Update buildings dropdown based on selected colony
+        function updateBuildingsDropdown(colonyId) {
+            // Clear existing building options except the first one
+            while (buildingSelect.options.length > 1) {
+                buildingSelect.remove(1);
+            }
+            
+            // If no colony is selected, return early
+            if (!colonyId) return;
+            
+            // Find the selected colony
+            const selectedColony = coloniesData.find(colony => colony.id == colonyId);
+            
+            if (selectedColony && selectedColony.buildings) {
+                // Add building options for the selected colony
+                selectedColony.buildings.forEach(building => {
+                    const option = document.createElement('option');
+                    option.value = building.id;
+                    option.textContent = building.name;
+                    buildingSelect.appendChild(option);
+                });
+            }
+        }
+        
+        // Event listener for colony dropdown change
+        colonySelect.addEventListener('change', function() {
+            updateBuildingsDropdown(this.value);
+        });
+        
+        // Initialize the form by fetching colonies and buildings data
+        fetchColoniesAndBuildings();
+    });
+
+
+    // To populate categories and natures
+    document.addEventListener('DOMContentLoaded', function() {
+        // API base URL
+        const API_BASE_URL = 'http://localhost:3000';
+        
+        // DOM Elements
+        const categorySelect = document.querySelector('select[name="category"]');
+        const natureSelect = document.querySelector('select[name="nature"]');
+        
+        // Store the categories data for later use
+        let categoriesData = [];
+        
+        // Fetch categories and their natures from the backend
+        async function fetchCategoriesAndNatures() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/categories-with-natures`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch categories and natures');
+                }
+                categoriesData = await response.json();
+                
+                // Debug: log what we received from the API
+                console.log('Categories API response:', categoriesData);
+                
+                // Clear existing options except the first one
+                while (categorySelect.options.length > 1) {
+                    categorySelect.remove(1);
+                }
+                
+                // Add category options
+                categoriesData.forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category.name;
+                    option.textContent = category.name;
+                    categorySelect.appendChild(option);
+                    
+                    // Debug: log each category
+                    console.log('Added category:', category.name);
+                });
+            } catch (error) {
+                console.error('Error fetching categories and natures:', error);
+                // You might want to show an error message to the user here
+            }
+        }
+        
+        // Update natures dropdown based on selected category
+        function updateNaturesDropdown(categoryName) {
+            // Clear existing nature options except the first one
+            while (natureSelect.options.length > 1) {
+                natureSelect.remove(1);
+            }
+            
+            // If no category is selected, return early
+            if (!categoryName) return;
+            
+            // Find the selected category
+            const selectedCategory = categoriesData.find(category => category.name === categoryName);
+            
+            // Debug: log the selected category and its natures
+            console.log('Selected category:', selectedCategory);
+            
+            if (selectedCategory && selectedCategory.natures) {
+                // Add nature options for the selected category
+                selectedCategory.natures.forEach(nature => {
+                    // Debug: log each nature
+                    console.log('Adding nature:', nature);
+                    
+                    const option = document.createElement('option');
+                    option.value = nature;
+                    option.textContent = nature;
+                    natureSelect.appendChild(option);
+                });
+            }
+        }
+        
+        // Event listener for category dropdown change
+        categorySelect.addEventListener('change', function() {
+            updateNaturesDropdown(this.value);
+        });
+        
+        // Initialize the form by fetching categories and natures data
+        fetchCategoriesAndNatures();
+    });
+
+    // Buttons functionality for default report
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get the buttons
+        const exportCsvBtn = document.getElementById('generate-report-for-default');
+        const printReportBtn = document.getElementById('print-report-for-default');
+        
+        // Function to get all form values as an object
+        function getFormValues() {
+            return {
+                colony: document.querySelector('select[name="colony"]').value,
+                building: document.querySelector('select[name="building"]').value,
+                category: document.querySelector('select[name="category"]').value,
+                nature: document.querySelector('select[name="nature"]').value,
+                status: document.querySelector('select[name="status"]').value,
+                priority: document.querySelector('select[name="priority"]').value,
+                fromDate: document.getElementById('from-date').value,
+                toDate: document.getElementById('to-date').value
+            };
+        }
+        
+        // Event listener for Export to CSV button
+        exportCsvBtn.addEventListener('click', function(e) {
+            e.preventDefault(); // Prevent form submission
+            console.log('Exporting CSV...');
+            
+            // Get all form values
+            const formValues = getFormValues();
+            console.log('Form Values:', formValues);
+        });
+        
+        // Event listener for Print Report button
+        printReportBtn.addEventListener('click', function(e) {
+            e.preventDefault(); // Prevent form submission
+            console.log('Printing PDF...');
+            
+            // Get all form values
+            const formValues = getFormValues();
+            console.log('Form Values:', formValues);
+        });
+    });
+
+
+  </script>
+
+
+  <script> 
+// Function to fetch data from the backend server with applied filters
+async function fetchComplaintsData(filters = {}) {
+    try {
+        // Build query string from filters
+        const queryParams = new URLSearchParams();
+        for (const key in filters) {
+            if (filters[key]) {
+                queryParams.append(key, filters[key]);
+            }
+        }
+
+        const response = await fetch(`http://localhost:3000/complaints-report?${queryParams}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching data:', error);
+        alert('Failed to fetch data from server. Please check if the server is running.');
+        return [];
+    }
+}
+
+// Function to get filter values from the form
+function getFilterValues() {
+    return {
+        colony: document.querySelector('select[name="colony"]').value,
+        building: document.querySelector('select[name="building"]').value,
+        category: document.querySelector('select[name="category"]').value,
+        nature: document.querySelector('select[name="nature"]').value,
+        status: document.querySelector('select[name="status"]').value,
+        priority: document.querySelector('select[name="priority"]').value,
+        fromDate: document.getElementById('from-date').value,
+        toDate: document.getElementById('to-date').value
+    };
+}
+
+// Function to generate table in a new tab
+function generateReportTable(data, filters) {
+    // Create a new window
+    const newWindow = window.open('', '_blank');
+    
+    if (!newWindow) {
+        alert('Please allow popups for this site to generate reports.');
+        return null;
+    }
+    
+    // Create HTML content for the new window
+    const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Complaints Report</title>
+            <style>
+                body { 
+                    font-family: Arial, sans-serif; 
+                    margin: 20px; 
+                    font-size: 14px;
+                }
+                table { 
+                    width: 100%; 
+                    border-collapse: collapse; 
+                    margin-top: 20px;
+                    font-size: 12px;
+                }
+                th, td { 
+                    border: 1px solid #ddd; 
+                    padding: 6px; 
+                    text-align: left; 
+                }
+                th { 
+                    background-color: #f2f2f2; 
+                    position: sticky;
+                    top: 0;
+                }
+                .report-header { 
+                    margin-bottom: 20px; 
+                    padding-bottom: 10px;
+                    border-bottom: 2px solid #333;
+                }
+                .filter-info { 
+                    margin-bottom: 10px; 
+                    font-size: 14px; 
+                    padding: 10px;
+                    background-color: #f9f9f9;
+                    border-radius: 5px;
+                }
+                tr:nth-child(even) {
+                    background-color: #f9f9f9;
+                }
+                @media print {
+                    body { margin: 0; }
+                    .no-print { display: none; }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="report-header">
+                <h1>Complaints Report</h1>
+                <div class="filter-info">
+                    <strong>Generated on:</strong> ${new Date().toLocaleString()}<br>
+                    <strong>Filters applied:</strong> ${Object.entries(filters)
+                        .filter(([key, value]) => value)
+                        .map(([key, value]) => `${key}: ${value}`)
+                        .join(', ') || 'None'}
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Id</th>
+                        <th>Date</th>
+                        <th>Sub-div</th>
+                        <th>Nature</th>
+                        <th>N-Type</th>
+                        <th>Colony</th>
+                        <th>Building</th>
+                        <th>Launched By</th>
+                        <th>Skillman</th>
+                        <th>Customer</th>
+                        <th>P-Type</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${data.map((item, index) => `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${item.id || ''}</td>
+                            <td>${item.date ? new Date(item.date).toLocaleDateString() : ''}</td>
+                            <td>${item.subdiv || ''}</td>
+                            <td>${item.nature || ''}</td>
+                            <td>${item.ntype || ''}</td>
+                            <td>${item.colony || ''}</td>
+                            <td>${item.building || ''}</td>
+                            <td>${item.launchedBy || ''}</td>
+                            <td>${item.skillman || ''}</td>
+                            <td>${item.customer || ''}</td>
+                            <td>${item.ptype || ''}</td>
+                            <td>${item.status || ''}</td>
+                        </tr>
+                    `).join('')}
+                    ${data.length === 0 ? '<tr><td colspan="13" style="text-align: center;">No data found with the selected filters</td></tr>' : ''}
+                </tbody>
+            </table>
+            <div class="no-print" style="margin-top: 20px;">
+                <button onclick="window.print()" style="padding: 10px 15px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    Print Report
+                </button>
+            </div>
+        </body>
+        </html>
+    `;
+    
+    // Write the content to the new window
+    newWindow.document.write(htmlContent);
+    newWindow.document.close();
+    
+    // Return the new window for potential further operations
+    return newWindow;
+}
+
+// Function to handle print button click
+async function handlePrintReport() {
+    // Show loading indicator
+    const printButton = document.getElementById('print-report-for-default');
+    const originalText = printButton.innerHTML;
+    printButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating Report...';
+    printButton.disabled = true;
+    
+    try {
+        // Get filter values
+        const filters = getFilterValues();
+        
+        // Remove empty filters
+        const activeFilters = Object.fromEntries(
+            Object.entries(filters).filter(([_, value]) => value)
+        );
+        
+        // Fetch data with filters
+        const data = await fetchComplaintsData(activeFilters);
+        
+        // Generate table in new tab
+        const reportWindow = generateReportTable(data, activeFilters);
+        
+        if (reportWindow) {
+            // Wait for the window to load before printing
+            reportWindow.onload = function() {
+                reportWindow.focus();
+            };
+        }
+    } catch (error) {
+        console.error('Error generating report:', error);
+        alert('Failed to generate report. Please try again.');
+    } finally {
+        // Restore button state
+        printButton.innerHTML = originalText;
+        printButton.disabled = false;
+    }
+}
+
+// Function to export data as CSV
+async function exportToCSV() {
+    // Show loading indicator
+    const exportButton = document.getElementById('generate-report-for-default');
+    const originalText = exportButton.innerHTML;
+    exportButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Exporting...';
+    exportButton.disabled = true;
+    
+    try {
+        // Get filter values
+        const filters = getFilterValues();
+        
+        // Remove empty filters
+        const activeFilters = Object.fromEntries(
+            Object.entries(filters).filter(([_, value]) => value)
+        );
+        
+        // Fetch data with filters
+        const data = await fetchComplaintsData(activeFilters);
+        
+        // Define CSV headers
+        const headers = ['#', 'Id', 'Date', 'Sub-div', 'Nature', 'N-Type', 'Colony', 'Building', 
+                        'Launched By', 'Skillman', 'Customer', 'P-Type', 'Status'];
+        
+        // Convert data to CSV
+        let csvContent = headers.join(',') + '\n';
+        
+        data.forEach((item, index) => {
+            const row = [
+                index + 1,
+                item.id || '',
+                item.date ? new Date(item.date).toLocaleDateString() : '',
+                item.subdiv || '',
+                item.nature || '',
+                item.ntype || '',
+                item.colony || '',
+                item.building || '',
+                item.launchedBy || '',
+                item.skillman || '',
+                item.customer || '',
+                item.ptype || '',
+                item.status || ''
+            ];
+            
+            // Escape values that might contain commas
+            csvContent += row.map(value => `"${value.toString().replace(/"/g, '""')}"`).join(',') + '\n';
+        });
+        
+        // Generate filename with from_date and to_date
+        const fromDate = filters.fromDate || 'all';
+        const toDate = filters.toDate || 'all';
+        const filename = `complaints_${fromDate}_${toDate}.csv`;
+        
+        // Create download link
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', filename);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    } catch (error) {
+        console.error('Error exporting CSV:', error);
+        alert('Failed to export CSV. Please try again.');
+    } finally {
+        // Restore button state
+        exportButton.innerHTML = originalText;
+        exportButton.disabled = false;
+    }
+}
+
+// Initialize when document is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Add event listeners
+    document.getElementById('generate-report-for-default').addEventListener('click', function(e) {
+        e.preventDefault();
+        exportToCSV();
+    });
+    
+    document.getElementById('print-report-for-default').addEventListener('click', function(e) {
+        e.preventDefault();
+        handlePrintReport();
+    });
+});
+        
+
+  </script>
+
+
+  <script> 
+
+    // Javascript for Subdivision Complaint Section
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get the generate report button
+        const generateBtn = document.querySelector('#subdiv-report-form .btn-primary');
+        
+        // Add click event listener to the button
+        generateBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Get form values
+            const fromDate = document.getElementById('subdiv-from-date').value;
+            const toDate = document.getElementById('subdiv-to-date').value;
+            const category = document.getElementById('subdiv-category').value;
+            
+            // Validate dates
+            if (!fromDate || !toDate) {
+                console.error('Please select both from and to dates');
+                alert('Please select both from and to dates');
+                return;
+            }
+            
+            if (new Date(fromDate) > new Date(toDate)) {
+                console.error('From date cannot be after to date');
+                alert('From date cannot be after to date');
+                return;
+            }
+            
+            // Show loading state
+            const originalText = generateBtn.textContent;
+            generateBtn.textContent = 'Loading...';
+            generateBtn.disabled = true;
+            
+            // Prepare request data
+            const requestData = {
+                fromDate: fromDate,
+                toDate: toDate,
+                category: category
+            };
+            
+            // Fetch data from the server at port 3000
+            fetch('http://localhost:3000/api/subdiv-report', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Make tables visible
+                document.querySelector('.subdivision-table').classList.remove('hidden');
+                
+                // Populate status table
+                populateStatusTable(data.statusData, category);
+                
+                // Populate priority table
+                populatePriorityTable(data.priorityData, category);
+            })
+            .catch(error => {
+                console.error('Error fetching report data:', error);
+                alert('Failed to fetch report data. Please check if the server is running on port 3000.');
+            })
+            .finally(() => {
+                // Reset button state
+                generateBtn.textContent = originalText;
+                generateBtn.disabled = false;
+            });
+        });
+        
+        // Function to populate status table
+        function populateStatusTable(data, selectedCategory) {
+            const tableBody = document.querySelector('#subdivision-status-table tbody');
+            tableBody.innerHTML = ''; // Clear existing content
+            
+            // Get all subdivision options from the dropdown (including '-')
+            const allSubdivisions = Array.from(document.getElementById('subdiv-category').options)
+                .map(option => option.value)
+                .filter(value => value !== ''); // Exclude only empty value (keep '-')
+            
+            // Check if data is available
+            if (!data || data.length === 0) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td colspan="6" style="text-align: center;">No data available for the selected criteria</td>`;
+                tableBody.appendChild(tr);
+                return;
+            }
+            
+            // Create a map of the data for easy lookup
+            const dataMap = {};
+            data.forEach(row => {
+                dataMap[row.subDivision] = row;
+            });
+            
+            // Initialize totals
+            let totalInprogress = 0;
+            let totalCompleted = 0;
+            let totalSna = 0;
+            let totalDeferred = 0;
+            let grandTotal = 0;
+            
+            // Determine which subdivisions to show
+            let subdivisionsToShow = allSubdivisions;
+            if (selectedCategory !== '') {
+                subdivisionsToShow = [selectedCategory];
+            }
+            
+            // Show all subdivisions, even if they have no data
+            subdivisionsToShow.forEach(subDiv => {
+                const rowData = dataMap[subDiv] || {
+                    subDivision: subDiv,
+                    inprogress: 0,
+                    completed: 0,
+                    sna: 0,
+                    deferred: 0,
+                    total: 0
+                };
+                
+                // Add to totals
+                totalInprogress += rowData.inprogress;
+                totalCompleted += rowData.completed;
+                totalSna += rowData.sna;
+                totalDeferred += rowData.deferred;
+                grandTotal += rowData.total;
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${rowData.subDivision}</td>
+                    <td>${rowData.inprogress}</td>
+                    <td>${rowData.completed}</td>
+                    <td>${rowData.sna}</td>
+                    <td>${rowData.deferred}</td>
+                    <td>${rowData.total}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+            
+            // Add total row
+            const totalRow = document.createElement('tr');
+            totalRow.style.fontWeight = 'bold';
+            totalRow.innerHTML = `
+                <td colspan="5" style="text-align: center;">Total</td>
+                <td>${grandTotal}</td>
+            `;
+            tableBody.appendChild(totalRow);
+        }
+        
+        // Function to populate priority table
+        function populatePriorityTable(data, selectedCategory) {
+            const tableBody = document.querySelector('#subdivision-priority-table tbody');
+            tableBody.innerHTML = ''; // Clear existing content
+            
+            // Get all subdivision options from the dropdown (including '-')
+            const allSubdivisions = Array.from(document.getElementById('subdiv-category').options)
+                .map(option => option.value)
+                .filter(value => value !== ''); // Exclude only empty value (keep '-')
+            
+            // Check if data is available
+            if (!data || data.length === 0) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td colspan="6" style="text-align: center;">No data available for the selected criteria</td>`;
+                tableBody.appendChild(tr);
+                return;
+            }
+            
+            // Create a map of the data for easy lookup
+            const dataMap = {};
+            data.forEach(row => {
+                dataMap[row.subDivision] = row;
+            });
+            
+            // Initialize totals
+            let totalImmediate = 0;
+            let totalUrgent = 0;
+            let totalRoutine = 0;
+            let totalDeferred = 0;
+            let grandTotal = 0;
+            
+            // Determine which subdivisions to show
+            let subdivisionsToShow = allSubdivisions;
+            if (selectedCategory !== '') {
+                subdivisionsToShow = [selectedCategory];
+            }
+            
+            // Show all subdivisions, even if they have no data
+            subdivisionsToShow.forEach(subDiv => {
+                const rowData = dataMap[subDiv] || {
+                    subDivision: subDiv,
+                    immediate: 0,
+                    urgent: 0,
+                    routine: 0,
+                    deferred: 0,
+                    total: 0
+                };
+                
+                // Add to totals
+                totalImmediate += rowData.immediate;
+                totalUrgent += rowData.urgent;
+                totalRoutine += rowData.routine;
+                totalDeferred += rowData.deferred;
+                grandTotal += rowData.total;
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${rowData.subDivision}</td>
+                    <td>${rowData.immediate}</td>
+                    <td>${rowData.urgent}</td>
+                    <td>${rowData.routine}</td>
+                    <td>${rowData.deferred}</td>
+                    <td>${rowData.total}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+            
+            // Add total row
+            const totalRow = document.createElement('tr');
+            totalRow.style.fontWeight = 'bold';
+            totalRow.innerHTML = `
+                <td colspan="5" style="text-align: center;">Total</td>
+                <td>${grandTotal}</td>
+            `;
+            tableBody.appendChild(totalRow);
+        }
+    });
+
+    // JS to print Subdivision Report
+    document.addEventListener('DOMContentLoaded', function() {
+        // Format date to dd-MMM-yyyy format
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            
+            const date = new Date(dateString);
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                          'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            
+            const day = date.getDate();
+            const month = months[date.getMonth()];
+            const year = date.getFullYear();
+            
+            return `${day}-${month}-${year}`;
+        }
+
+        // Print functionality
+        document.getElementById('export-subdiv-report').addEventListener('click', function() {
+            // Get the date values
+            const fromDate = document.getElementById('subdiv-from-date').value;
+            const toDate = document.getElementById('subdiv-to-date').value;
+            
+            // Format the dates
+            const formattedFromDate = formatDate(fromDate);
+            const formattedToDate = formatDate(toDate);
+            
+            // Get the tables HTML
+            const statusTable = document.getElementById('subdivision-status-table').outerHTML;
+            const priorityTable = document.getElementById('subdivision-priority-table').outerHTML;
+            
+            // Create print overlay
+            const printOverlay = document.createElement('div');
+            printOverlay.id = 'print-overlay-subdiv';
+            printOverlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: white;
+                z-index: 10000;
+                padding: 30px;
+                overflow-y: auto;
+            `;
+            
+            // Create print content
+            printOverlay.innerHTML = `
+                <div class="print-header" style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #000; padding-bottom: 15px;">
+                    <h2 style="margin-bottom: 10px;">CMES (DP) HIT Taxila</h2>
+                    <h3 style="margin-bottom: 10px;">GE DP</h3>
+                    <h4 style="margin-bottom: 10px;">Sub Division Wise Report</h4>
+                    <p style="font-size: 18px;">${formattedFromDate} To ${formattedToDate}</p>
+                </div>
+                ${statusTable}
+                ${priorityTable}
+            `;
+            
+            // Add print styles
+            const printStyle = document.createElement('style');
+            printStyle.innerHTML = `
+                #print-overlay-subdiv table { 
+                    width: 100%; 
+                    border-collapse: collapse; 
+                    margin-bottom: 25px; 
+                    border: 2px solid #000; 
+                }
+                #print-overlay-subdiv th, #print-overlay-subdiv td { 
+                    border: 1px solid #000; 
+                    padding: 10px; 
+                    text-align: center; 
+                    color: black;
+                }
+                #print-overlay-subdiv th { 
+                    background-color: #f0f0f0; 
+                    font-weight: bold; 
+                }
+                @media print {
+                    body * {
+                        visibility: hidden;
+                    }
+                    #print-overlay-subdiv, #print-overlay-subdiv * {
+                        visibility: visible;
+                    }
+                    #print-overlay-subdiv {
+                        position: absolute;
+                        left: 0;
+                        top: 0;
+                        width: 100%;
+                        padding: 0;
+                        margin: 0;
+                    }
+                }
+            `;
+            
+            // Add to document
+            document.head.appendChild(printStyle);
+            document.body.appendChild(printOverlay);
+            
+            // Store original title
+            const originalTitle = document.title;
+            document.title = "Sub Division Wise Report";
+            
+            // Print the overlay
+            window.print();
+            
+            // Clean up after printing
+            const cleanup = function() {
+                document.head.removeChild(printStyle);
+                document.body.removeChild(printOverlay);
+                document.title = originalTitle;
+                window.onafterprint = null;
+            };
+            
+            // Set up afterprint event
+            window.onafterprint = cleanup;
+            
+            // Also set a timeout as a fallback in case onafterprint doesn't fire
+            setTimeout(cleanup, 100);
+        });
+    });
+
+  </script>
+
+
+  <script>
+
+    $('#yearPicker').datepicker({
+      format: "yyyy",
+      viewMode: "years", 
+      minViewMode: "years"
+    });
+
+  </script>
+
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const generateBtn = document.getElementById('generate-summary-report');
+        const yearPicker = document.getElementById('yearPicker');
+        const printBtn = document.getElementById('print-summary-report');
+        const summarySubtitle = document.querySelector('.summary-subtitle');
+
+        // Initialize year picker with current year
+        const currentYear = new Date().getFullYear();
+        yearPicker.value = currentYear;
+        updateSubtitle(currentYear);
+
+        // Generate report button click handler
+        generateBtn.addEventListener('click', function() {
+            const year = yearPicker.value.trim();
+            
+            if (!year || year.length !== 4 || isNaN(year)) {
+                alert('Please enter a valid year (YYYY)');
+                return;
+            }
+            
+            fetchSummaryReport(year);
+        });
+
+        // Print report button click handler
+        printBtn.addEventListener('click', function() {
+            window.print();
+        });
+
+        // Fetch data from backend
+        function fetchSummaryReport(year) {
+            // Show loading state
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+
+            fetch(`http://localhost:3000/api/summary-report?year=${year}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    populateTables(data);
+                    updateSubtitle(year);
+                    generateBtn.disabled = false;
+                    generateBtn.innerHTML = '<i class="fas fa-chart-pie"></i> Generate Report';
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                    alert('Failed to fetch data from server. Please check if the server is running on port 3000.');
+                    generateBtn.disabled = false;
+                    generateBtn.innerHTML = '<i class="fas fa-chart-pie"></i> Generate Report';
+                });
+        }
+
+        // Populate both tables with data using specific IDs
+        function populateTables(data) {
+            // Populate Nature table (using ID: nature-summary-table)
+            const natureTableBody = document.querySelector('#nature-summary-table tbody');
+            natureTableBody.innerHTML = '';
+            
+            if (data.nature && data.nature.length > 0) {
+                data.nature.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${item.nature || 'N/A'}</td>
+                        <td>${item.total || 0}</td>
+                        <td>${item.percentage ? item.percentage.toFixed(2) + '%' : '0%'}</td>
+                    `;
+                    natureTableBody.appendChild(row);
+                });
+            } else {
+                natureTableBody.innerHTML = '<tr><td colspan="3">No data available</td></tr>';
+            }
+
+            // Populate Colony table (using ID: colony-summary-table)
+            const colonyTableBody = document.querySelector('#colony-summary-table tbody');
+            colonyTableBody.innerHTML = '';
+            
+            if (data.colony && data.colony.length > 0) {
+                data.colony.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${item.colony || 'N/A'}</td>
+                        <td>${item.total || 0}</td>
+                        <td>${item.percentage ? item.percentage.toFixed(2) + '%' : '0%'}</td>
+                    `;
+                    colonyTableBody.appendChild(row);
+                });
+            } else {
+                colonyTableBody.innerHTML = '<tr><td colspan="3">No data available</td></tr>';
+            }
+        }
+
+        // Update subtitle with selected year
+        function updateSubtitle(year) {
+            summarySubtitle.textContent = `${year} Annual Performance Overview`;
+        }
+            summarySubtitle.textContent = `YYYY Annual Performance Overview`;
+
+        // Optional: Auto-generate report on page load for current year
+        // fetchSummaryReport(currentYear);
+    });
+    
+    
+    // Print functionality for summary report
+    document.getElementById('print-summary-report').addEventListener('click', function () {
+        console.log(">>> Print button clicked");
+
+        // Get year and tables
+        const year = document.getElementById('yearPicker').value || new Date().getFullYear();
+        const colonyTable = document.getElementById('colony-summary-table').outerHTML;
+        const natureTable = document.getElementById('nature-summary-table').outerHTML;
+
+        // Create print overlay
+        const printOverlay = document.createElement('div');
+        printOverlay.id = 'print-overlay';
+        printOverlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            z-index: 10000;
+            padding: 30px;
+            overflow-y: auto;
+        `;
+
+        // Create print content
+        printOverlay.innerHTML = `
+            <div class="print-header" style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #000; padding-bottom: 15px;">
+                <h2 style="margin-bottom: 10px;">CMES (DP) HIT Taxila</h2>
+                <h3 style="margin-bottom: 10px;">GE DP</h3>
+                <h4 style="margin-bottom: 10px;">Summary Wise Report</h4>
+                <p style="font-size: 18px;">Year ${year}</p>
+            </div>
+            <div class="tables-container" style="display: flex; justify-content: space-between; gap: 30px;">
+                <div class="table-wrapper" style="width: 48%;">${colonyTable}</div>
+                <div class="table-wrapper" style="width: 48%;">${natureTable}</div>
+            </div>
+        `;
+
+        // Add print styles
+        const printStyle = document.createElement('style');
+        printStyle.innerHTML = `
+            #print-overlay table { width: 100%; border-collapse: collapse; margin-bottom: 25px; border: 2px solid #000; }
+            #print-overlay th, #print-overlay td { border: 1px solid #000; padding: 10px; text-align: center; }
+            #print-overlay th { background-color: #f0f0f0; font-weight: bold; }
+            @media print {
+                body * {
+                    visibility: hidden;
+                }
+                #print-overlay, #print-overlay * {
+                    visibility: visible;
+                }
+                #print-overlay {
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    width: 100%;
+                    padding: 0;
+                    margin: 0;
+                }
+            }
+        `;
+
+        // Add to document
+        document.head.appendChild(printStyle);
+        document.body.appendChild(printOverlay);
+
+        // Store original title
+        const originalTitle = document.title;
+        document.title = "Summary Wise Report - " + year;
+
+
+        // Clean up after printing
+        const cleanup = function() {
+            document.head.removeChild(printStyle);
+            document.body.removeChild(printOverlay);
+            document.title = originalTitle;
+            window.onafterprint = null;
+        };
+
+        // Set up afterprint event
+        window.onafterprint = cleanup;
+
+        // Also set a timeout as a fallback in case onafterprint doesn't fire
+        setTimeout(cleanup, 1000);
+    });
+
   </script>
 </body>
 </html>
