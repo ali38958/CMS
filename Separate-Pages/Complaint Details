@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SCMS - Complaint Details</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+      scrollbar-width: thin;
+      scroll-behavior: smooth;
+      scrollbar-color: rgb(138, 119, 119) transparent;
+    }
+
+    body {
+      background-color: #eef2f5;
+      padding-bottom: 40px;
+      overflow-x: hidden;
+    }
+
+    /* Header Styles */
+    header {
+      width: 100vw;
+      height: 60px;
+      background-color: rgb(136, 28, 28);
+      margin-top: 36px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 25px;
+      margin-bottom: 30px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .nav-bar {
+      width: 100vw;
+      background-color: rgb(136, 28, 28);
+      display: flex;
+      justify-content: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      position: relative;
+      z-index: 1;
+      margin-top: 40px;
+    }
+
+    .nav-container {
+      width: 100%;
+      max-width: 1500px;
+      display: flex;
+      margin-left: 90px;
+    }
+
+    .nav-item {
+      padding: 15px 25px;
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      position: relative;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-item:hover {
+      background-color: rgba(0,0,0,0.1);
+    }
+
+    .nav-item.active {
+      background-color: rgba(0,0,0,0.2);
+    }
+
+    .nav-item.active::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60%;
+      height: 3px;
+      background-color: white;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 2;
+    }
+
+    .logo .logo-image {
+      width: 130px;
+      height: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 5px;
+      background-color: #f4f4f4;
+      border-radius: 50%;
+    }
+
+    .logo .logo-image img {
+      border-radius: 50%;
+      width: 100%;
+      height: auto;
+    }
+
+    .logo h2 {
+      color: white;
+      font-size: 20px;
+      white-space: nowrap;
+    }
+
+    .user {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      color: white;
+    }
+
+    .user h2 {
+      font-size: 16px;
+      white-space: nowrap;
+    }
+
+    .logout-btn {
+      background-color: white;
+      color: rgb(136, 28, 28);
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s;
+      border: 1px solid white;
+    }
+
+    .logout-btn:hover {
+      background-color: #ddd;
+    }
+
+    .logout-btn:active {
+      border: 1px solid white;
+      background-color: rgb(136, 28, 28);
+      color: white;
+    }
+
+    .content {
+      width: 100%;
+      max-width: 1800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      margin-top: 20px;
+    }
+    
+    /* Variables */
+    :root {
+      --primary: rgb(136, 28, 28);
+      --secondary: #8c2f2f;
+      --accent: #4caf50;
+      --warning: #ff9800;
+      --danger: #f44336;
+      --light: #f8f9fa;
+      --dark: #212529;
+      --gray: #6c757d;
+      --card-bg: rgba(255, 255, 255, 0.95);
+      --nav-bg: rgba(255, 255, 255, 0.85);
+      --nav-active: rgba(136, 28, 28, 0.15);
+      --nav-hover: rgba(136, 28, 28, 0.08);
+      --success: #4caf50;
+    }
+
+    /* Complaint Details Layout */
+    .complaint-details-container {
+      display: flex;
+      gap: 30px;
+      min-height: 600px;
+    }
+    
+    .left-panel {
+      flex: 0 0 300px;
+      background: var(--card-bg);
+      border-radius: 18px;
+      padding: 25px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+    
+    .right-panel {
+      flex: 1;
+      background: var(--card-bg);
+      border-radius: 18px;
+      padding: 30px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .detail-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
+    
+    .detail-icon {
+      width: 40px;
+      height: 40px;
+      background-color: var(--primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 15px;
+      flex-shrink: 0;
+    }
+    
+    .detail-icon i {
+      color: white;
+      font-size: 18px;
+    }
+    
+    .detail-content {
+      flex: 1;
+    }
+    
+    .detail-label {
+      font-size: 14px;
+      color: var(--gray);
+      margin-bottom: 3px;
+    }
+    
+    .detail-value {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--dark);
+    }
+    
+    /* Right Panel Styles */
+    .complaint-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
+    
+    .complaint-id {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    
+    .priority-badge {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    
+    .priority-immediate {
+      background-color: #e53935;
+      color: white;
+    }
+    
+    .priority-urgent {
+      background-color: #ff9800;
+      color: white;
+    }
+    
+    .priority-routine {
+      background-color: #2196f3;
+      color: white;
+    }
+    
+    .priority-deferred {
+      background-color: #757575;
+      color: white;
+    }
+    
+    .address-section {
+      margin-bottom: 20px;
+    }
+    
+    .address-text {
+      font-size: 16px;
+      margin-bottom: 8px;
+      color: var(--dark);
+    }
+    
+    .status-badge {
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      display: inline-block;
+    }
+    
+    .status-in-progress {
+      background: #2196F3;
+      color: white;
+    }
+    
+    .status-completed {
+      background: #4CAF50;
+      color: white;
+    }
+    
+    .status-deffered {
+      background: #0f0f0f;
+      color: white;
+    }
+    
+    .status-un-assigned {
+      background: #F44336;
+      color: white;
+    }
+    
+    .contact-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
+    
+    .contact-info {
+      font-size: 16px;
+      color: var(--dark);
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .whatsapp-btn, .print-btn {
+      padding: 8px 15px;
+      border-radius: 6px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      border: none;
+      transition: all 0.3s;
+    }
+    
+    .whatsapp-btn {
+      background-color: #25D366;
+      color: white;
+    }
+    
+    .whatsapp-btn:hover {
+      background-color: #128C7E;
+    }
+    
+    .print-btn {
+      background-color: var(--primary);
+      color: white;
+    }
+    
+    .print-btn:hover {
+      background-color: var(--secondary);
+    }
+    
+    /* Navigation Tabs */
+    .detail-tabs {
+      display: flex;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    
+    .tab {
+      padding: 12px 20px;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--gray);
+      border-bottom: 3px solid transparent;
+      transition: all 0.3s;
+    }
+    
+    .tab.active {
+      color: var(--primary);
+      border-bottom: 3px solid var(--primary);
+    }
+    
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.4s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Form Styles */
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: var(--dark);
+    }
+    
+    .form-control {
+      width: 100%;
+      padding: 14px 18px;
+      border-radius: 12px;
+      border: 1px solid rgba(0,0,0,0.1);
+      background: rgba(248, 249, 250, 0.5);
+      font-size: 16px;
+      transition: all 0.3s;
+    }
+    
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(136, 28, 28, 0.2);
+    }
+    
+    textarea.form-control {
+      min-height: 120px;
+      resize: vertical;
+    }
+    
+    .checkbox-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .checkbox-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--primary);
+    }
+    
+    .btn {
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 6px 18px rgba(136, 28, 28, 0.2);
+    }
+    
+    .btn-primary:hover {
+      background: #a33a3a;
+      transform: translateY(-3px);
+      box-shadow: 0 8px 22px rgba(136, 28, 28, 0.3);
+    }
+    
+    .btn-primary:disabled {
+      background: var(--gray);
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    
+    /* Mark Complaint Section */
+    .mark-complaint-section {
+      text-align: center;
+      padding: 30px;
+      background-color: #f8f9fa;
+      border-radius: 12px;
+    }
+    
+    .mark-title {
+      font-size: 20px;
+      margin-bottom: 15px;
+      color: var(--primary);
+    }
+    
+    .mark-description {
+      margin-bottom: 25px;
+      color: var(--gray);
+    }
+    
+    /* Responsive Styles */
+    @media (max-width: 992px) {
+      .complaint-details-container {
+        flex-direction: column;
+      }
+      
+      .left-panel {
+        flex: 1;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .contact-section {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+      }
+      
+      .action-buttons {
+        width: 100%;
+        justify-content: space-between;
+      }
+      
+      .whatsapp-btn, .print-btn {
+        flex: 1;
+        justify-content: center;
+      }
+    }
+    
+    @media (max-width: 576px) {
+      .detail-tabs {
+        flex-direction: column;
+      }
+      
+      .tab {
+        width: 100%;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <div class="logo-image">
+        <img src="logo.jpg" alt="logo image">
+      </div>
+      <h2>MES CMS</h2>
+    </div>
+
+    <div class="user">
+      <h2>CH HAND</h2>
+      <button class="logout-btn">Logout</button>
+    </div>
+  </header>
+
+  <div class="nav-bar">
+    <div class="nav-container">
+      <a href="#" class="nav-item">
+        <i class="fas fa-chart-line"></i>
+        Dashboard
+      </a>
+      <a href="#" class="nav-item">
+        <i class="fas fa-ticket-alt"></i>
+        Complaints
+      </a>
+      <a href="all-users.html" class="nav-item">
+        <i class="fas fa-users"></i>
+        Users
+      </a>
+      <a href="#" class="nav-item">
+        <i class="fas fa-store"></i>
+        Store
+      </a>
+      <a href="#" class="nav-item">
+        <i class="fas fa-boxes"></i>
+        Stock
+      </a>
+      <a href="#" class="nav-item">
+        <i class="fas fa-file-alt"></i>
+        Reporting
+      </a>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="complaint-details-container">
+      <!-- Left Panel -->
+      <div class="left-panel">
+        <div class="detail-item">
+          <div class="detail-icon">
+            <i class="fas fa-user"></i>
+          </div>
+          <div class="detail-content">
+            <div class="detail-label">Occupant</div>
+            <div class="detail-value">Dear User</div>
+          </div>
+        </div>
+        
+        <div class="detail-item">
+          <div class="detail-icon">
+            <i class="fas fa-tools"></i>
+          </div>
+          <div class="detail-content">
+            <div class="detail-label">Skill Man</div>
+            <div class="detail-value">John Doe (0333-1234567)</div>
+          </div>
+        </div>
+        
+        <div class="detail-item">
+          <div class="detail-icon">
+            <i class="fas fa-rocket"></i>
+          </div>
+          <div class="detail-content">
+            <div class="detail-label">Launched By</div>
+            <div class="detail-value">Admin User</div>
+          </div>
+        </div>
+        
+        <div class="detail-item">
+          <div class="detail-icon">
+            <i class="fas fa-clock"></i>
+          </div>
+          <div class="detail-content">
+            <div class="detail-label">Initiate Time</div>
+            <div class="detail-value">2025-08-15 20:48:17</div>
+          </div>
+        </div>
+        
+        <div class="detail-item">
+          <div class="detail-icon">
+            <i class="fas fa-user-clock"></i>
+          </div>
+          <div class="detail-content">
+            <div class="detail-label">Assign Time</div>
+            <div class="detail-value">2025-08-15 21:15:42</div>
+          </div>
+        </div>
+        
+        <div class="detail-item">
+          <div class="detail-icon">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <div class="detail-content">
+            <div class="detail-label">Completion Time</div>
+            <div class="detail-value">2025-08-16 09:30:15</div>
+          </div>
+        </div>
+        
+        <div class="detail-item">
+          <div class="detail-icon">
+            <i class="fas fa-star"></i>
+          </div>
+          <div class="detail-content">
+            <div class="detail-label">Avg Rating</div>
+            <div class="detail-value">
+              <i class="fas fa-star" style="color: gold;"></i>
+              <i class="fas fa-star" style="color: gold;"></i>
+              <i class="fas fa-star" style="color: gold;"></i>
+              <i class="fas fa-star" style="color: gold;"></i>
+              <i class="fas fa-star-half-alt" style="color: gold;"></i>
+              4.5
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Right Panel -->
+      <div class="right-panel">
+        <div class="complaint-header">
+          <h1 class="complaint-id">Complaint # HT8251-1001</h1>
+          <span class="priority-badge priority-urgent">Urgent</span>
+        </div>
+        
+        <div class="address-section">
+          <p class="address-text">GE DP -> Tanveer Naqvi -> Apartment 1, Type Sldrs Qtrs, Building S-III/54</p>
+          <span class="status-badge status-in-progress">Ongoing</span>
+        </div>
+        
+        <div class="contact-section">
+          <div class="contact-info">Contact : 03335868556</div>
+          <div class="action-buttons">
+            <button class="whatsapp-btn">
+              <i class="fab fa-whatsapp"></i> Whatsapp
+            </button>
+            <button class="print-btn">
+              <i class="fas fa-print"></i> Print
+            </button>
+          </div>
+        </div>
+        
+        <div class="detail-tabs">
+          <div class="tab active" data-tab="complaint-detail">Complaint Detail</div>
+          <div class="tab" data-tab="mark-complaint">Mark Complaint</div>
+        </div>
+        
+        <div class="tab-content active" id="complaint-detail">
+          <h3>Update Complaint</h3>
+          
+          <div class="form-group">
+            <label>Select Service Providers</label>
+            <div class="checkbox-group">
+              <div class="checkbox-item">
+                <input type="checkbox" id="customer" checked>
+                <label for="customer">Customer (Tanveer Naqvi)</label>
+              </div>
+              <div class="checkbox-item">
+                <input type="checkbox" id="skillman" checked>
+                <label for="skillman">Skillman (John Doe)</label>
+              </div>
+              <div class="checkbox-item">
+                <input type="checkbox" id="building">
+                <label for="building">Building (S-III/54)</label>
+              </div>
+              <div class="checkbox-item">
+                <input type="checkbox" id="colony">
+                <label for="colony">Colony (GE DP)</label>
+              </div>
+              <div class="checkbox-item">
+                <input type="checkbox" id="sector">
+                <label for="sector">Sector (Sector 5)</label>
+              </div>
+              <div class="checkbox-item">
+                <input type="checkbox" id="area">
+                <label for="area">Area (North Area)</label>
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="message">Message</label>
+            <textarea class="form-control" id="message" placeholder="Enter your message here..."></textarea>
+          </div>
+          
+          <button class="btn btn-primary">
+            <i class="fas fa-paper-plane"></i> Submit
+          </button>
+        </div>
+        
+        <div class="tab-content" id="mark-complaint">
+          <div class="mark-complaint-section">
+            <h3 class="mark-title">Mark Complaint as Complete</h3>
+            <p class="mark-description">You can mark this complaint as complete since it's currently in progress.</p>
+            <button class="btn btn-primary">
+              <i class="fas fa-check-circle"></i> Mark as Complete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Tab switching functionality
+      const tabs = document.querySelectorAll('.tab');
+      const tabContents = document.querySelectorAll('.tab-content');
+      
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          const tabId = tab.getAttribute('data-tab');
+          
+          // Remove active class from all tabs and contents
+          tabs.forEach(t => t.classList.remove('active'));
+          tabContents.forEach(c => c.classList.remove('active'));
+          
+          // Add active class to clicked tab and corresponding content
+          tab.classList.add('active');
+          document.getElementById(tabId).classList.add('active');
+        });
+      });
+      
+      // Print button functionality
+      document.querySelector('.print-btn').addEventListener('click', function() {
+        alert('Print functionality would be implemented here');
+      });
+      
+      // WhatsApp button functionality
+      document.querySelector('.whatsapp-btn').addEventListener('click', function() {
+        alert('WhatsApp functionality would be implemented here');
+      });
+      
+      // Submit button functionality
+      document.querySelector('.btn-primary').addEventListener('click', function() {
+        alert('Complaint update submitted successfully');
+      });
+    });
+  </script>
+</body>
+</html>
