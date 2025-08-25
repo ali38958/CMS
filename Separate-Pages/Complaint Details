@@ -264,8 +264,9 @@
     .priority-badge {
       padding: 6px 12px;
       border-radius: 20px;
-      font-weight: 600;
-      font-size: 14px;
+      font-weight: 700;
+      /* Changed from 24px to 18px */
+      font-size: 18px;
     }
     
     .priority-immediate {
@@ -487,6 +488,30 @@
       box-shadow: 0 8px 22px rgba(136, 28, 28, 0.3);
     }
     
+    .btn-secondary {
+      background: var(--secondary);
+      color: white;
+      box-shadow: 0 6px 18px rgba(140, 47, 47, 0.2);
+    }
+    
+    .btn-secondary:hover {
+      background: #7a2525;
+      transform: translateY(-3px);
+      box-shadow: 0 8px 22px rgba(140, 47, 47, 0.3);
+    }
+    
+    .btn-warning {
+      background: var(--warning);
+      color: white;
+      box-shadow: 0 6px 18px rgba(255, 152, 0, 0.2);
+    }
+    
+    .btn-warning:hover {
+      background: #e68900;
+      transform: translateY(-3px);
+      box-shadow: 0 8px 22px rgba(255, 152, 0, 0.3);
+    }
+    
     .btn-primary:disabled {
       background: var(--gray);
       cursor: not-allowed;
@@ -511,6 +536,13 @@
     .mark-description {
       margin-bottom: 25px;
       color: var(--gray);
+    }
+    
+    .mark-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      flex-wrap: wrap;
     }
     
     /* Responsive Styles */
@@ -539,6 +571,14 @@
       .whatsapp-btn, .print-btn {
         flex: 1;
         justify-content: center;
+      }
+      
+      .mark-buttons {
+        flex-direction: column;
+      }
+      
+      .mark-buttons .btn {
+        width: 100%;
       }
     }
     
@@ -667,7 +707,7 @@
             <i class="fas fa-star"></i>
           </div>
           <div class="detail-content">
-            <div class="detail-label">Avg Rating</div>
+            <div class="detail-label">Rating</div>
             <div class="detail-value">
               <i class="fas fa-star" style="color: gold;"></i>
               <i class="fas fa-star" style="color: gold;"></i>
@@ -754,11 +794,22 @@
         
         <div class="tab-content" id="mark-complaint">
           <div class="mark-complaint-section">
-            <h3 class="mark-title">Mark Complaint as Complete</h3>
-            <p class="mark-description">You can mark this complaint as complete since it's currently in progress.</p>
-            <button class="btn btn-primary">
-              <i class="fas fa-check-circle"></i> Mark as Complete
-            </button>
+            <h3 class="mark-title">Mark Complaint Status</h3>
+            <p class="mark-description">Select the appropriate status for this complaint.</p>
+            
+            <div class="mark-buttons">
+              <button class="btn btn-primary">
+                <i class="fas fa-check-circle"></i> Complete
+              </button>
+              
+              <button class="btn btn-secondary">
+                <i class="fas fa-calendar-times"></i> Deferred
+              </button>
+              
+              <button class="btn btn-warning">
+                <i class="fas fa-store-slash"></i> Complaint (Store Not Available)
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -798,6 +849,14 @@
       // Submit button functionality
       document.querySelector('.btn-primary').addEventListener('click', function() {
         alert('Complaint update submitted successfully');
+      });
+      
+      // Mark complaint buttons functionality
+      document.querySelectorAll('.mark-buttons .btn').forEach(button => {
+        button.addEventListener('click', function() {
+          const status = this.textContent.trim();
+          alert(`Complaint marked as: ${status}`);
+        });
       });
     });
   </script>
