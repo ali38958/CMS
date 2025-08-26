@@ -86,6 +86,7 @@
       scrollbar-width: thin;
       scroll-behavior: smooth;
       scrollbar-color: rgb(138, 119, 119) transparent;
+      user-select: none;
     }
 
     body {
@@ -1640,6 +1641,16 @@
       }, duration);
     }
 
+  // Add this global variable at the top of your script to store current filters
+  let currentFilters = {
+    receiver: '',
+    colony: '',
+    category: '',
+    status: '',
+    search: ''
+  };
+
+
     const SERVER_URL = 'http://localhost:3000';
     
   document.addEventListener('DOMContentLoaded', function() {
@@ -1714,17 +1725,15 @@
         let status = statusFilter.value;
 
         searchInput.value = ''; // Clear search input
-        let filter = {
+        currentFilters = {
           receiver: receiver || '',
           colony: colony || '',
           category: category || '',
           status: status || '',
           search: searchInput.value.trim() || ''
         }
-
-
         currentPage = 1; // Reset to first page on filter change
-        fetchComplaints(filter);
+        fetchComplaints();
       });
       
       // Initialize the table
@@ -1737,23 +1746,17 @@
         fetchComplaints();
       });
       
-      searchButton.addEventListener('click', function() {
-        let receiver = receiverFilter.value;
-        let colony = colonyFilter.value;
-        let category = categoryFilter.value;
-        let status = statusFilter.value;
+  searchButton.addEventListener('click', function() {
+    // Update currentFilters with the current values
+    currentFilters.receiver = receiverFilter.value;
+    currentFilters.colony = colonyFilter.value;
+    currentFilters.category = categoryFilter.value;
+    currentFilters.status = statusFilter.value;
+    currentFilters.search = searchInput.value.trim();
 
-        let filter = {
-          receiver: receiver || '',
-          colony: colony || '',
-          category: category || '',
-          status: status || '',
-          search: searchInput.value.trim() || ''
-        }
-
-        currentPage = 1; // Reset to first page on filter change
-        fetchComplaints(filter);
-      });
+    currentPage = 1; // Reset to first page on filter change
+    fetchComplaints();
+  });
       
       // Handle Enter key in search input
       searchInput.addEventListener('keyup', function(e) {
@@ -1763,7 +1766,7 @@
           let category = categoryFilter.value;
           let status = statusFilter.value;
  
-          let filter = {
+          currentFilters = {
             receiver: receiver || '',
             colony: colony || '',
             category: category || '',
@@ -1779,80 +1782,77 @@
         }
       });
       
-      document.addEventListener('click', function(e) {
-        // Handle pagination buttons
-        if (e.target.classList.contains('page-btn')) {
-          if (e.target.classList.contains('prev-btn')) {
-            if (currentPage > 1) {
-              currentPage--;
-              fetchComplaints();
-            }
-          } else if (e.target.classList.contains('next-btn')) {
-            if (currentPage < Math.ceil(totalItems / itemsPerPage)) {
-              currentPage++;
-              fetchComplaints();
-            }
-          } else if (!isNaN(parseInt(e.target.textContent))) {
-            currentPage = parseInt(e.target.textContent);
-            fetchComplaints();
-          }
+  document.addEventListener('click', function(e) {
+    // Handle pagination buttons
+    if (e.target.classList.contains('page-btn')) {
+      if (e.target.classList.contains('prev-btn')) {
+        if (currentPage > 1) {
+          currentPage--;
+          fetchComplaints(); // This will now use currentFilters
         }
-      });
+      } else if (e.target.classList.contains('next-btn')) {
+        if (currentPage < Math.ceil(totalItems / itemsPerPage)) {
+          currentPage++;
+          fetchComplaints(); // This will now use currentFilters
+        }
+      } else if (!isNaN(parseInt(e.target.textContent))) {
+        currentPage = parseInt(e.target.textContent);
+        fetchComplaints(); // This will now use currentFilters
+      }
+    }
+  });
       
       
 // Store last applied filters
 let lastAppliedFilters = null;
 
 // Fetch complaints from API
-function fetchComplaints(filters) {
-  const authToken = localStorage.getItem('authToken');
-    // Store the filters for pagination changes
-    if (filters) {
-        lastAppliedFilters = filters;
-    }
 
+  // Modify the fetchComplaints function to always use currentFilters
+  function fetchComplaints() {
+    const authToken = localStorage.getItem('authToken');
+    
+    // Always use the currentFilters
     const url = new URL(SERVER_URL+'/api/complaints');
     url.searchParams.append('page', currentPage);
     url.searchParams.append('pageSize', itemsPerPage);
     
     // Add search term if it exists
-    if (filters?.search) {
-        url.searchParams.append('search', filters.search);
+    if (currentFilters.search) {
+      url.searchParams.append('search', currentFilters.search);
     }
     
     // Add filter parameters if they exist
-    if (filters) {
-        if (filters.receiver) url.searchParams.append('receiver', filters.receiver);
-        if (filters.colony) url.searchParams.append('colony', filters.colony);
-        if (filters.category) url.searchParams.append('category', filters.category);
-        if (filters.status) url.searchParams.append('status', filters.status);
-    }
+    if (currentFilters.receiver) url.searchParams.append('receiver', currentFilters.receiver);
+    if (currentFilters.colony) url.searchParams.append('colony', currentFilters.colony);
+    if (currentFilters.category) url.searchParams.append('category', currentFilters.category);
+    if (currentFilters.status) url.searchParams.append('status', currentFilters.status);
 
     fetch(url, {
-                headers: {
-                    'Authorization': `Bearer ${authToken}`,
-                    'Content-Type': 'application/json'
-                }})
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                allComplaints = data.data;
-                totalItems = data.pagination.total;
-                renderTable();
-                updatePagination();
-            } else {
-                throw new Error(data.message || 'Failed to fetch complaints');
-                showNotification(data.message || 'Failed to fetch complaints', 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            tableBody.innerHTML = `<tr><td colspan="12" style="text-align: center; color: red;">Error loading data: ${error.message}</td></tr>`;
-            paginationInfo.textContent = 'Error loading data';
-            showNotification('Erro loading data', 'error')
-        });
-        
-}
+      headers: {
+        'Authorization': `Bearer ${authToken}`,
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        allComplaints = data.data;
+        totalItems = data.pagination.total;
+        renderTable();
+        updatePagination();
+      } else {
+        throw new Error(data.message || 'Failed to fetch complaints');
+        showNotification(data.message || 'Failed to fetch complaints', 'error');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      tableBody.innerHTML = `<tr><td colspan="12" style="text-align: center; color: red;">Error loading data: ${error.message}</td></tr>`;
+      paginationInfo.textContent = 'Error loading data';
+      showNotification('Error loading data', 'error')
+    });
+  }
 
 document.addEventListener('click', function(e) {
     // Handle pagination buttons
@@ -1985,7 +1985,7 @@ document.addEventListener('click', function(e) {
         // Previous button
         const prevBtn = document.createElement('button');
         prevBtn.className = `page-btn prev-btn ${currentPage === 1 ? 'disabled' : ''}`;
-        prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+        prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i> Prev';
         paginationControls.appendChild(prevBtn);
         
         // Page buttons
@@ -2035,11 +2035,10 @@ document.addEventListener('click', function(e) {
         // Next button
         const nextBtn = document.createElement('button');
         nextBtn.className = `page-btn next-btn ${currentPage === totalPages ? 'disabled' : ''}`;
-        nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+        nextBtn.innerHTML = 'Next <i class="fas fa-chevron-right"></i>';
         paginationControls.appendChild(nextBtn);
       }
       
-
 
       // Initialize event listeners for table rows
       function initializeRowEventListeners() {
@@ -2095,8 +2094,6 @@ document.addEventListener('click', function(e) {
       }
       
     });
-
-    
 
 
     function markComplaintCompleted(complaintId, row) {
@@ -2212,7 +2209,6 @@ document.addEventListener('click', function(e) {
   }
 
 
-
 // JS for Skillman Modal
 // Skillman Assignment Modal Functionality
 document.addEventListener('DOMContentLoaded', function() {
@@ -2274,47 +2270,52 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
   
+
   // Fetch complaints from API
+  // Modify the fetchComplaints function to always use currentFilters
   function fetchComplaints() {
-    try {
-      const authToken = localStorage.getItem('authToken');
-      showNotification('Loading complaints...', 'info', 2000);
-      const searchTerm = searchInput.value.trim();
-      const url = new URL(`${SERVER_URL}/api/complaints`);
-      url.searchParams.append('page', currentPage);
-      url.searchParams.append('pageSize', itemsPerPage);
-      
-      if (searchTerm) {
-        url.searchParams.append('search', searchTerm);
+    const authToken = localStorage.getItem('authToken');
+    
+    // Always use the currentFilters
+    const url = new URL(SERVER_URL+'/api/complaints');
+    url.searchParams.append('page', currentPage);
+    url.searchParams.append('pageSize', itemsPerPage);
+    
+    // Add search term if it exists
+    if (currentFilters.search) {
+      url.searchParams.append('search', currentFilters.search);
+    }
+    
+    // Add filter parameters if they exist
+    if (currentFilters.receiver) url.searchParams.append('receiver', currentFilters.receiver);
+    if (currentFilters.colony) url.searchParams.append('colony', currentFilters.colony);
+    if (currentFilters.category) url.searchParams.append('category', currentFilters.category);
+    if (currentFilters.status) url.searchParams.append('status', currentFilters.status);
+
+    fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${authToken}`,
+        'Content-Type': 'application/json'
       }
-      
-      fetch(url, {
-                headers: {
-                    'Authorization': `Bearer ${authToken}`,
-                    'Content-Type': 'application/json'
-                }})
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            allComplaints = data.data;
-            totalItems = data.pagination.total;
-            renderTable();
-            updatePagination();
-            showNotification('Successfully loaded Complaints', 'success');
-          } else {
-            throw new Error(data.message || 'Failed to fetch complaints');
-            showNotification(data.message || 'Failed to fetch complaints', 'error');
-          }
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          tableBody.innerHTML = `<tr><td colspan="12" style="text-align: center; color: red;">Error loading data: ${error.message}</td></tr>`;
-          paginationInfo.textContent = 'Error loading data';
-          showNotification('Error loading Data', 'error');
-        });
-    } catch (error) {
-      showNotification('Error: '+ error, 'error')
-    } 
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        allComplaints = data.data;
+        totalItems = data.pagination.total;
+        renderTable();
+        updatePagination();
+      } else {
+        throw new Error(data.message || 'Failed to fetch complaints');
+        showNotification(data.message || 'Failed to fetch complaints', 'error');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      tableBody.innerHTML = `<tr><td colspan="12" style="text-align: center; color: red;">Error loading data: ${error.message}</td></tr>`;
+      paginationInfo.textContent = 'Error loading data';
+      showNotification('Error loading data', 'error')
+    });
   }
   
   // Render the table with complaint data
@@ -2362,8 +2363,6 @@ document.addEventListener('DOMContentLoaded', function() {
           actionOptions = `
             <a href="#" class="complaint-details-btn"><i class="fas fa-info-circle"></i> Complaint Details</a>
             <a href="#" class="assign-skillman-btn"><i class="fas fa-user-plus"></i> Assign Skillman</a>
-            <a href="#" class="mark-complaint-btn"><i class="fas fa-check"></i> Mark Complaint</a>
-            <a href="#" class="print-complaint-btn"><i class="fas fa-print"></i> Print Complaint</a>
           `;
           break;
         case 'in-progress':
@@ -2446,73 +2445,74 @@ function initializeActionDropdowns() {
   });
 }
   
-  // Update pagination controls
-  function updatePagination() {
-    const totalPages = Math.ceil(totalItems / itemsPerPage);
-    const startItem = (currentPage - 1) * itemsPerPage + 1;
-    const endItem = Math.min(currentPage * itemsPerPage, totalItems);
-    
-    paginationInfo.textContent = `Showing ${startItem} to ${endItem} of ${totalItems} entries`;
-    
-    // Clear existing pagination buttons
-    paginationControls.innerHTML = '';
-    
-    // Previous button
-    const prevBtn = document.createElement('button');
-    prevBtn.className = `page-btn prev-btn ${currentPage === 1 ? 'disabled' : ''}`;
-    prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i> Prev';
-    paginationControls.appendChild(prevBtn);
-    
-    // Page buttons
-    const maxVisiblePages = 5;
-    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-    
-    if (endPage - startPage + 1 < maxVisiblePages) {
-      startPage = Math.max(1, endPage - maxVisiblePages + 1);
-    }
-    
-    if (startPage > 1) {
-      const firstBtn = document.createElement('button');
-      firstBtn.className = 'page-btn';
-      firstBtn.textContent = '1';
-      paginationControls.appendChild(firstBtn);
-      
-      if (startPage > 2) {
-        const ellipsis = document.createElement('span');
-        ellipsis.textContent = '...';
-        ellipsis.style.padding = '8px 12px';
-        paginationControls.appendChild(ellipsis);
+
+      // Update pagination controls
+      function updatePagination() {
+        const totalPages = Math.ceil(totalItems / itemsPerPage);
+        const startItem = (currentPage - 1) * itemsPerPage + 1;
+        const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+        
+        paginationInfo.textContent = `Showing ${startItem} to ${endItem} of ${totalItems} entries`;
+        
+        // Clear existing pagination buttons
+        paginationControls.innerHTML = '';
+        
+        // Previous button
+        const prevBtn = document.createElement('button');
+        prevBtn.className = `page-btn prev-btn ${currentPage === 1 ? 'disabled' : ''}`;
+        prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i> Prev';
+        paginationControls.appendChild(prevBtn);
+        
+        // Page buttons
+        const maxVisiblePages = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+        
+        if (endPage - startPage + 1 < maxVisiblePages) {
+          startPage = Math.max(1, endPage - maxVisiblePages + 1);
+        }
+        
+        if (startPage > 1) {
+          const firstBtn = document.createElement('button');
+          firstBtn.className = 'page-btn';
+          firstBtn.textContent = '1';
+          paginationControls.appendChild(firstBtn);
+          
+          if (startPage > 2) {
+            const ellipsis = document.createElement('span');
+            ellipsis.textContent = '...';
+            ellipsis.style.padding = '8px 12px';
+            paginationControls.appendChild(ellipsis);
+          }
+        }
+        
+        for (let i = startPage; i <= endPage; i++) {
+          const pageBtn = document.createElement('button');
+          pageBtn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+          pageBtn.textContent = i;
+          paginationControls.appendChild(pageBtn);
+        }
+        
+        if (endPage < totalPages) {
+          if (endPage < totalPages - 1) {
+            const ellipsis = document.createElement('span');
+            ellipsis.textContent = '...';
+            ellipsis.style.padding = '8px 12px';
+            paginationControls.appendChild(ellipsis);
+          }
+          
+          const lastBtn = document.createElement('button');
+          lastBtn.className = 'page-btn';
+          lastBtn.textContent = totalPages;
+          paginationControls.appendChild(lastBtn);
+        }
+        
+        // Next button
+        const nextBtn = document.createElement('button');
+        nextBtn.className = `page-btn next-btn ${currentPage === totalPages ? 'disabled' : ''}`;
+        nextBtn.innerHTML = 'Next <i class="fas fa-chevron-right"></i>';
+        paginationControls.appendChild(nextBtn);
       }
-    }
-    
-    for (let i = startPage; i <= endPage; i++) {
-      const pageBtn = document.createElement('button');
-      pageBtn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
-      pageBtn.textContent = i;
-      paginationControls.appendChild(pageBtn);
-    }
-    
-    if (endPage < totalPages) {
-      if (endPage < totalPages - 1) {
-        const ellipsis = document.createElement('span');
-        ellipsis.textContent = '...';
-        ellipsis.style.padding = '8px 12px';
-        paginationControls.appendChild(ellipsis);
-      }
-      
-      const lastBtn = document.createElement('button');
-      lastBtn.className = 'page-btn';
-      lastBtn.textContent = totalPages;
-      paginationControls.appendChild(lastBtn);
-    }
-    
-    // Next button
-    const nextBtn = document.createElement('button');
-    nextBtn.className = `page-btn next-btn ${currentPage === totalPages ? 'disabled' : ''}`;
-    nextBtn.innerHTML = 'Next <i class="fas fa-chevron-right"></i>';
-    paginationControls.appendChild(nextBtn);
-  }
   
   // Initialize event listeners for table rows
   function initializeRowEventListeners() {
@@ -2798,41 +2798,7 @@ async function fetchSkillmenForModal() {
     renderHelperDropdown();
   }
   
-  function addHelperSkillman(skillman) {
-    if (!selectedHelpers.some(h => h.id === skillman.id)) {
-      selectedHelpers.push(skillman);
-      renderHelperTags();
-    }
-  }
   
-  function removeHelperSkillman(skillmanId) {
-    selectedHelpers = selectedHelpers.filter(h => h.id !== skillmanId);
-    renderHelperTags();
-  }
-  
-  function renderHelperTags() {
-    helperTags.innerHTML = '';
-    
-    if (selectedHelpers.length === 0) {
-      helperTags.innerHTML = '<div class="empty-helpers">No helpers added yet</div>';
-    } else {
-      selectedHelpers.forEach(skillman => {
-        const tag = document.createElement('div');
-        tag.className = 'helper-tag';
-        tag.innerHTML = `
-          ${skillman.name} (${skillman.phone}), ${skillman.location}, ${skillman.skill}
-          <button type="button" data-id="${skillman.id}">
-            <i class="fas fa-times"></i>
-          </button>
-        `;
-        tag.querySelector('button').addEventListener('click', (e) => {
-          e.stopPropagation();
-          removeHelperSkillman(skillman.id);
-        });
-        helperTags.appendChild(tag);
-      });
-    }
-  }
   
   // Dropdown toggle function
   function toggleDropdown(dropdown) {
@@ -3083,7 +3049,6 @@ async function fetchPreviousSkillman(complaintId) {
 }
 
 
-
 // New function to fetch current skillman
 // Update the fetchCurrentSkillman function
 function fetchCurrentSkillman(complaintId) {
@@ -3123,7 +3088,6 @@ function selectPrimarySkillman(skillman) {
   document.getElementById('primarySkillmanText').textContent = 
     `${skillman.name} (${skillman.phone}), ${skillman.location}, ${skillman.skill}`;
 }
-
 
 
 document.getElementById('assignBtn').addEventListener('click', async () => {
@@ -3194,16 +3158,12 @@ function closeModal() {
 document.getElementById('closeBtn').addEventListener('click', closeModal);
 document.getElementById('cancelBtn').addEventListener('click', closeModal);
 
-
-
-
   
   // Initialize the modal
   initModal();
   
   // Expose to global scope for button click handlers
   window.openSkillmanModal = openSkillmanModal;
-
 
 
       fetchFilterOptions();
@@ -3234,11 +3194,6 @@ function initializeRowEventListeners() {
 // End of Skillman Modal JS
 
 
-
-
-
-
-
 function initializeActionButtonListeners(row) {
   const dropdownBtn = row.querySelector('.action-dropdown-btn');
   const dropdownContent = row.querySelector('.action-dropdown-content');
@@ -3258,14 +3213,13 @@ function initializeActionButtonListeners(row) {
   }
 }
 
+
 // Hide dropdown when clicking outside
 document.addEventListener('click', function() {
   document.querySelectorAll('.action-dropdown-content').forEach(dc => {
     dc.style.display = 'none';
   });
 });
-
-
 
 
 document.querySelectorAll('.priority-box').forEach(box => {
@@ -3292,21 +3246,11 @@ document.querySelectorAll('.priority-box').forEach(box => {
 });
 
 
-
 // Add a negative offset (e.g., -20px) to move it a little left
 if (typeof globalDropdown !== 'undefined' && globalDropdown) {
   globalDropdown.style.left = `${rect.left - 20}px`;
   globalDropdown.style.top = `${rect.top - 40}px`;
 }
-
-
-
-
-
-
-
-
-
 
 
 // Function to initialize click-based action dropdowns
@@ -3348,9 +3292,6 @@ function initializeActionDropdowns() {
 
 // Call this function after rendering your table
 initializeActionDropdowns();
-
-
-
 
 
 // Add this after your fetchComplaints() function
@@ -3419,9 +3360,6 @@ function populateDropdown(dropdownId, options) {
     dropdown.appendChild(opt);
   });
 }
-  
-
-
   </script>
 </body>
 </html>
