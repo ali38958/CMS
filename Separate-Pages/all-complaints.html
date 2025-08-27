@@ -2092,8 +2092,53 @@ document.addEventListener('click', function(e) {
           });
         });
       }
+
+
+
+
+
       
     });
+
+
+// Add this function to handle the complaint details click
+async function handleComplaintDetailsClick(complaintId) {
+  try {
+    const authToken = localStorage.getItem('authToken');
+    
+    // Show loading state if needed
+    showNotification('Loading complaint details...', 'info', 2000);
+    
+    // Send complaint ID to encryption API
+    const response = await fetch(`${SERVER_URL}/api/encrypt-id`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${authToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ complaint_id: complaintId })
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to encrypt complaint ID');
+    }
+    
+    const data = await response.json();
+    
+    if (data.success && data.encrypted_id) {
+      // Redirect to complaint details page with encrypted ID
+      showNotification('Navigating to complaint details...', 'success', 2000);
+      window.location.href = `complaint-details.html?${data.encrypted_id}`;
+      console.log(`Redirecting to complaint-details?${data.encrypted_id}`);
+
+    } else {
+      throw new Error(data.message || 'Failed to encrypt ID');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    showNotification('Failed to open complaint details: ' + error.message, 'error', 3000);
+  }
+}
 
 
     function markComplaintCompleted(complaintId, row) {
@@ -2171,35 +2216,63 @@ document.addEventListener('click', function(e) {
     }
 
 
-  function initializeActionButtonListeners(row) {
-    // Complaint details button
-    row.querySelector('.complaint-details-btn')?.addEventListener('click', function(e) {
-      e.preventDefault();
-      const complaintId = row.dataset.complaintId;
-      console.log(`Viewing details for complaint #${complaintId}`);
-      // Implement complaint details view
-    });
+// Also update the initializeActionButtonListeners function
+function initializeActionButtonListeners(row) {
+  const complaintId = row.dataset.complaintId;
+  
+  // Complaint details button
+  row.querySelector('.complaint-details-btn')?.addEventListener('click', function(e) {
+    e.preventDefault();
+    handleComplaintDetailsClick(complaintId);
+  });
 
-    // Print complaint button
-    row.querySelector('.print-complaint-btn')?.addEventListener('click', function(e) {
-      e.preventDefault();
-      const complaintId = row.dataset.complaintId;
-      console.log(`Printing complaint #${complaintId}`);
-      // Implement print functionality
-    });
-  }
+  // Print complaint button
+  row.querySelector('.print-complaint-btn')?.addEventListener('click', function(e) {
+    e.preventDefault();
+    console.log(`Printing complaint #${complaintId}`);
+    // Implement print functionality
+  });
+}
 
 
+  // Initialize event listeners for table rows
   function initializeRowEventListeners() {
-    // Add event listeners to all rows
     document.querySelectorAll('tr[data-complaint-id]').forEach(row => {
-      initializeActionButtonListeners(row);
+      const complaintId = row.dataset.complaintId;
 
-
+      // Complaint details button - new implementation
+      row.querySelector('.complaint-details-btn')?.addEventListener('click', function(e) {
+        e.preventDefault();
+        handleComplaintDetailsClick(complaintId);
+      });
+      /*/ Complaint details button
+      row.querySelector('.complaint-details-btn')?.addEventListener('click', function(e) {
+        e.preventDefault();
+        console.log(`Viewing details for complaint #${complaintId}`);
+      });*/
+      
+      // Assign Skillman button
+      row.querySelector('.assign-skillman-btn')?.addEventListener('click', function(e) {
+        e.preventDefault();
+        openSkillmanModal(complaintId);
+      });
+      
+      // Change Skillman button
+      row.querySelector('.change-skillman-btn')?.addEventListener('click', function(e) {
+        e.preventDefault();
+        openSkillmanModal(complaintId);
+      });
+      
+      
+      // Print complaint button
+      row.querySelector('.print-complaint-btn')?.addEventListener('click', function(e) {
+        e.preventDefault();
+        console.log(`Printing complaint #${complaintId}`);
+      });
+      
       // Mark complaint button
       row.querySelector('.mark-complaint-btn')?.addEventListener('click', function(e) {
         e.preventDefault();
-        const complaintId = row.dataset.complaintId;
         const confirmed = confirm(`Do you want to mark the complaint #${complaintId} as 'Completed'? This action cannot be undone.`);
         if (confirmed) {
           markComplaintCompleted(complaintId, row);
@@ -2519,6 +2592,17 @@ function initializeActionDropdowns() {
     document.querySelectorAll('tr[data-complaint-id]').forEach(row => {
       const complaintId = row.dataset.complaintId;
       
+      // Complaint details button - new implementation
+      row.querySelector('.complaint-details-btn')?.addEventListener('click', function(e) {
+        e.preventDefault();
+        handleComplaintDetailsClick(complaintId);
+      });
+      /*/ Complaint details button
+      row.querySelector('.complaint-details-btn')?.addEventListener('click', function(e) {
+        e.preventDefault();
+        console.log(`Viewing details for complaint #${complaintId}`);
+      });*/
+      
       // Assign Skillman button
       row.querySelector('.assign-skillman-btn')?.addEventListener('click', function(e) {
         e.preventDefault();
@@ -2531,11 +2615,6 @@ function initializeActionDropdowns() {
         openSkillmanModal(complaintId);
       });
       
-      // Complaint details button
-      row.querySelector('.complaint-details-btn')?.addEventListener('click', function(e) {
-        e.preventDefault();
-        console.log(`Viewing details for complaint #${complaintId}`);
-      });
       
       // Print complaint button
       row.querySelector('.print-complaint-btn')?.addEventListener('click', function(e) {
