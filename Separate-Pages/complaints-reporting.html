@@ -45,6 +45,7 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
 
+
     .nav-bar {
       width: 100vw;
       background-color: rgb(136, 28, 28);
@@ -77,6 +78,8 @@
 
     .nav-item:hover {
       background-color: rgba(0,0,0,0.1);
+      text-decoration: none;
+      color: white;
     }
 
     .nav-item.active {
@@ -134,6 +137,8 @@
     .user h2 {
       font-size: 16px;
       white-space: nowrap;
+      margin-top: auto;
+      margin-bottom: auto;
     }
 
     .logout-btn {
@@ -388,39 +393,39 @@
     }
     
     /* Radio Button Styles */
-.report-type {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  margin-bottom: 25px;
-}
+    .report-type {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 25px;
+    }
 
-.report-option {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 15px 25px;
-  border: 2px solid #ccc;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-  color: #555;
-  transition: all 0.3s ease;
-  user-select: none;
-  min-width: 160px;
-  text-align: center;
-}
+    .report-option {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 15px 25px;
+      border: 2px solid #ccc;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      color: #555;
+      transition: all 0.3s ease;
+      user-select: none;
+      min-width: 160px;
+      text-align: center;
+    }
 
-.report-option:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-}
+    .report-option:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
 
-.report-option.active {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: #fff;
-}
+    .report-option.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
 
 
     
@@ -675,6 +680,10 @@
       background-color: var(--primary);
       border-radius: 4px;
     }
+
+    .hamburger {
+      display: none;
+    }
     
     /* Responsive adjustments */
     @media (max-width: 992px) {
@@ -709,31 +718,6 @@
     }
     
     @media (max-width: 768px) {
-      .nav-bar {
-        flex-wrap: wrap;
-        justify-content: center;
-      }
-      
-      .nav-container {
-        margin-left: 0;
-        justify-content: center;
-      }
-      
-      .nav-item {
-        padding: 12px 15px;
-        font-size: 14px;
-      }
-      
-      header {
-        flex-direction: column;
-        height: auto;
-        padding: 15px;
-        gap: 15px;
-      }
-      
-      .logo {
-        margin-bottom: 10px;
-      }
       
       .complaints-option {
         padding: 12px 15px;
@@ -773,6 +757,148 @@
         justify-content: space-between;
       }
     }
+
+    /* Responsive header */
+    @media (max-width: 768px) {
+      .report-type .report-option {
+        padding: 10px 20px;
+        font-size: 15px;
+      }
+
+      label {
+        font-size: 15px;
+      }
+
+      select {
+        font-size: 15px;
+        height: 20px;
+      }
+
+      .btn {
+        font-size: 15px;
+      }
+
+      .report-header h1 {
+        font-size: 20px;
+      }
+      
+      .logo h2 {
+        font-size: 16px;
+      }
+
+      .nav-container {
+        margin-left: 0;
+        justify-content: center;
+        display: none;
+      }
+      
+      .nav-item {
+        padding: 12px 15px;
+        font-size: 14px;
+      }
+
+      .content {
+        margin-top: 0px;
+      }
+      
+      header {
+        /*flex-direction: column;*/
+        height: auto;
+        padding: 5px;
+        gap: 15px;
+        margin-top: 0px;
+      }
+      
+      .logo {
+        margin-bottom: 0px;
+      }
+
+      .logo .logo-image {
+        width: 60px;
+        height: auto;
+        margin-bottom: 0px;
+        padding: 2px;
+      }
+
+      .user h2 {
+        font-size: 14px;
+        margin: 0px;
+      }
+      
+      .logout-btn {
+        padding: 4px 8px;
+        font-size: 15px;
+        font-weight: 650;
+      }
+
+      .hamburger {
+        display: flex;
+        height: 35px;
+        width: 35px;
+        background-color: rgba(0,0,0,0.2);
+        cursor: pointer;
+        padding: 8px;
+        margin-right: 10px;
+        border-radius: 4px;
+      }
+
+      .hamburger i {
+        font-size: 20px;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+      }
+
+      .navigation-block {
+        right: 0;
+        width: 100vw;
+        top: 55px;
+        border-radius: 0;
+      }
+
+      /* By default, hide the menu off-screen to the right */
+      .navigation-block {
+        position: fixed;
+        top: 60px;
+        right: -250px; /* Hide off-screen to the right */
+        display: flex;
+        flex-direction: column;
+        background-color: var(--primary);
+        width: 220px;
+        border-radius: 8px;
+        padding: 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        z-index: 999;
+        transition: right 0.3s ease-in-out; /* Smooth slide animation */
+        border: 2px solid rgba(0, 0, 0, 0.1);
+      }
+
+      /* Each nav item */
+      .navigation-block .navi-block-items {
+        color: white;
+        padding: 12px;
+        font-size: 16px;
+        text-decoration: none;
+        transition: background 0.2s ease;
+        font-weight: 500;
+      }
+
+      .navigation-block .navi-block-items:hover {
+        background: rgba(255,255,255,0.1);
+        border-radius: 5px;
+      }
+
+      /* Show menu when active - slide in from right */
+      .navigation-block.active {
+        right: 10px; /* Slide into view from the right */
+      }
+
+      .navigation-block div {
+        background-color: rgba(0, 0, 0, 0.1);
+      }
+    }
   </style>
 </head>
 <body>
@@ -788,13 +914,22 @@
       <div class="logo-image">
         <img src="logo.jpg" alt="logo image">
       </div>
-      <h2>Secured CMS</h2>
+      <h2>MES CMS</h2>
     </div>
 
     <div class="user">
-      <h2>CH HAND</h2>
+      <h2>Unknown</h2>
       <button class="logout-btn">Logout</button>
-    </div>
+      <div class="hamburger">
+        <i class="fas fa-bars" id="hamburger-btn"></i>
+        <div class="navigation-block">
+          <a href="dashboard.html" class="navi-block-items">Dashboard</a>
+          <a href="launch-complaints.html" class="navi-block-items">Complaints</a>
+          <a href="all-users.html" class="navi-block-items">Users</a>
+          <div class="navi-block-items active"">Reporting</div>
+        </div>
+        </div>
+      </div>
   </header>
 
   <!-- Navigation -->
@@ -858,6 +993,7 @@
           <h1 class="report-title">Complaints Report</h1>
         </div>
         
+
         <!-- Report type selection with radio buttons -->
          <!-- Report type selection -->
         <div class="report-type">
@@ -866,11 +1002,8 @@
           <div class="report-option" data-type="summary">Summary Report</div>
         </div>
 
-        
 
 
-
-        
         <!-- Default Report Form -->
         <div id="default-report-form" class="report-form">
           <form>
@@ -1156,6 +1289,15 @@
       </div>
     </div>
   </div>
+
+  <script>
+    const hamburgerBtn = document.getElementById("hamburger-btn");
+    const navBlock = document.querySelector(".navigation-block");
+
+    hamburgerBtn.addEventListener("click", () => {
+      navBlock.classList.toggle("active");
+    });
+  </script>
 
   <script>
 
