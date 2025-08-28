@@ -1971,26 +1971,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  document.addEventListener('click', function(e) {
-    // Handle pagination buttons
-    if (e.target.classList.contains('page-btn')) {
-      if (e.target.classList.contains('prev-btn')) {
-        if (currentPage > 1) {
-          currentPage--;
-          fetchComplaints(); // This will now use currentFilters
-        }
-      } else if (e.target.classList.contains('next-btn')) {
-        if (currentPage < Math.ceil(totalItems / itemsPerPage)) {
-          currentPage++;
-          fetchComplaints(); // This will now use currentFilters
-        }
-      } else if (!isNaN(parseInt(e.target.textContent))) {
-        currentPage = parseInt(e.target.textContent);
-        fetchComplaints(); // This will now use currentFilters
-      }
-    }
-  });
-
   // Store last applied filters
   let lastAppliedFilters = null;
 
@@ -2042,6 +2022,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
+
   document.addEventListener('click', function(e) {
       // Handle pagination buttons
       if (e.target.classList.contains('page-btn')) {
@@ -2061,11 +2042,6 @@ document.addEventListener('DOMContentLoaded', function() {
           }
       }
   });
-
-
-
-
-
 
   
   // Render the table with complaint data
