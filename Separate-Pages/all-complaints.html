@@ -1695,410 +1695,7 @@
 
     // Add this global variable at the top of your script
     let allSkillmen = [];
-    document.addEventListener('DOMContentLoaded', function() {
-      // Current page and items per page
-      let currentPage = 1;
-      let itemsPerPage = 10;
-      let totalItems = 0;
-      let allComplaints = [];
-      
-      // DOM elements
-      const tableBody = document.getElementById('complaints-table-body');
-      const perPageSelect = document.getElementById('per-page-select');
-      const paginationInfo = document.querySelector('tfoot #pagination-info');
-      const paginationControls = document.getElementById('complaints-pagination');
-      const searchInput = document.getElementById('complaint-search');
-      const searchButton = document.getElementById('search-complaints-btn');
 
-      //Filter elements
-      const receiverFilter = document.getElementById('receiver-filter');
-      const colonyFilter = document.getElementById('colony-filter');
-      const categoryFilter = document.getElementById('category-filter');
-      const statusFilter = document.getElementById('status-filter');
-      const applyFiltersButton = document.getElementById('apply-filters');
-
-      //below line will add action to find button
-      applyFiltersButton.addEventListener('click', function() {
-        let receiver = receiverFilter.value;
-        let colony = colonyFilter.value;
-        let category = categoryFilter.value;
-        let status = statusFilter.value;
-
-        searchInput.value = ''; // Clear search input
-        currentFilters = {
-          receiver: receiver || '',
-          colony: colony || '',
-          category: category || '',
-          status: status || '',
-          search: searchInput.value.trim() || ''
-        }
-        currentPage = 1; // Reset to first page on filter change
-        fetchComplaints();
-      });
-      
-      // Initialize the table
-      fetchComplaints(null);
-      
-      // Event listeners
-      perPageSelect.addEventListener('change', function() {
-        itemsPerPage = parseInt(this.value);
-        currentPage = 1;
-        fetchComplaints();
-      });
-      
-  searchButton.addEventListener('click', function() {
-    // Update currentFilters with the current values
-    currentFilters.receiver = receiverFilter.value;
-    currentFilters.colony = colonyFilter.value;
-    currentFilters.category = categoryFilter.value;
-    currentFilters.status = statusFilter.value;
-    currentFilters.search = searchInput.value.trim();
-
-    currentPage = 1; // Reset to first page on filter change
-    fetchComplaints();
-  });
-      
-      // Handle Enter key in search input
-      searchInput.addEventListener('keyup', function(e) {
-          if (e.key === 'Enter') {
-          let receiver = receiverFilter.value;
-          let colony = colonyFilter.value;
-          let category = categoryFilter.value;
-          let status = statusFilter.value;
- 
-          currentFilters = {
-            receiver: receiver || '',
-            colony: colony || '',
-            category: category || '',
-            status: status || '',
-            search: searchInput.value.trim() || ''
-          }
-
-          currentPage = 1; // Reset to first page on filter change
-          fetchComplaints(filter);
-
-          currentPage = 1;
-          fetchComplaints();
-        }
-      });
-      
-  document.addEventListener('click', function(e) {
-    // Handle pagination buttons
-    if (e.target.classList.contains('page-btn')) {
-      if (e.target.classList.contains('prev-btn')) {
-        if (currentPage > 1) {
-          currentPage--;
-          fetchComplaints(); // This will now use currentFilters
-        }
-      } else if (e.target.classList.contains('next-btn')) {
-        if (currentPage < Math.ceil(totalItems / itemsPerPage)) {
-          currentPage++;
-          fetchComplaints(); // This will now use currentFilters
-        }
-      } else if (!isNaN(parseInt(e.target.textContent))) {
-        currentPage = parseInt(e.target.textContent);
-        fetchComplaints(); // This will now use currentFilters
-      }
-    }
-  });
-      
-      
-// Store last applied filters
-let lastAppliedFilters = null;
-
-// Fetch complaints from API
-
-  // Modify the fetchComplaints function to always use currentFilters
-  function fetchComplaints() {
-    const authToken = localStorage.getItem('authToken');
-    
-    // Always use the currentFilters
-    const url = new URL(SERVER_URL+'/api/complaints');
-    url.searchParams.append('page', currentPage);
-    url.searchParams.append('pageSize', itemsPerPage);
-    
-    // Add search term if it exists
-    if (currentFilters.search) {
-      url.searchParams.append('search', currentFilters.search);
-    }
-    
-    // Add filter parameters if they exist
-    if (currentFilters.receiver) url.searchParams.append('receiver', currentFilters.receiver);
-    if (currentFilters.colony) url.searchParams.append('colony', currentFilters.colony);
-    if (currentFilters.category) url.searchParams.append('category', currentFilters.category);
-    if (currentFilters.status) url.searchParams.append('status', currentFilters.status);
-
-    fetch(url, {
-      headers: {
-        'Authorization': `Bearer ${authToken}`,
-        'Content-Type': 'application/json'
-      }
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        allComplaints = data.data;
-        totalItems = data.pagination.total;
-        renderTable();
-        updatePagination();
-      } else {
-        throw new Error(data.message || 'Failed to fetch complaints');
-        showNotification(data.message || 'Failed to fetch complaints', 'error');
-      }
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      tableBody.innerHTML = `<tr><td colspan="12" style="text-align: center; color: red;">Error loading data: ${error.message}</td></tr>`;
-      paginationInfo.textContent = 'Error loading data';
-      showNotification('Error loading data', 'error')
-    });
-  }
-
-document.addEventListener('click', function(e) {
-    // Handle pagination buttons
-    if (e.target.classList.contains('page-btn')) {
-        if (e.target.classList.contains('prev-btn')) {
-            if (currentPage > 1) {
-                currentPage--;
-                fetchComplaints(lastAppliedFilters); // Use lastAppliedFilters
-            }
-        } else if (e.target.classList.contains('next-btn')) {
-            if (currentPage < Math.ceil(totalItems / itemsPerPage)) {
-                currentPage++;
-                fetchComplaints(lastAppliedFilters); // Use lastAppliedFilters
-            }
-        } else if (!isNaN(parseInt(e.target.textContent))) {
-            currentPage = parseInt(e.target.textContent);
-            fetchComplaints(lastAppliedFilters); // Use lastAppliedFilters
-        }
-    }
-});
-      
-      // Render the table with complaint data
-      function renderTable() {
-        tableBody.innerHTML = '';
-        
-        if (allComplaints.length === 0) {
-          tableBody.innerHTML = `<tr><td colspan="12" style="text-align: center;">No complaints found</td></tr>`;
-          return;
-        }
-        
-        allComplaints.forEach((complaint, index) => {
-          const row = document.createElement('tr');
-          row.dataset.complaintId = complaint.complaint_id;
-          
-          // Format date/time
-          const launchedAt = new Date(complaint.launched_at);
-          const dateStr = launchedAt.toISOString().split('T')[0];
-          const timeStr = launchedAt.toTimeString().split(' ')[0].substring(0, 5);
-          
-          // Determine status class and action options
-          let statusClass = '';
-          let actionOptions = '';
-          const status = complaint.status.toLowerCase();
-          
-          switch(status) {
-            case 'deffered':
-              statusClass = 'status-deffered';
-              actionOptions = `
-                <a href="#" class="complaint-details-btn"><i class="fas fa-info-circle"></i> Complaint Details</a>
-                <a href="#" class="print-complaint-btn"><i class="fas fa-print"></i> Print Complaint</a>
-              `;
-              break;
-            case 'completed':
-              statusClass = 'status-completed';
-              actionOptions = `
-                <a href="#" class="complaint-details-btn"><i class="fas fa-info-circle"></i> Complaint Details</a>
-                <a href="#" class="print-complaint-btn"><i class="fas fa-print"></i> Print Complaint</a>
-              `;
-              break;
-            case 'un-assigned':
-              statusClass = 'status-un-assigned';
-              actionOptions = `
-                <a href="#" class="complaint-details-btn"><i class="fas fa-info-circle"></i> Complaint Details</a>
-                <a href="#" class="assign-skillman-btn"><i class="fas fa-user-plus"></i> Assign Skillman</a>
-              `;
-              break;
-            case 'in-progress':
-              statusClass = 'status-in-progress';
-              actionOptions = `
-                <a href="#" class="complaint-details-btn"><i class="fas fa-info-circle"></i> Complaint Details</a>
-                <a href="#" class="change-skillman-btn"><i class="fas fa-user-edit"></i> Change Skillman</a>
-                <a href="#" class="mark-complaint-btn"><i class="fas fa-check"></i> Mark Complaint</a>
-                <a href="#" class="print-complaint-btn"><i class="fas fa-print"></i> Print Complaint</a>
-              `;
-              break;
-          }
-          
-          // Create category by combining nature and type
-          const category = complaint.nature && complaint.type 
-            ? `${complaint.nature} / ${complaint.type}`
-            : 'N/A';
-          
-          row.innerHTML = `
-            <td>${index + 1}</td>
-            <td>${dateStr}<br>${timeStr}</td>
-            <td>${complaint.complaint_id}</td>
-            <td>${complaint.category || 'N/A'}</td>
-            <td>${category}</td>
-            <td>${complaint.location_colony_name || 'N/A'}</td>
-            <td>${complaint.location_building_number || 'N/A'}</td>
-            <td>${complaint.receiver_name || 'N/A'}</td>
-            <td class="editable-cell">
-              <div class="static-value" data-field="skillman">${complaint.skillman_name || 'Unassigned'}</div>
-              </select>
-            </td>
-            <td>${complaint.customer_name || 'N/A'}</td>
-            <td class="editable-cell">
-              <div class="status-badge ${statusClass}">${complaint.status}</div>
-            </td>
-            <td class="action-cell">
-              <div class="action-dropdown">
-                <button class="action-dropdown-btn">Actions <i class="fas fa-caret-down"></i></button>
-                <div class="action-dropdown-content">
-                  <a href="#" class="complaint-details-btn"><i class="fas fa-info-circle"></i> Details</a>
-                  <a href="#" class="assign-skillman-btn"><i class="fas fa-user-plus"></i> Assign</a>
-                  <!-- other action links -->
-                </div>
-              </div>
-            </td>
-          `;
-          
-          tableBody.appendChild(row);
-        });
-        
-        // Add event listeners to the new rows
-        initializeRowEventListeners();
-      }
-      
-      // Update pagination controls
-      function updatePagination() {
-        const totalPages = Math.ceil(totalItems / itemsPerPage);
-        const startItem = (currentPage - 1) * itemsPerPage + 1;
-        const endItem = Math.min(currentPage * itemsPerPage, totalItems);
-        
-        paginationInfo.textContent = `Showing ${startItem} to ${endItem} of ${totalItems} entries`;
-        
-        // Clear existing pagination buttons
-        paginationControls.innerHTML = '';
-        
-        // Previous button
-        const prevBtn = document.createElement('button');
-        prevBtn.className = `page-btn prev-btn ${currentPage === 1 ? 'disabled' : ''}`;
-        prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i> Prev';
-        paginationControls.appendChild(prevBtn);
-        
-        // Page buttons
-        const maxVisiblePages = 5;
-        let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-        
-        if (endPage - startPage + 1 < maxVisiblePages) {
-          startPage = Math.max(1, endPage - maxVisiblePages + 1);
-        }
-        
-        if (startPage > 1) {
-          const firstBtn = document.createElement('button');
-          firstBtn.className = 'page-btn';
-          firstBtn.textContent = '1';
-          paginationControls.appendChild(firstBtn);
-          
-          if (startPage > 2) {
-            const ellipsis = document.createElement('span');
-            ellipsis.textContent = '...';
-            ellipsis.style.padding = '8px 12px';
-            paginationControls.appendChild(ellipsis);
-          }
-        }
-        
-        for (let i = startPage; i <= endPage; i++) {
-          const pageBtn = document.createElement('button');
-          pageBtn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
-          pageBtn.textContent = i;
-          paginationControls.appendChild(pageBtn);
-        }
-        
-        if (endPage < totalPages) {
-          if (endPage < totalPages - 1) {
-            const ellipsis = document.createElement('span');
-            ellipsis.textContent = '...';
-            ellipsis.style.padding = '8px 12px';
-            paginationControls.appendChild(ellipsis);
-          }
-          
-          const lastBtn = document.createElement('button');
-          lastBtn.className = 'page-btn';
-          lastBtn.textContent = totalPages;
-          paginationControls.appendChild(lastBtn);
-        }
-        
-        // Next button
-        const nextBtn = document.createElement('button');
-        nextBtn.className = `page-btn next-btn ${currentPage === totalPages ? 'disabled' : ''}`;
-        nextBtn.innerHTML = 'Next <i class="fas fa-chevron-right"></i>';
-        paginationControls.appendChild(nextBtn);
-      }
-      
-
-      // Initialize event listeners for table rows
-      function initializeRowEventListeners() {
-          // Add new event listeners for action buttons
-          document.querySelectorAll('.complaint-details-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-              e.preventDefault();
-              const row = this.closest('tr');
-              const complaintId = row.dataset.complaintId;
-              console.log(`Viewing details for complaint #${complaintId}`);
-              // Implement complaint details view
-            });
-          });
-
-          document.querySelectorAll('.print-complaint-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-              e.preventDefault();
-              const row = this.closest('tr');
-              const complaintId = row.dataset.complaintId;
-              console.log(`Printing complaint #${complaintId}`);
-              // Implement print functionality
-            });
-          });
-
-          document.querySelectorAll('.assign-skillman-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-              e.preventDefault();
-              const row = this.closest('tr');
-              const skillmanCell = row.querySelector('.editable-cell[data-field="skillman"]');
-              const staticValue = skillmanCell.querySelector('.static-value');
-              const select = skillmanCell.querySelector('.editable-select');
-              staticValue.style.display = 'none';
-              select.style.display = 'block';
-              select.value = staticValue.textContent;
-            });
-          });
-
-        document.querySelectorAll('.mark-complaint-btn').forEach(btn => {
-          btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            const row = this.closest('tr');
-            const complaintId = row.dataset.complaintId;
-            
-            // Show confirmation dialog
-            const confirmed = confirm(`Do you want to mark the complaint #${complaintId} as 'Completed'? This action cannot be undone.`);
-            
-            if (confirmed) {
-              // Send data to backend API
-              markComplaintCompleted(complaintId, row);
-            }
-          });
-        });
-      }
-
-
-
-
-
-      
-    });
 
 
 // Add this function to handle the complaint details click
@@ -2300,49 +1897,103 @@ document.addEventListener('DOMContentLoaded', function() {
   const paginationControls = document.getElementById('complaints-pagination');
   const searchInput = document.getElementById('complaint-search');
   const searchButton = document.getElementById('search-complaints-btn');
-  
+
+  //Filter elements
+  const receiverFilter = document.getElementById('receiver-filter');
+  const colonyFilter = document.getElementById('colony-filter');
+  const categoryFilter = document.getElementById('category-filter');
+  const statusFilter = document.getElementById('status-filter');
+  const applyFiltersButton = document.getElementById('apply-filters');
+
+  //below line will add action to find button
+  applyFiltersButton.addEventListener('click', function() {
+    let receiver = receiverFilter.value;
+    let colony = colonyFilter.value;
+    let category = categoryFilter.value;
+    let status = statusFilter.value;
+
+    searchInput.value = ''; // Clear search input
+    currentFilters = {
+      receiver: receiver || '',
+      colony: colony || '',
+      category: category || '',
+      status: status || '',
+      search: searchInput.value.trim() || ''
+    }
+    currentPage = 1; // Reset to first page on filter change
+    fetchComplaints();
+  });
+      
   // Initialize the table
-  fetchComplaints();
-  
+  fetchComplaints(null);
+      
   // Event listeners
   perPageSelect.addEventListener('change', function() {
     itemsPerPage = parseInt(this.value);
     currentPage = 1;
     fetchComplaints();
   });
-  
+      
+
   searchButton.addEventListener('click', function() {
-    currentPage = 1;
+    // Update currentFilters with the current values
+    currentFilters.receiver = receiverFilter.value;
+    currentFilters.colony = colonyFilter.value;
+    currentFilters.category = categoryFilter.value;
+    currentFilters.status = statusFilter.value;
+    currentFilters.search = searchInput.value.trim();
+
+    currentPage = 1; // Reset to first page on filter change
     fetchComplaints();
   });
-  
+      
+  // Handle Enter key in search input
   searchInput.addEventListener('keyup', function(e) {
-    if (e.key === 'Enter') {
+      if (e.key === 'Enter') {
+      let receiver = receiverFilter.value;
+      let colony = colonyFilter.value;
+      let category = categoryFilter.value;
+      let status = statusFilter.value;
+
+      currentFilters = {
+        receiver: receiver || '',
+        colony: colony || '',
+        category: category || '',
+        status: status || '',
+        search: searchInput.value.trim() || ''
+      }
+
+      currentPage = 1; // Reset to first page on filter change
+      fetchComplaints(filter);
+
       currentPage = 1;
       fetchComplaints();
     }
   });
-  
+
   document.addEventListener('click', function(e) {
     // Handle pagination buttons
     if (e.target.classList.contains('page-btn')) {
       if (e.target.classList.contains('prev-btn')) {
         if (currentPage > 1) {
           currentPage--;
-          fetchComplaints();
+          fetchComplaints(); // This will now use currentFilters
         }
       } else if (e.target.classList.contains('next-btn')) {
         if (currentPage < Math.ceil(totalItems / itemsPerPage)) {
           currentPage++;
-          fetchComplaints();
+          fetchComplaints(); // This will now use currentFilters
         }
       } else if (!isNaN(parseInt(e.target.textContent))) {
         currentPage = parseInt(e.target.textContent);
-        fetchComplaints();
+        fetchComplaints(); // This will now use currentFilters
       }
     }
   });
-  
+
+  // Store last applied filters
+  let lastAppliedFilters = null;
+
 
   // Fetch complaints from API
   // Modify the fetchComplaints function to always use currentFilters
@@ -2390,6 +2041,32 @@ document.addEventListener('DOMContentLoaded', function() {
       showNotification('Error loading data', 'error')
     });
   }
+
+  document.addEventListener('click', function(e) {
+      // Handle pagination buttons
+      if (e.target.classList.contains('page-btn')) {
+          if (e.target.classList.contains('prev-btn')) {
+              if (currentPage > 1) {
+                  currentPage--;
+                  fetchComplaints(lastAppliedFilters); // Use lastAppliedFilters
+              }
+          } else if (e.target.classList.contains('next-btn')) {
+              if (currentPage < Math.ceil(totalItems / itemsPerPage)) {
+                  currentPage++;
+                  fetchComplaints(lastAppliedFilters); // Use lastAppliedFilters
+              }
+          } else if (!isNaN(parseInt(e.target.textContent))) {
+              currentPage = parseInt(e.target.textContent);
+              fetchComplaints(lastAppliedFilters); // Use lastAppliedFilters
+          }
+      }
+  });
+
+
+
+
+
+
   
   // Render the table with complaint data
   function renderTable() {
