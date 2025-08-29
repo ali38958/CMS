@@ -531,6 +531,11 @@
       background: #F44336;
       color: white;
     }
+
+    .status-sna {
+      background: #FFA500;
+      color: white;
+    }
     
     .editable-cell {
       position: relative;
@@ -751,7 +756,7 @@
       }
       
       .search-box button {
-        border-radius: 12px;
+        border-radius: 6px;
         width: 100%;
       }
     }
@@ -1096,6 +1101,91 @@
   background-color: #9e1e1e;
 }
 
+/* Mark Complaint Modal Styles */
+.mark-complaint-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.mark-complaint-modal-backdrop.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.mark-complaint-modal-container {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+  width: 95%;
+  max-width: 450px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: translateY(-20px);
+  transition: transform 0.3s ease;
+}
+
+.mark-complaint-modal-backdrop.active .mark-complaint-modal-container {
+  transform: translateY(0);
+}
+
+.mark-complaint-modal-header {
+  padding: 16px 20px;
+  background-color: var(--primary);
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mark-complaint-modal-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.mark-complaint-modal-body {
+  padding: 25px 20px;
+  text-align: center;
+}
+
+.complaint-id-display {
+  font-weight: bold;
+  color: var(--primary);
+}
+
+.mark-complaint-modal-footer {
+  padding: 16px 20px;
+  background-color: #f8f9fa;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  border-top: 1px solid #ddd;
+}
+
+.mark-complaint-option {
+  flex: 1;
+  padding: 10px;
+  text-align: center;
+}
+
+@media (max-width: 480px) {
+  .mark-complaint-modal-footer {
+    flex-direction: column;
+  }
+}
+
 /* Responsive */
 @media (max-width: 480px) {
   .priority-options {
@@ -1210,7 +1300,156 @@
 }
 
 
+/* Mark Complaint Modal Footer Buttons */
+/* Mark Complaint Modal Styles */
+.mark-complaint-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
 
+.mark-complaint-modal-backdrop.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.mark-complaint-modal-container {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+  width: 95%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: translateY(-20px);
+  transition: transform 0.3s ease;
+}
+
+.mark-complaint-modal-backdrop.active .mark-complaint-modal-container {
+  transform: translateY(0);
+}
+
+.mark-complaint-modal-header {
+  padding: 16px 20px;
+  background-color: var(--primary);
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mark-complaint-modal-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.mark-complaint-modal-body {
+  padding: 25px 20px;
+  text-align: center;
+}
+
+.complaint-id-display {
+  font-weight: bold;
+  color: var(--primary);
+}
+
+.mark-complaint-modal-footer {
+  padding: 16px 20px;
+  background-color: #f8f9fa;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  border-top: 1px solid #ddd;
+}
+
+.mark-complaint-option {
+  padding: 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+}
+
+/* Deferred button - Black */
+.mark-complaint-option[data-status="Deffered"] {
+  background-color: #000000;
+  color: white;
+  border: 1px solid #000000;
+}
+
+.mark-complaint-option[data-status="Deffered"]:hover {
+  background-color: #333333;
+  border-color: #333333;
+}
+
+/* SNA button - Yellowish orange */
+.mark-complaint-option[data-status="SNA"] {
+  background-color: #FFA500;
+  color: #FFF;
+  border: 1px solid #FFA500;
+}
+
+.mark-complaint-option[data-status="SNA"]:hover {
+  background-color: #FF8C00;
+  border-color: #FF8C00;
+}
+
+/* In-Progress button - Blue */
+.mark-complaint-option[data-status="In-Progress"] {
+  background-color: #2196F3;
+  color: white;
+  border: 1px solid #2196F3;
+}
+
+.mark-complaint-option[data-status="In-Progress"]:hover {
+  background-color: #0b7dda;
+  border-color: #0b7dda;
+}
+
+/* Completed button - Green */
+.mark-complaint-option[data-status="Completed"] {
+  background-color: #4CAF50;
+  color: white;
+  border: 1px solid #4CAF50;
+}
+
+.mark-complaint-option[data-status="Completed"]:hover {
+  background-color: #45a049;
+  border-color: #45a049;
+}
+
+/* Add SNA status badge style */
+.status-sna {
+  background: #FFA500;
+  color: #FFF;
+}
+
+@media (max-width: 480px) {
+  .mark-complaint-modal-footer {
+    grid-template-columns: 1fr;
+  }
+  
+  .mark-complaint-modal-container {
+    width: 90%;
+  }
+}
 
 
 .priority-filters {
@@ -1239,6 +1478,14 @@
     transform 0.3s;
   position: relative;
   overflow: hidden;
+  border: 1px solid var(--primary);
+}
+
+.priority-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px; /* spacing between boxes */
+  justify-content: center;
 }
 
 .priority-box .priority-icon {
@@ -1297,6 +1544,18 @@
 .priority-box.active .priority-icon.deferred,
 .priority-box:hover .priority-icon.deferred { color: #fff; }
 
+  .priority-count {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 5px 0;
+    color: var(--primary);
+    transition: color 0.4s;
+  }
+  
+  .priority-box.active .priority-count,
+  .priority-box:hover .priority-count {
+    color: #fff;
+  }
 
 /* Filter Controls*/
 .filter-controls {
@@ -1339,12 +1598,502 @@
     min-width: 100%;
   }
 }
+
+
+    .hamburger {
+      display: none;
+    }
+    
+    @media (max-width: 768px) {
+      
+      .complaints-option {
+        padding: 12px 15px;
+        font-size: 14px;
+      }
+      
+      .radio-group {
+        flex-direction: column;
+        gap: 10px;
+      }
+      
+      .radio-item {
+        width: 100%;
+      }
+      
+      .btn {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+      
+      .content {
+        padding: 15px;
+      }
+      
+      .summary-action-bar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .year-selection {
+        width: 100%;
+        justify-content: space-between;
+      }
+      
+      .report-buttons {
+        width: 100%;
+        justify-content: space-between;
+      }
+    }
+
+    /* Responsive header */
+    @media (max-width: 768px) {
+      .report-type .report-option {
+        padding: 10px 20px;
+        font-size: 15px;
+      }
+
+      label {
+        font-size: 15px;
+      }
+
+      select {
+        font-size: 15px;
+        height: 40px;
+      }
+
+      .btn {
+        font-size: 15px;
+      }
+
+      .report-header h1 {
+        font-size: 20px;
+      }
+      
+      .logo h2 {
+        font-size: 16px;
+      }
+
+      .nav-container {
+        margin-left: 0;
+        justify-content: center;
+        display: none;
+      }
+      
+      .nav-item {
+        padding: 12px 15px;
+        font-size: 14px;
+      }
+
+      .content {
+        margin-top: 0px;
+      }
+      
+      header {
+        /*flex-direction: column;*/
+        height: auto;
+        padding: 5px;
+        gap: 15px;
+        margin-top: 0px;
+      }
+      
+      .logo {
+        margin-bottom: 0px;
+      }
+
+      .logo .logo-image {
+        width: 60px;
+        height: auto;
+        margin-bottom: 0px;
+        padding: 2px;
+      }
+
+      .user h2 {
+        font-size: 14px;
+        margin: 0px;
+      }
+      
+      .logout-btn {
+        padding: 4px 8px;
+        font-size: 15px;
+        font-weight: 650;
+      }
+
+      .hamburger {
+        display: flex;
+        height: 35px;
+        width: 35px;
+        background-color: rgba(0,0,0,0.2);
+        cursor: pointer;
+        padding: 8px;
+        margin-right: 10px;
+        border-radius: 4px;
+      }
+
+      .hamburger i {
+        font-size: 20px;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+      }
+
+      .navigation-block {
+        right: 0;
+        width: 100vw;
+        top: 55px;
+        border-radius: 0;
+      }
+
+      /* By default, hide the menu off-screen to the right */
+      .navigation-block {
+        position: fixed;
+        top: 60px;
+        right: -250px; /* Hide off-screen to the right */
+        display: flex;
+        flex-direction: column;
+        background-color: var(--primary);
+        width: 220px;
+        border-radius: 8px;
+        padding: 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        z-index: 999;
+        transition: right 0.3s ease-in-out; /* Smooth slide animation */
+        border: 2px solid rgba(0, 0, 0, 0.1);
+      }
+
+      /* Each nav item */
+      .navigation-block .navi-block-items {
+        color: white;
+        padding: 12px;
+        font-size: 16px;
+        text-decoration: none;
+        transition: background 0.2s ease;
+        font-weight: 500;
+      }
+
+      .navigation-block .navi-block-items:hover {
+        background: rgba(255,255,255,0.1);
+        border-radius: 5px;
+      }
+
+      /* Show menu when active - slide in from right */
+      .navigation-block.active {
+        right: 10px; /* Slide into view from the right */
+      }
+
+      .navigation-block div {
+        background-color: rgba(0, 0, 0, 0.1);
+      }
+    }
+
+    /* Another Responsive designing*/
+    @media (max-width: 768px) {
+  /* Search box responsiveness */
+  .search-box {
+    flex-direction: column;
+    height: auto;
+    margin-bottom: 15px;
+  }
+  
+  .search-box input {
+    width: 100%;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    height: 45px;
+  }
+  
+  .search-box button {
+    width: 100%;
+    border-radius: 8px;
+    height: 45px;
+  }
+  
+  /* Pagination responsiveness */
+  .pagination-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    margin-top: 15px;
+  }
+  
+  .entries-per-page {
+    order: 2; /* Move to bottom on mobile */
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .pagination-controls {
+    order: 1; /* Move to top on mobile */
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  .page-btn {
+    padding: 8px 12px;
+    font-size: 14px;
+    min-width: 40px;
+  }
+  
+  .page-btn.prev-btn, 
+  .page-btn.next-btn {
+    min-width: 70px;
+  }
+  
+  /* Filter controls responsiveness */
+  .filter-controls {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .filter-group {
+    min-width: 100%;
+    margin-bottom: 5px;
+  }
+  
+  #apply-filters {
+    width: 100%;
+    margin-bottom: 15px;
+    align-self: center;
+  }
+  
+  /* Table responsiveness */
+  .complaints-history-table {
+    font-size: 12px;
+    overflow-x: auto;
+    display: block;
+    border-radius: 2%;
+  }
+
+  .complaints-history-table th {
+    padding: 1rem;
+    font-size: 0.85rem;
+    height: auto;
+  }
+
+  .complaints-history-table td {
+    padding: 0.5rem;
+    height: auto;
+  }
+
+  /*
+  .complaints-history-table th,
+  .complaints-history-table td {
+    padding: 6px 8px;
+    white-space: nowrap;
+  }
+  
+  .complaints-history-table th:nth-child(n+4),
+  .complaints-history-table td:nth-child(n+4) {
+    display: none; 
+  }/* Hide less important columns on mobile */
+  
+  /* Show essential columns only */
+  .complaints-history-table th:nth-child(-n+3),
+  .complaints-history-table td:nth-child(-n+3),
+  .complaints-history-table th:nth-last-child(-n+2),
+  .complaints-history-table td:nth-last-child(-n+2) {
+    display: table-cell;
+  }
+  
+  /* Action button adjustments */
+  .action-dropdown-btn {
+    font-size: 12px;
+    padding: 5px 8px;
+  }
+  
+  .action-dropdown-content {
+    left: -100px;
+    min-width: 140px;
+  }
+  
+  /* Priority filters responsiveness */
+  .priority-filters {
+    flex-direction: column;
+    gap: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  h2 {
+    size: 5px;
+  }
+
+  .logo {
+    flex-direction: column;
+  }
+
+  .hamburger {
+    height: 30px;
+    width: 30px;
+    padding: 6px;
+  }
+
+
+  .logo .logo-image {
+    width: 50px;
+    height: auto;
+    margin-bottom: 0px;
+    padding: 2px;
+    margin-bottom: 0px;
+  }
+
+  /* Further adjustments for very small screens */
+  .complaints-history-table {
+    font-size: 11px;
+  }
+  
+  .complaints-history-table th,
+  .complaints-history-table td {
+    padding: 4px 6px;
+  }
+  
+  .page-btn {
+    padding: 6px 8px;
+    font-size: 12px;
+    min-width: 35px;
+  }
+  
+  .pagination-info {
+    font-size: 10px;
+    text-align: center;
+  }
+  
+  .panel-title {
+    font-size: 20px;
+  }
+  
+  /* Make sure content doesn't overflow */
+  .content {
+    padding: 10px;
+    margin: 5px;
+  }
+  
+  .complaints-content {
+    padding: 15px;
+  }
+
+}
+
+
+/* Mobile Responsiveness for Priority Filters */
+@media (max-width: 768px) {
+  .priority-filters {
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+  
+  .priority-box {
+    max-width: 100%;
+    min-width: 100%;
+    padding: 18px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: left;
+    border-radius: 6px;
+  }
+  
+  .priority-icon {
+    font-size: 1.8rem;
+    margin-bottom: 0;
+    margin-right: 15px;
+    min-width: 40px;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .priority-label {
+    font-size: 1.1rem;
+    margin-bottom: 2px;
+  }
+  
+  .priority-count {
+    margin-left: auto;
+    font-size: 1.4rem;
+    min-width: 40px;
+    text-align: right;
+  }
+  
+  .priority-desc {
+    display: none; /* Hide description on mobile to save space */
+  }
+  
+  /* Adjust hover/active states for mobile */
+  .priority-box.active,
+  .priority-box:hover {
+    transform: translateX(5px) scale(1.02);
+  }
+}
+
+@media (max-width: 480px) {
+  .priority-box {
+    padding: 15px 10px;
+    height: auto;
+  }
+  
+  .priority-icon {
+    font-size: 2rem;
+    margin-right: 12px;
+  }
+
+  .priority-icon i {
+    margin-top: 0.6rem;
+    font-size: 1rem;
+  }
+  
+  .priority-box .priority-label {
+    font-size: 0.99rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .priority-count {
+    font-size: 0.99rem;
+  }
+
+
+}
   </style>
 </head>
 <body>
   <!-- Notification Container (place this in your HTML) -->
   <div class="notification-area" id="notification-area"></div>
 
+
+<!-- Mark Complaint Modal -->
+<div class="mark-complaint-modal-backdrop" id="markComplaintModalBackdrop">
+  <div class="mark-complaint-modal-container">
+    <!-- Modal Header -->
+    <div class="mark-complaint-modal-header">
+      <h3><i class="fas fa-check-circle"></i> Mark Complaint</h3>
+      <button class="close-btn" id="closeMarkComplaintBtn">&times;</button>
+    </div>
+    
+    <!-- Modal Body -->
+    <div class="mark-complaint-modal-body">
+      <p>Select the status for complaint <span id="markComplaintId" class="complaint-id-display"></span>:</p>
+    </div>
+    
+    <!-- Modal Footer -->
+    <div class="mark-complaint-modal-footer">
+      <button class="mark-complaint-option" data-status="Deffered">
+        <i class="fas fa-calendar-alt"></i> Deferred
+      </button>
+      <button class="mark-complaint-option" data-status="SNA">
+        <i class="fas fa-times-circle"></i> SNA
+      </button>
+      <button class="mark-complaint-option" data-status="In-Progress">
+        <i class="fas fa-spinner"></i> In-Progress
+      </button>
+      <button class="mark-complaint-option" data-status="Completed">
+        <i class="fas fa-check"></i> Completed
+      </button>
+    </div>
+  </div>
+</div>
 
 <!-- Skillman Assignment Modal -->
 <!-- Skillman Assignment Modal -->
@@ -1405,7 +2154,16 @@
     <div class="user">
       <h2 id="user-id">Unknown</h2>
       <button class="logout-btn" id="logout-btn">Logout</button>
-    </div>
+      <div class="hamburger">
+        <i class="fas fa-bars" id="hamburger-btn"></i>
+        <div class="navigation-block">
+          <a href="dashboard.html" class="navi-block-items">Dashboard</a>
+          <a href="launch-complaints.html" class="navi-block-items">Complaints</a>
+          <a href="all-users.html" class="navi-block-items">Users</a>
+          <div class="navi-block-items active"">Reporting</div>
+        </div>
+        </div>
+      </div>
   </header>
 
   <div class="nav-bar">
@@ -1464,26 +2222,30 @@
             <h2 class="panel-title">All Complaints</h2>
           </div>
 
-          
+          <!-- Modify the priority-filters section to include counters -->
           <div class="priority-filters">
             <div class="priority-box" data-priority="immediate" id="box-immediate">
               <div class="priority-icon immediate"><i class="fas fa-bolt"></i></div>
               <div class="priority-label">Immediate</div>
+              <div class="priority-count" id="immediate-count">N/A</div>
               <div class="priority-desc">Critical action</div>
             </div>
             <div class="priority-box" data-priority="urgent" id="box-urgent">
               <div class="priority-icon urgent"><i class="fas fa-exclamation-triangle"></i></div>
               <div class="priority-label">Urgent</div>
+              <div class="priority-count" id="urgent-count">N/A</div>
               <div class="priority-desc">Needs quick response</div>
             </div>
             <div class="priority-box" data-priority="routine" id="box-routine">
               <div class="priority-icon routine"><i class="fas fa-clock"></i></div>
               <div class="priority-label">Routine</div>
+              <div class="priority-count" id="routine-count">N/A</div>
               <div class="priority-desc">Standard workflow</div>
             </div>
             <div class="priority-box" data-priority="deferred" id="box-deferred">
               <div class="priority-icon deferred"><i class="fas fa-calendar-alt"></i></div>
               <div class="priority-label">Deferred</div>
+              <div class="priority-count" id="deferred-count">N/A</div>
               <div class="priority-desc">Can be scheduled</div>
             </div>
           </div>
@@ -1600,6 +2362,15 @@
       </div>
     </div>
   </div>
+
+  <script>
+    const hamburgerBtn = document.getElementById("hamburger-btn");
+    const navBlock = document.querySelector(".navigation-block");
+
+    hamburgerBtn.addEventListener("click", () => {
+      navBlock.classList.toggle("active");
+    });
+  </script>
 
   <script>
 
@@ -1868,12 +2639,10 @@ function initializeActionButtonListeners(row) {
       });
       
       // Mark complaint button
+      // Mark complaint button
       row.querySelector('.mark-complaint-btn')?.addEventListener('click', function(e) {
         e.preventDefault();
-        const confirmed = confirm(`Do you want to mark the complaint #${complaintId} as 'Completed'? This action cannot be undone.`);
-        if (confirmed) {
-          markComplaintCompleted(complaintId, row);
-        }
+        openMarkComplaintModal(complaintId);
       });
     });
   }
@@ -1934,6 +2703,13 @@ document.addEventListener('DOMContentLoaded', function() {
     fetchComplaints();
   });
       
+  // Add this to your existing JavaScript code
+  document.getElementById('complaint-search').addEventListener('keyup', function(e) {
+      if (e.key === 'Enter') {
+          // Trigger the same action as the search button click
+          document.getElementById('search-complaints-btn').click();
+      }
+  });
 
   searchButton.addEventListener('click', function() {
     // Update currentFilters with the current values
@@ -2022,7 +2798,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-
+/*
   document.addEventListener('click', function(e) {
       // Handle pagination buttons
       if (e.target.classList.contains('page-btn')) {
@@ -2042,7 +2818,7 @@ document.addEventListener('DOMContentLoaded', function() {
           }
       }
   });
-
+*/
   
   // Render the table with complaint data
   function renderTable() {
@@ -2100,6 +2876,15 @@ document.addEventListener('DOMContentLoaded', function() {
             <a href="#" class="print-complaint-btn"><i class="fas fa-print"></i> Print Complaint</a>
           `;
           break;
+        case 'sna':
+          statusClass = 'status-sna';
+          actionOptions = `
+            <a href="#" class="complaint-details-btn"><i class="fas fa-info-circle"></i> Complaint Details</a>
+            <a href="#" class="change-skillman-btn"><i class="fas fa-user-edit"></i> Change Skillman</a>
+            <a href="#" class="mark-complaint-btn"><i class="fas fa-check"></i> Mark Complaint</a>
+            <a href="#" class="print-complaint-btn"><i class="fas fa-print"></i> Print Complaint</a>
+          `;
+          break;
       }
       
       // Create category by combining nature and type
@@ -2142,103 +2927,131 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeActionDropdowns();
   }
 
-  
-function initializeActionDropdowns() {
-  // Close all dropdowns when clicking outside
-  document.addEventListener('click', function(e) {
-    if (!e.target.closest('.action-dropdown')) {
-      document.querySelectorAll('.action-dropdown-content').forEach(dropdown => {
-        dropdown.style.display = 'none';
+      
+    function initializeActionDropdowns() {
+      // Close all dropdowns when clicking outside
+      document.addEventListener('click', function(e) {
+        if (!e.target.closest('.action-dropdown')) {
+          document.querySelectorAll('.action-dropdown-content').forEach(dropdown => {
+            dropdown.style.display = 'none';
+          });
+        }
+      });
+
+      // Toggle dropdown on button click
+      document.querySelectorAll('.action-dropdown-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+          e.stopPropagation();
+          const dropdownContent = this.nextElementSibling;
+          
+          // Hide all others
+          document.querySelectorAll('.action-dropdown-content').forEach(dc => {
+            if (dc !== dropdownContent) dc.style.display = 'none';
+          });
+
+          // Toggle this one
+          dropdownContent.style.display = 
+            dropdownContent.style.display === 'block' ? 'none' : 'block';
+        });
       });
     }
-  });
 
-  // Toggle dropdown on button click
-  document.querySelectorAll('.action-dropdown-btn').forEach(button => {
-    button.addEventListener('click', function(e) {
-      e.stopPropagation();
-      const dropdownContent = this.nextElementSibling;
+    // Update pagination controls
+    // Update pagination controls
+    function updatePagination() {
+      const totalPages = Math.ceil(totalItems / itemsPerPage);
+      const startItem = (currentPage - 1) * itemsPerPage + 1;
+      const endItem = Math.min(currentPage * itemsPerPage, totalItems);
       
-      // Hide all others
-      document.querySelectorAll('.action-dropdown-content').forEach(dc => {
-        if (dc !== dropdownContent) dc.style.display = 'none';
+      paginationInfo.textContent = `Showing ${startItem} to ${endItem} of ${totalItems} entries`;
+      
+      // Clear existing pagination buttons
+      paginationControls.innerHTML = '';
+      
+      // Previous button
+      const prevBtn = document.createElement('button');
+      prevBtn.className = `page-btn prev-btn ${currentPage === 1 ? 'disabled' : ''}`;
+      prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i> Prev';
+      prevBtn.addEventListener('click', () => {
+        if (currentPage > 1) {
+          currentPage--;
+          fetchComplaints();
+        }
       });
-
-      // Toggle this one
-      dropdownContent.style.display = 
-        dropdownContent.style.display === 'block' ? 'none' : 'block';
-    });
-  });
-}
-  
-
-      // Update pagination controls
-      function updatePagination() {
-        const totalPages = Math.ceil(totalItems / itemsPerPage);
-        const startItem = (currentPage - 1) * itemsPerPage + 1;
-        const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+      paginationControls.appendChild(prevBtn);
+      
+      // Page buttons with ellipsis for many pages
+      const maxVisiblePages = 7;
+      let startPage, endPage;
+      
+      if (totalPages <= maxVisiblePages) {
+        // Show all pages if total pages is less than max visible
+        startPage = 1;
+        endPage = totalPages;
+      } else {
+        // Calculate start and end pages with current page in the middle
+        startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+        endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
         
-        paginationInfo.textContent = `Showing ${startItem} to ${endItem} of ${totalItems} entries`;
-        
-        // Clear existing pagination buttons
-        paginationControls.innerHTML = '';
-        
-        // Previous button
-        const prevBtn = document.createElement('button');
-        prevBtn.className = `page-btn prev-btn ${currentPage === 1 ? 'disabled' : ''}`;
-        prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i> Prev';
-        paginationControls.appendChild(prevBtn);
-        
-        // Page buttons
-        const maxVisiblePages = 5;
-        let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-        
+        // Adjust if we're at the beginning or end
         if (endPage - startPage + 1 < maxVisiblePages) {
           startPage = Math.max(1, endPage - maxVisiblePages + 1);
         }
-        
-        if (startPage > 1) {
-          const firstBtn = document.createElement('button');
-          firstBtn.className = 'page-btn';
-          firstBtn.textContent = '1';
-          paginationControls.appendChild(firstBtn);
-          
-          if (startPage > 2) {
-            const ellipsis = document.createElement('span');
-            ellipsis.textContent = '...';
-            ellipsis.style.padding = '8px 12px';
-            paginationControls.appendChild(ellipsis);
-          }
-        }
-        
-        for (let i = startPage; i <= endPage; i++) {
-          const pageBtn = document.createElement('button');
-          pageBtn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
-          pageBtn.textContent = i;
-          paginationControls.appendChild(pageBtn);
-        }
-        
-        if (endPage < totalPages) {
-          if (endPage < totalPages - 1) {
-            const ellipsis = document.createElement('span');
-            ellipsis.textContent = '...';
-            ellipsis.style.padding = '8px 12px';
-            paginationControls.appendChild(ellipsis);
-          }
-          
-          const lastBtn = document.createElement('button');
-          lastBtn.className = 'page-btn';
-          lastBtn.textContent = totalPages;
-          paginationControls.appendChild(lastBtn);
-        }
-        
-        // Next button
-        const nextBtn = document.createElement('button');
-        nextBtn.className = `page-btn next-btn ${currentPage === totalPages ? 'disabled' : ''}`;
-        nextBtn.innerHTML = 'Next <i class="fas fa-chevron-right"></i>';
-        paginationControls.appendChild(nextBtn);
       }
+      
+      // Add first page and ellipsis if needed
+      if (startPage > 1) {
+        addPageButton(1);
+        if (startPage > 2) {
+          addEllipsis();
+        }
+      }
+      
+      // Add page buttons
+      for (let i = startPage; i <= endPage; i++) {
+        addPageButton(i);
+      }
+      
+      // Add last page and ellipsis if needed
+      if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+          addEllipsis();
+        }
+        addPageButton(totalPages);
+      }
+      
+      // Next button
+      const nextBtn = document.createElement('button');
+      nextBtn.className = `page-btn next-btn ${currentPage === totalPages ? 'disabled' : ''}`;
+      nextBtn.innerHTML = 'Next <i class="fas fa-chevron-right"></i>';
+      nextBtn.addEventListener('click', () => {
+        if (currentPage < totalPages) {
+          currentPage++;
+          fetchComplaints();
+        }
+      });
+      paginationControls.appendChild(nextBtn);
+      
+      // Helper functions
+      function addPageButton(pageNumber) {
+        const pageBtn = document.createElement('button');
+        pageBtn.className = `page-btn ${pageNumber === currentPage ? 'active' : ''}`;
+        pageBtn.textContent = pageNumber;
+        pageBtn.addEventListener('click', () => {
+          currentPage = pageNumber;
+          fetchComplaints();
+        });
+        paginationControls.appendChild(pageBtn);
+      }
+      
+      function addEllipsis() {
+        const ellipsis = document.createElement('span');
+        ellipsis.textContent = '...';
+        ellipsis.style.padding = '8px 12px';
+        ellipsis.style.color = '#6c757d';
+        paginationControls.appendChild(ellipsis);
+      }
+    }
   
   // Initialize event listeners for table rows
   function initializeRowEventListeners() {
@@ -2276,12 +3089,10 @@ function initializeActionDropdowns() {
       });
       
       // Mark complaint button
+      // Mark complaint button
       row.querySelector('.mark-complaint-btn')?.addEventListener('click', function(e) {
         e.preventDefault();
-        const confirmed = confirm(`Do you want to mark the complaint #${complaintId} as 'Completed'? This action cannot be undone.`);
-        if (confirmed) {
-          markComplaintCompleted(complaintId, row);
-        }
+        openMarkComplaintModal(complaintId);
       });
     });
   }
@@ -2529,7 +3340,6 @@ async function fetchSkillmenForModal() {
     primaryDropdown.text.textContent = `${skillman.name} (${skillman.phone}), ${skillman.location}, ${skillman.skill}`;
     renderHelperDropdown();
   }
-  
   
   
   // Dropdown toggle function
@@ -3092,6 +3902,269 @@ function populateDropdown(dropdownId, options) {
     dropdown.appendChild(opt);
   });
 }
+
+
+
+
+
+
+
+
+
+
+
+
+// Mark Complaint Modal Functions
+function openMarkComplaintModal(complaintId) {
+  const modal = document.getElementById('markComplaintModalBackdrop');
+  const complaintIdSpan = document.getElementById('markComplaintId');
+  
+  // Set the complaint ID in the modal
+  complaintIdSpan.textContent = complaintId;
+  
+  // Store the complaint ID in the modal for later use
+  modal.dataset.complaintId = complaintId;
+  
+  // Show the modal
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeMarkComplaintModal() {
+  const modal = document.getElementById('markComplaintModalBackdrop');
+  modal.classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+function updateComplaintStatus(status) {
+  const modal = document.getElementById('markComplaintModalBackdrop');
+  const complaintId = modal.dataset.complaintId;
+  const authToken = localStorage.getItem('authToken');
+  
+  // Show loading state
+  const buttons = document.querySelectorAll('.mark-complaint-option');
+  buttons.forEach(btn => btn.disabled = true);
+  
+  // Find the row for this complaint
+  const row = document.querySelector(`tr[data-complaint-id="${complaintId}"]`);
+  const statusCell = row.querySelector('td:nth-child(11)');
+  const statusBadge = statusCell.querySelector('.status-badge');
+  
+  // Store original status for potential rollback
+  const originalStatus = statusBadge.textContent;
+  const originalStatusClass = statusBadge.className;
+  
+  // Update UI immediately for better UX
+  statusBadge.textContent = status;
+  
+  // Set appropriate status class
+  let statusClass = '';
+  switch(status.toLowerCase()) {
+    case 'completed':
+      statusClass = 'status-completed';
+      break;
+    case 'deffered':
+      statusClass = 'status-deffered';
+      break;
+    case 'sna':
+      statusClass = 'status-sna';
+      break;
+    case 'in-progress':
+      statusClass = 'status-in-progress';
+      break;
+    default:
+      statusClass = 'status-in-progress';
+  }
+  statusBadge.className = `status-badge ${statusClass}`;
+  
+  // Make API call to update status
+  fetch(`${SERVER_URL}/api/complaints/update-status`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${authToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      complaint_id: complaintId,
+      status: status
+    })
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    return response.json();
+  })
+  .then(data => {
+    if (data.success) {
+      // Update action dropdown based on new status
+      const actionDropdown = row.querySelector('.action-dropdown-content');
+      if (actionDropdown && status === 'Completed') {
+        actionDropdown.innerHTML = `
+          <a href="#" class="complaint-details-btn"><i class="fas fa-info-circle"></i> Complaint Details</a>
+          <a href="#" class="print-complaint-btn"><i class="fas fa-print"></i> Print Complaint</a>
+        `;
+        
+        // Re-attach event listeners
+        initializeActionButtonListeners(row);
+      }
+      
+      showNotification(`Complaint marked as ${status} successfully!`, 'success', 3000);
+      closeMarkComplaintModal();
+    } else {
+      throw new Error(data.message || 'Failed to update complaint status');
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    // Revert to original status
+    statusBadge.textContent = originalStatus;
+    statusBadge.className = originalStatusClass;
+    showNotification('Failed to update complaint status: ' + error.message, 'error', 3000);
+  })
+  .finally(() => {
+    // Re-enable buttons
+    buttons.forEach(btn => btn.disabled = false);
+  });
+}
+
+// Initialize Mark Complaint Modal
+function initMarkComplaintModal() {
+  const modalBackdrop = document.getElementById('markComplaintModalBackdrop');
+  const closeBtn = document.getElementById('closeMarkComplaintBtn');
+  const optionButtons = document.querySelectorAll('.mark-complaint-option');
+  
+  // Close modal events
+  if (closeBtn) {
+    closeBtn.addEventListener('click', closeMarkComplaintModal);
+  }
+  
+  // Close when clicking outside modal
+  if (modalBackdrop) {
+    modalBackdrop.addEventListener('click', (e) => {
+      if (e.target === modalBackdrop) {
+        closeMarkComplaintModal();
+      }
+    });
+  }
+  
+  // Option button events
+  optionButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      const status = button.dataset.status;
+      updateComplaintStatus(status);
+    });
+  });
+}
+
+// Call this function when the DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+  initMarkComplaintModal();
+});
   </script>
+
+
+
+
+  
+  <script>
+// Add this function to handle the modal button clicks
+function setupMarkComplaintModalListeners() {
+  const modalBackdrop = document.getElementById('markComplaintModalBackdrop');
+  const closeBtn = document.getElementById('closeMarkComplaintBtn');
+  const optionButtons = document.querySelectorAll('.mark-complaint-option');
+  
+  // Close modal events
+  if (closeBtn) {
+    closeBtn.addEventListener('click', closeMarkComplaintModal);
+  }
+  
+  // Close when clicking outside modal
+  if (modalBackdrop) {
+    modalBackdrop.addEventListener('click', (e) => {
+      if (e.target === modalBackdrop) {
+        closeMarkComplaintModal();
+      }
+    });
+  }
+  
+  // Option button events - connect to updateComplaintStatus
+  optionButtons.forEach(button => {
+    button.addEventListener('click', (e) => {
+      e.preventDefault();
+      const status = button.getAttribute('data-status');
+      updateComplaintStatus(status);
+    });
+  });
+}
+
+// Call this function when the DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+  setupMarkComplaintModalListeners();
+});
+
+// Make sure the openMarkComplaintModal function stores the complaint ID correctly
+function openMarkComplaintModal(complaintId) {
+  const modal = document.getElementById('markComplaintModalBackdrop');
+  const complaintIdSpan = document.getElementById('markComplaintId');
+  
+  // Set the complaint ID in the modal
+  complaintIdSpan.textContent = complaintId;
+  
+  // Store the complaint ID in the modal for later use
+  modal.dataset.complaintId = complaintId;
+  
+  // Show the modal
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+</script>
+
+<script>
+// Add this function to fetch priority counts
+async function fetchPriorityCounts() {
+  try {
+    const authToken = localStorage.getItem('authToken');
+    const response = await fetch(`${SERVER_URL}/api/count-based-on-priority`, {
+      headers: {
+        'Authorization': `Bearer ${authToken}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch priority counts');
+    }
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      // Update the counts for each priority
+      document.getElementById('immediate-count').textContent = data.counts.immediate || 0;
+      document.getElementById('urgent-count').textContent = data.counts.urgent || 0;
+      document.getElementById('routine-count').textContent = data.counts.routine || 0;
+      document.getElementById('deferred-count').textContent = data.counts.deferred || 0;
+    } else {
+      throw new Error(data.message || 'Failed to fetch priority counts');
+    }
+  } catch (error) {
+    console.error('Error fetching priority counts:', error);
+    // Don't show an error notification as this is a background process
+  }
+}
+
+// Call this function when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+  fetchPriorityCounts();
+  
+  // Also fetch counts after certain actions that might change the counts
+  // For example, after assigning a skillman or marking a complaint
+  // You can call fetchPriorityCounts() in those functions too
+});
+
+// You might also want to refresh counts after certain operations
+// For example, after assigning a skillman or updating a complaint status
+// Add fetchPriorityCounts() calls in those success handlers
+</script>
 </body>
 </html>
