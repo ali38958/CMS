@@ -1,4 +1,75 @@
 <!DOCTYPE html>
+  <script>  
+    setTimeout(() => {
+      console.log("2 seconds later...");
+    }, 2000); // 2000 milliseconds = 2 seconds
+    
+    // Variables to store user data
+    let complaintReceiverName = '';
+    let complaintReceiverId = null;
+
+    async function verifyAuthToken() {
+      const authToken = localStorage.getItem('authToken');
+      
+      if (!authToken) {
+        console.log('No authToken found in localStorage');
+        alert('Authentication failed: No token found');
+        window.location.href = 'login.html';
+        return;
+      }
+
+      try {
+        console.log('Attempting to verify authToken...');
+        
+        const response = await fetch('http://localhost:3000/verify-token-get-receiver', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('API Response:', data);
+
+        if (data.success) {
+          console.log('Token verification successful for user:', data.user.name);
+
+          localStorage.setItem('UserId', data.user.name);
+          
+          // Store user data in localStorage
+          localStorage.setItem('currentUser', JSON.stringify(data.user));
+          
+          // Store user ID in variable
+          complaintReceiverId = data.user.id;
+          console.log('Current user ID:', complaintReceiverId);
+          
+          // Store receiver name
+          complaintReceiverName = data.receiver?.name || 'Unknown';
+          console.log('Complaint receiver name:', complaintReceiverName);
+          
+        } else {
+          console.log('Token verification failed:', data.message || 'No error message provided');
+          //alert('Authentication failed: ' + (data.message || 'Invalid token'));
+          showNotification('Authentication failed: ' + (data.message || 'Invalid token'), 'error');
+          window.location.href = 'login.html';
+        }
+      } catch (error) {
+        console.error('Error during token verification:', error);
+        //alert('Authentication failed: ' + error.message);
+        showNotification('Authentication failed: ' + error.message, 'error')
+        window.location.href = 'login.html';
+      }
+    }
+
+    // Call the function when the page loads
+    document.addEventListener('DOMContentLoaded', verifyAuthToken);
+
+  </script>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -204,7 +275,7 @@
     /* Reporting Section Styles */
     .content {
       width: 100%;
-      max-width: 1800px;
+      max-width: 95vw;
       margin: 0 auto;
       padding: 25px;
       background-color: white;
@@ -918,8 +989,8 @@
     </div>
 
     <div class="user">
-      <h2>Unknown</h2>
-      <button class="logout-btn">Logout</button>
+      <h2 id="user-id">Unknown</h2>
+      <button class="logout-btn" id="logout-btn">Logout</button>
       <div class="hamburger">
         <i class="fas fa-bars" id="hamburger-btn"></i>
         <div class="navigation-block">
@@ -935,7 +1006,7 @@
   <!-- Navigation -->
   <div class="nav-bar">
     <div class="nav-container">
-      <a href="#" class="nav-item">
+      <a href="dashboard.html" class="nav-item">
         <i class="fas fa-chart-line"></i>
         Dashboard
       </a>
@@ -947,14 +1018,14 @@
         <i class="fas fa-users"></i>
         Users
       </a>
-      <a href="#" class="nav-item">
+      <!--a href="#" class="nav-item">
         <i class="fas fa-store"></i>
         Store
       </a>
       <a href="#" class="nav-item">
         <i class="fas fa-boxes"></i>
         Stock
-      </a>
+      </a-->
       <a href="#" class="nav-item active">
         <i class="fas fa-file-alt"></i>
         Reporting
@@ -1290,14 +1361,79 @@
     </div>
   </div>
 
-  <script>
-    const hamburgerBtn = document.getElementById("hamburger-btn");
-    const navBlock = document.querySelector(".navigation-block");
+<script>
+  const hamburgerBtn = document.getElementById("hamburger-btn");
+  const navBlock = document.querySelector(".navigation-block");
 
-    hamburgerBtn.addEventListener("click", () => {
-      navBlock.classList.toggle("active");
+  // Toggle navigation on hamburger click
+  hamburgerBtn.addEventListener("click", (e) => {
+    e.stopPropagation(); // Prevent click from bubbling to document
+    navBlock.classList.toggle("active");
+  });
+
+  // Close navigation when clicking outside
+  document.addEventListener("click", (e) => {
+    // Check if click is outside the navigation block and hamburger button
+    if (!navBlock.contains(e.target) && e.target !== hamburgerBtn) {
+      navBlock.classList.remove("active");
+    }
+  });
+
+  // Optional: Prevent clicks inside navigation from closing it
+  navBlock.addEventListener("click", (e) => {
+    e.stopPropagation();
+  });
+</script>
+
+<script>
+  let USER_ID = localStorage.getItem('UserId');
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById("user-id").textContent = USER_ID;
+      localStorage.removeItem('UserId');
     });
-  </script>
+
+    const SERVER_URL = 'http://localhost:3000';
+  // Logout functionality
+  document.addEventListener('DOMContentLoaded', function() {
+
+    // DOM Elements
+    const logoutBtn = document.getElementById('logout-btn');
+    
+    logoutBtn.addEventListener('click', async () => {
+      try {
+        const authToken = localStorage.getItem('authToken');
+        const response = await fetch(SERVER_URL+'/logout', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${authToken}`,'Content-Type': 'application/json' }
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          document.getElementById("user-id").textContent = 'Unknown';
+          console.log('Logout success:', data);
+          alert('Logged out successfully!');
+          
+          // 👇 you can add more procedural lines here
+          // e.g., redirect:
+          setTimeout(() => {
+            window.location.href = 'login.html';
+          }, 500); // 500 ms = 0.5 sec
+
+        } else {
+          console.error('Logout failed:', data);
+          alert('Logout failed!');
+        }
+
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Something went wrong!');
+      }
+    });
+    
+  });
+</script>
 
   <script>
 
