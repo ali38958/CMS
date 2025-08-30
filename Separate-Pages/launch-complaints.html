@@ -238,7 +238,7 @@
 
     .content {
       width: 100%;
-      max-width: 1800px;
+      max-width: 95vw;
       margin: 0 auto;
       padding: 20px;
       background-color: white;
@@ -1602,15 +1602,15 @@ label {
         <i class="fas fa-users"></i>
         Users
       </a>
-      <a href="#" class="nav-item">
+      <!--a href="#" class="nav-item">
         <i class="fas fa-store"></i>
         Store
       </a>
       <a href="#" class="nav-item">
         <i class="fas fa-boxes"></i>
         Stock
-      </a>
-      <a href="#" class="nav-item">
+      </a-->
+      <a href="complaint-reporting.html" class="nav-item">
         <i class="fas fa-file-alt"></i>
         Reporting
       </a>
@@ -1710,10 +1710,18 @@ label {
   </div>
 
   <script>
+          
+    document.getElementById("user-id").textContent = 'Unknown';
 
     let USER_ID = localStorage.getItem('UserId');
-    
+
     document.getElementById("user-id").textContent = USER_ID;
+    
+    if(document.getElementById("user-id").textContent != USER_ID) {
+      setTimeout(() => {
+        location.reload();
+      }, 500); // 500 ms = 0.5 sec
+    }
 
     localStorage.removeItem('UserId');
     
@@ -1754,10 +1762,7 @@ function showNotification(message, type = 'success', duration = 3000) {
     setTimeout(() => notification.remove(), 300);
   }, duration);
 }
-
-
-
-
+ 
 
     const SERVER_URL = 'http://localhost:3000';
 
@@ -1778,10 +1783,14 @@ function showNotification(message, type = 'success', duration = 3000) {
 
         if (response.ok) {
           console.log('Logout success:', data);
-          alert('Logged out successfully!');
+          //alert('Logged out successfully!');
           // 👇 you can add more procedural lines here
           // e.g., redirect:
-          window.location.href = 'login.html';
+          showNotification('Logging out');
+          localStorage.removeItem('authToken');
+          setTimeout(() => {
+            window.location.href = 'login.html';
+          }, 1000); // 1000 ms = 1 sec
         } else {
           console.error('Logout failed:', data);
           alert('Logout failed!');
@@ -1841,18 +1850,26 @@ function showNotification(message, type = 'success', duration = 3000) {
 
     // Function to fetch address data
 function fetchAddressData() {
+  const authToken = localStorage.getItem('authToken');
   loadingSpinner.style.display = 'block';
   addressTableBody.innerHTML = '';
   errorMessage.style.display = 'none';
   noRecords.style.display = 'none';
   
-  fetch(SERVER_URL+'/api/addresses')
+  fetch(SERVER_URL+'/api/addresses',
+    {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+        'Content-Type': 'application/json'
+      }
+    })
     .then(response => response.json())
     .then(data => {
       loadingSpinner.style.display = 'none';
       currentAddressData = data; // Store the data for searching
       if (data && data.length > 0) {
         renderAddressTable(data);
+        //console.log('Address data fetched:', data);
       } else {
         noRecords.style.display = 'block';
       }
@@ -1862,6 +1879,7 @@ function fetchAddressData() {
       loadingSpinner.style.display = 'none';
       errorMessage.style.display = 'block';
       errorMessage.textContent = 'Error loading address data';
+      showNotification('Error loading address data', 'error');
     });
 }
 
@@ -2308,9 +2326,7 @@ function hideAllErrors() {
     document.getElementById('email-error').style.display = 'none';
     document.getElementById('phone-error').style.display = 'none';
 }
-
-
-
+ 
 
   // Modal functionality with API integration
   document.addEventListener('DOMContentLoaded', function() {
@@ -2623,9 +2639,7 @@ function populateLocationSelect(locations) {
     assignButton.disabled = false;
   }
 }
-
-
-
+ 
 
 document.addEventListener('DOMContentLoaded', function() {
     // DOM Elements
