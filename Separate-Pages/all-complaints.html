@@ -226,7 +226,7 @@
 
     .content {
       width: 100%;
-      max-width: 1800px;
+      max-width: 95vw;
       margin: 0 auto;
       padding: 20px;
       background-color: white;
@@ -456,10 +456,12 @@
       border-collapse: collapse;
       margin-top: 20px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-      border-radius: 12px;
+      border-radius: 5px;
       overflow: hidden;
       background: white;
       font-size: 13px;
+      overflow-x: auto;
+      border: 1px solid #ffc4c4; /* Add outer border instead of individual cell borders */
     }
 
     
@@ -470,17 +472,17 @@
       padding: 10px 12px;
       text-align: center;
       font-size: 14px;
+      border: 1px solid #ffc4c4; /* vertical line color */
     }
     
     .complaints-history-table td {
       padding: 8px 12px;
       border-bottom: 1px solid rgba(0,0,0,0.05);
       vertical-align: middle;
-      border-left: 1px solid #f3f3f3; /* vertical line color */
+      border: 1px solid #ffc4c4; /* vertical line color */
       cursor: default;
       vertical-align: top;
       height: 60px;
-
     }
     
     .complaints-history-table tr:hover:not(tfoot tr) {
@@ -554,7 +556,6 @@
     } 
     
     .action-cell {
-      display: flex;
       gap: 5px;
     }
     
@@ -709,11 +710,11 @@
   display: block;
 }
 
-    @media (max-width: 1200px) {
+/* Changed from 1200 to 1495 */
+    @media (max-width: 1495px) {
       .complaints-history-table {
         display: block;
         overflow-x: auto;
-        white-space: nowrap;
       }
     }
 
@@ -1020,45 +1021,6 @@
   color: var(--dark);
 }
 
-.helper-tag-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  min-height: 50px;
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  background-color: white;
-}
-
-.helper-tag {
-  display: inline-flex;
-  align-items: center;
-  padding: 6px 12px;
-  background-color: rgba(136, 28, 28, 0.1);
-  border-radius: 16px;
-  font-size: 14px;
-  height: fit-content;
-}
-
-.helper-tag button {
-  background: none;
-  border: none;
-  margin-left: 6px;
-  color: var(--secondary);
-  cursor: pointer;
-  padding: 0;
-  line-height: 1;
-}
-
-.helper-tag button:hover {
-  color: var(--danger);
-}
-
-.empty-helpers {
-  color: var(--secondary);
-  font-style: italic;
-}
 
 /* Modal Footer */
 .modal-footer {
@@ -1668,6 +1630,10 @@
       .report-header h1 {
         font-size: 20px;
       }
+
+      .logo {
+        flex-direction: column;
+      }
       
       .logo h2 {
         font-size: 16px;
@@ -1889,13 +1855,13 @@
     display: none; 
   }/* Hide less important columns on mobile */
   
-  /* Show essential columns only */
+  /* Show essential columns only /
   .complaints-history-table th:nth-child(-n+3),
   .complaints-history-table td:nth-child(-n+3),
   .complaints-history-table th:nth-last-child(-n+2),
   .complaints-history-table td:nth-last-child(-n+2) {
     display: table-cell;
-  }
+  }*/
   
   /* Action button adjustments */
   .action-dropdown-btn {
@@ -2180,14 +2146,14 @@
         <i class="fas fa-users"></i>
         Users
       </a>
-      <a href="#" class="nav-item">
+      <!--a href="#" class="nav-item">
         <i class="fas fa-store"></i>
         Store
       </a>
       <a href="#" class="nav-item">
         <i class="fas fa-boxes"></i>
         Stock
-      </a>
+      </a-->
       <a href="#" class="nav-item">
         <i class="fas fa-file-alt"></i>
         Reporting
@@ -2363,23 +2329,39 @@
     </div>
   </div>
 
-  <script>
-    const hamburgerBtn = document.getElementById("hamburger-btn");
-    const navBlock = document.querySelector(".navigation-block");
+<script>
+  const hamburgerBtn = document.getElementById("hamburger-btn");
+  const navBlock = document.querySelector(".navigation-block");
 
-    hamburgerBtn.addEventListener("click", () => {
-      navBlock.classList.toggle("active");
-    });
-  </script>
+  // Toggle navigation on hamburger click
+  hamburgerBtn.addEventListener("click", (e) => {
+    e.stopPropagation(); // Prevent click from bubbling to document
+    navBlock.classList.toggle("active");
+  });
+
+  // Close navigation when clicking outside
+  document.addEventListener("click", (e) => {
+    // Check if click is outside the navigation block and hamburger button
+    if (!navBlock.contains(e.target) && e.target !== hamburgerBtn) {
+      navBlock.classList.remove("active");
+    }
+  });
+
+  // Optional: Prevent clicks inside navigation from closing it
+  navBlock.addEventListener("click", (e) => {
+    e.stopPropagation();
+  });
+</script>
 
   <script>
 
     let USER_ID = localStorage.getItem('UserId');
     
+  document.addEventListener('DOMContentLoaded', function() {
     document.getElementById("user-id").textContent = USER_ID;
-
     localStorage.removeItem('UserId');
-
+  });
+    
 
     function showNotification(message, type = 'success', duration = 3000) {
       const notificationArea = document.getElementById('notification-area');
