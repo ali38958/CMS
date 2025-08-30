@@ -4,9 +4,21 @@ const cors = require('cors');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const moment = require('moment-timezone');
+const CryptoJS = require('crypto-js');
+const dotenv = require('dotenv');
 
 
-// Database configuration
+const fs = require("fs");
+const qrcode = require("qrcode-terminal");
+const { Client } = require("whatsapp-web.js");
+
+require("dotenv").config();
+// WhatsApp Web.js integration
+
+
+
+
+/*/ Database configuration
 const dbConfig = {
   user: 'cms_user2',
   password: 'StrongPassword456',
@@ -17,10 +29,27 @@ const dbConfig = {
     trustServerCertificate: true
   }
 };
+*/
+// Database configuration
+const dbConfig = {
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  server: process.env.DB_SERVER,
+  database: process.env.DB_NAME,
+  options: {
+    encrypt: false,
+    trustServerCertificate: true
+  }
+};
+
 
 // Create Express app
 const app = express();
-const port = 3000;
+const port = process.env.PORT;
+
+
+
+
 
 // Middleware
 app.use(cors());
@@ -37,6 +66,830 @@ async function testConnection() {
     throw err;
   }
 }
+
+
+
+
+
+
+
+
+// Whatsapp login
+// --- WhatsApp Client ---
+let client = new Client();
+
+client.on("qr", (qr) => {
+    console.log("📱 Scan this QR code to log in:");
+    qrcode.generate(qr, { small: true });
+});
+
+client.on("authenticated", () => {
+    console.log("✅ Authenticated with WhatsApp");
+});
+
+client.on("ready", () => {
+    console.log("🤖 WhatsApp client is ready!");
+});
+
+client.on("disconnected", (reason) => {
+    console.log("⚠️ WhatsApp disconnected:", reason);
+});
+
+client.initialize();
+
+// --- Express Endpoints ---
+app.get("/", (req, res) => {
+    res.send("🚀 WhatsApp API running. Use /whatsapp-logout to log out manually.");
+});
+
+app.get("/whatsapp-logout", async (req, res) => {
+    try {
+        await client.logout();
+        res.send("✅ Logged out from WhatsApp.");
+    } catch (err) {
+        console.error("❌ Error logging out:", err);
+        res.status(500).send("Error logging out from WhatsApp.");
+    }
+});
+
+// --- Graceful Shutdown ---
+async function shutdown() {
+    console.log("\n⏹️ Shutting down server...");
+    if (client) {
+        try {
+            await client.logout();
+            console.log("✅ Logged out from WhatsApp before exit.");
+        } catch (err) {
+            console.error("❌ Failed to log out:", err.message);
+        }
+    }
+    process.exit(0);
+}
+
+process.on("SIGINT", shutdown);   // CTRL+C
+process.on("SIGTERM", shutdown);  // kill command
+
+
+
+
+
+
+
+
+
+
+
+
+// Whatsapp message listener
+// WhatsApp message event handler
+client.on('message', async (message) => {
+    try {
+        // Ignore messages sent by ourselves
+        if (message.fromMe) return;
+
+        const senderNumber = message.from.replace('@c.us', '');
+        console.log(`Message received from: ${senderNumber}`);
+
+        // Normalize the incoming WhatsApp number to match database format
+        const normalizedSenderNumber = normalizeToLocalFormat(senderNumber);
+        console.log(`Normalized sender number: ${normalizedSenderNumber}`);
+
+        // Check if sender is a customer
+        let pool;
+        try {
+            pool = await sql.connect(dbConfig);
+
+            // Check if this phone number belongs to a customer (compare with normalized number)
+            const customerQuery = `
+                SELECT c.customer_id, c.full_name 
+                FROM Customers c 
+                WHERE c.phone_number = @phoneNumber
+            `;
+
+            const customerResult = await pool.request()
+                .input('phoneNumber', sql.NVarChar(20), normalizedSenderNumber)
+                .query(customerQuery);
+
+            if (customerResult.recordset.length === 0) {
+                console.log(`Number ${normalizedSenderNumber} is not a registered customer`);
+                console.log(`Original WhatsApp number: ${senderNumber}`);
+                return; // Not a customer, ignore message
+            }
+
+            const customer = customerResult.recordset[0];
+            const messageBody = message.body.trim();
+
+            console.log(`Processing message from customer: ${customer.full_name}, Message: ${messageBody}`);
+
+            // Check if this is a reply to our message
+            if (message.hasQuotedMsg) {
+                const quotedMsg = await message.getQuotedMessage();
+                
+                // Check if the quoted message is from us and contains a review request
+                if (quotedMsg.fromMe && (quotedMsg.body.includes('rating') || quotedMsg.body.includes('rate'))) {
+                    // Extract complaint ID from quoted message
+                    const complaintIdMatch = quotedMsg.body.match(/#(HT\d+-\d+)/) || quotedMsg.body.match(/#(\w+-\d+)/);
+                    if (complaintIdMatch) {
+                        const complaintId = complaintIdMatch[1];
+                        console.log(`Found complaint ID in reply: ${complaintId}`);
+                        await processRatingReview(pool, normalizedSenderNumber, messageBody, complaintId, customer);
+                        return;
+                    }
+                }
+            }
+
+            // If not a reply, check if message starts with rating digit (0-5)
+            const ratingMatch = messageBody.match(/^([0-5])\s*(.*)$/);
+            if (ratingMatch) {
+                console.log(`Rating message detected: ${messageBody}`);
+                
+                // Find awaiting feedback for this customer
+                const awaitingFeedbackQuery = `
+                    SELECT cf.complaint_id 
+                    FROM ComplaintFeedback cf
+                    INNER JOIN Complaints c ON cf.complaint_id = c.complaint_id
+                    INNER JOIN Customers cust ON c.customer_id = cust.customer_id
+                    WHERE cust.phone_number = @phoneNumber 
+                    AND cf.status = 'awaiting'
+                    ORDER BY cf.created_at DESC
+                `;
+
+                const feedbackResult = await pool.request()
+                    .input('phoneNumber', sql.NVarChar(20), normalizedSenderNumber)
+                    .query(awaitingFeedbackQuery);
+
+                if (feedbackResult.recordset.length > 0) {
+                    const complaintId = feedbackResult.recordset[0].complaint_id;
+                    console.log(`Found awaiting feedback for complaint: ${complaintId}`);
+                    await processRatingReview(pool, normalizedSenderNumber, messageBody, complaintId, customer);
+                } else {
+                    console.log(`No awaiting feedback found for customer ${normalizedSenderNumber}`);
+                    await sendMessage(senderNumber, "Thank you for your message. We don't have any pending review requests for you.");
+                }
+            } else {
+                console.log(`Message doesn't start with rating digit (0-5): ${messageBody}`);
+            }
+
+        } catch (error) {
+            console.error('Error processing message:', error);
+        } finally {
+            if (pool) {
+                await pool.close();
+            }
+        }
+
+    } catch (error) {
+        console.error('Error in message handler:', error);
+    }
+});
+
+// Helper function to convert international format to local format
+function normalizeToLocalFormat(phoneNumber) {
+    let digitsOnly = phoneNumber.replace(/\D/g, '');
+    
+    // If number is in international format (92XXXXXXXXX), convert to local (0XXXXXXXXXX)
+    if (digitsOnly.startsWith('92') && digitsOnly.length === 12) {
+        return '0' + digitsOnly.substring(2);
+    }
+    else if (digitsOnly.startsWith('92') && digitsOnly.length > 12) {
+        return '0' + digitsOnly.substring(2, 13);
+    }
+    
+    // If already in local format or other format, return as is (up to 11 digits)
+    return digitsOnly.length > 11 ? digitsOnly.substring(0, 11) : digitsOnly;
+}
+
+// Helper function to process rating and review
+async function processRatingReview(pool, phoneNumber, messageBody, complaintId, customer) {
+    const ratingMatch = messageBody.match(/^([0-5])\s*(.*)$/);
+    
+    if (!ratingMatch) {
+        console.log(`Invalid rating format from ${phoneNumber}: ${messageBody}`);
+        await sendMessage(phoneNumber, "Please send your rating in the format: '5 Your review here'. Rating should be 0-5 followed by your comments.");
+        return;
+    }
+
+    const rating = parseInt(ratingMatch[1]);
+    const review = ratingMatch[2].trim();
+
+    console.log(`Processing rating: ${rating}, review: ${review} for complaint: ${complaintId}`);
+
+    // Validate complaint exists and belongs to this customer
+    const complaintCheckQuery = `
+        SELECT c.complaint_id 
+        FROM Complaints c
+        INNER JOIN Customers cust ON c.customer_id = cust.customer_id
+        WHERE c.complaint_id = @complaintId 
+        AND cust.phone_number = @phoneNumber
+    `;
+
+    const complaintResult = await pool.request()
+        .input('complaintId', sql.VarChar(25), complaintId)
+        .input('phoneNumber', sql.NVarChar(20), phoneNumber)
+        .query(complaintCheckQuery);
+
+    if (complaintResult.recordset.length === 0) {
+        console.log(`Complaint ${complaintId} not found for customer ${phoneNumber}`);
+        await sendMessage(formatPhoneNumber(phoneNumber), "We couldn't find the complaint you're trying to review. Please contact support.");
+        return;
+    }
+
+    // Update the feedback record
+    const updateQuery = `
+        UPDATE ComplaintFeedback 
+        SET rating = @rating, 
+            review = @review, 
+            status = 'reviewed',
+            created_at = GETDATE()
+        WHERE complaint_id = @complaintId 
+        AND status = 'awaiting'
+    `;
+
+    const updateResult = await pool.request()
+        .input('rating', sql.Int, rating)
+        .input('review', sql.NVarChar(sql.MAX), review)
+        .input('complaintId', sql.VarChar(25), complaintId)
+        .query(updateQuery);
+
+    console.log(`Rating received - Complaint: ${complaintId}, Rating: ${rating}, Review: ${review}`);
+    console.log(`Rows affected: ${updateResult.rowsAffected}`);
+
+    // Send confirmation message
+    let confirmationMessage = `Thank you, ${customer.full_name}!\n\n`;
+    confirmationMessage += `Your rating of ${rating} stars has been recorded for complaint #${complaintId}.\n\n`;
+    
+    if (review) {
+        confirmationMessage += `Review: "${review}"\n\n`;
+    }
+    
+    confirmationMessage += `We appreciate your feedback!`;
+
+    await sendMessage(formatPhoneNumber(phoneNumber), confirmationMessage);
+}
+
+// Helper function to send messages (convert back to international format for WhatsApp)
+async function sendMessage(phoneNumber, text) {
+    try {
+        const formattedNumber = formatPhoneNumber(phoneNumber);
+        const chatId = `${formattedNumber}@c.us`;
+        await client.sendMessage(chatId, text);
+        console.log(`Confirmation sent to: ${formattedNumber}`);
+    } catch (error) {
+        console.error('Error sending confirmation message:', error);
+    }
+}
+
+// Phone number formatting function for WhatsApp (local to international)
+function formatPhoneNumber(phoneNumber) {
+    let digitsOnly = phoneNumber.replace(/\D/g, '');
+    
+    // Convert local format to international
+    if (digitsOnly.startsWith('0') && digitsOnly.length === 11) {
+        return '92' + digitsOnly.substring(1);
+    }
+    else if (digitsOnly.startsWith('0') && digitsOnly.length > 11) {
+        return '92' + digitsOnly.substring(1, 12);
+    }
+    else if (!digitsOnly.startsWith('92') && digitsOnly.length === 10) {
+        return '92' + digitsOnly;
+    }
+    
+    // If already in international format or other, return as is
+    return digitsOnly.length > 12 ? digitsOnly.substring(0, 12) : digitsOnly;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Your secret key (store this securely in environment variables in production)
+//const SECRET_KEY = process.env.ENCRYPTION_SECRET || 'your-super-secret-key-here-256-bit';
+const SECRET_KEY = process.env.ENCRYPTION_SECRET; // Example key, replace with a strong key
+
+// Encrypt ID endpoint
+app.post('/api/encrypt-id', async (req, res) => {
+  try {
+    const { complaint_id } = req.body;
+    
+    if (!complaint_id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Complaint ID is required'
+      });
+    }
+    
+    // Encrypt the complaint ID
+    const encryptedId = CryptoJS.AES.encrypt(complaint_id.toString(), SECRET_KEY).toString();
+    
+    // URL-safe encoding (replace characters that might cause issues in URLs)
+    const urlSafeEncryptedId = encryptedId
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=/g, '');
+    
+    res.json({
+      success: true,
+      encrypted_id: urlSafeEncryptedId,
+      message: 'ID encrypted successfully'
+    });
+    
+  } catch (error) {
+    console.error('Encryption error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error during encryption'
+    });
+  }
+});
+
+
+// Optional: Decryption endpoint (if needed elsewhere in your application)
+app.post('/api/decrypt-id', async (req, res) => {
+  let pool;
+  try {
+    const { encrypted_id } = req.body;
+    
+    if (!encrypted_id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Encrypted ID is required'
+      });
+    }
+    
+    // Convert URL-safe format back to standard Base64
+    const standardEncryptedId = encrypted_id
+      .replace(/-/g, '+')
+      .replace(/_/g, '/');
+    
+    // Decrypt the ID
+    const bytes = CryptoJS.AES.decrypt(standardEncryptedId, SECRET_KEY);
+    const decryptedId = bytes.toString(CryptoJS.enc.Utf8);
+    
+    // Validate that we got a proper decrypted ID
+    if (!decryptedId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid encrypted ID provided'
+      });
+    }
+    
+    // Connect to database and check if complaint exists
+    pool = await sql.connect(dbConfig);
+    
+    const result = await pool.request()
+      .input('complaintId', sql.VarChar, decryptedId)
+      .query('SELECT COUNT(*) as count FROM Complaints WHERE complaint_id = @complaintId');
+    
+    const complaintExists = result.recordset[0].count > 0;
+    
+    if (!complaintExists) {
+      return res.status(404).json({
+        success: false,
+        message: 'Complaint not found in the database'
+      });
+    }
+    
+    res.json({
+      success: true,
+      decrypted_id: decryptedId,
+      message: 'ID decrypted successfully and validated'
+    });
+    
+  } catch (error) {
+    console.error('Decryption error:', error);
+    
+    // Determine appropriate error message
+    let errorMessage = 'Internal server error during decryption';
+    if (error instanceof sql.ConnectionError) {
+      errorMessage = 'Database connection error';
+    } else if (error instanceof sql.RequestError) {
+      errorMessage = 'Database query error';
+    }
+    
+    res.status(500).json({
+      success: false,
+      message: errorMessage
+    });
+  } finally {
+    // Close database connection if it was opened
+    if (pool) {
+      try {
+        await pool.close();
+      } catch (closeError) {
+        console.error('Error closing database connection:', closeError);
+      }
+    }
+  }
+});
+
+
+
+
+
+
+
+// Endpoint for complaint details
+app.get(`/data`, async (req, res) => {
+  const { complaintId } = req.query;
+
+  if (!complaintId) {
+    return res.status(400).json({ error: 'complaintId query parameter is required' });
+  }
+
+  try {
+    // Connect to the database
+    await sql.connect(dbConfig);
+    
+    // SQL query to fetch all required data with joins
+    // Fixed the column names based on your table structure
+    const query = `
+      SELECT 
+        comp.customer_id,
+        cust.full_name as customer_name,
+        cust.phone_number as customer_phone,
+        s.id as skillman_id,
+        s.name as skillman_name,
+        s.phoneNumber as skillman_contact,
+        u.id as user_id,
+        u.name as user_account,
+        u.receiver as user_name,
+        comp.launched_at as initiate_time,
+        comp.assigned_at as assign_time,
+        comp.completed_at as completion_time,
+        cf.rating,
+        cf.review,
+        -- Adjust this based on your actual Colonies table structure
+        CONCAT('GE DP ', N'➜ ', col.Name, N' ➜ ', l.building_number) as location,
+        comp.status,
+        comp.priority
+      FROM Complaints comp
+      INNER JOIN Customers cust ON comp.customer_id = cust.customer_id
+      INNER JOIN Location l ON comp.location_id = l.location_id
+      INNER JOIN Colonies col ON l.colony_number = col.ColonyNumber
+      LEFT JOIN Skillmen s ON comp.skillman_id = s.id
+      LEFT JOIN Users u ON comp.receiver_id = u.id
+      LEFT JOIN ComplaintFeedback cf ON comp.complaint_id = cf.complaint_id
+      WHERE comp.complaint_id = @complaintId
+    `;
+
+    const request = new sql.Request();
+    request.input('complaintId', sql.VarChar(25), complaintId);
+
+    const result = await request.query(query);
+
+    if (result.recordset.length === 0) {
+      return res.status(404).json({ error: 'Complaint not found' });
+    }
+
+    // Format the data as required
+    const formattedData = result.recordset.map(item => ({
+      customerId: item.customer_id,
+      customerName: item.customer_name,
+      customerPhone: item.customer_phone,
+      skillmanId: item.skillman_id,
+      skillmanName: item.skillman_name,
+      skillmanContact: item.skillman_contact,
+      userId: item.user_id,
+      userAccount: item.user_account,
+      userName: item.user_name,
+      initiateTime: item.initiate_time,
+      assignTime: item.assign_time,
+      completionTime: item.completion_time,
+      rating: item.rating,
+      review: item.review,
+      location: item.location,
+      status: item.status,
+      priority: item.priority
+    }));
+
+    res.json(formattedData);
+
+  } catch (error) {
+    console.error('Database error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  } finally {
+    // Close the connection if needed
+    // await sql.close();
+  }
+});
+
+
+
+
+
+
+
+
+// Complaints data endpoint
+// Complaints data endpoint for a customer's history
+app.get('/api/users-history', async (req, res) => {
+  let pool;
+  //console.log('Received request for /api/users-history');
+  try {
+    // Get complaintId from query parameter (required)
+    const complaintId = req.query.complaintId;
+    
+    if (!complaintId) {
+      return res.status(400).json({ error: 'complaintId parameter is required' });
+    }
+    
+    // Connect to the database
+    pool = await sql.connect(dbConfig);
+    
+    // First, get the customer ID from the provided complaint ID
+    const customerQuery = `
+      SELECT customer_id 
+      FROM Complaints 
+      WHERE complaint_id = @complaintId
+    `;
+    
+    const customerRequest = pool.request();
+    customerRequest.input('complaintId', sql.VarChar(25), complaintId);
+    const customerResult = await customerRequest.query(customerQuery);
+    
+    if (customerResult.recordset.length === 0) {
+      return res.status(404).json({ error: 'Complaint not found' });
+    }
+    
+    const customerId = customerResult.recordset[0].customer_id;
+    
+    // Now get all complaints for this customer except the provided one
+    let queryString = `
+      SELECT 
+        c.complaint_id as id,
+        CONVERT(VARCHAR, c.launched_at, 23) as date,
+        col.Name + ', ' + l.building_number as location,
+        c.nature,
+        c.type as natureType,
+        ISNULL(s.name, 'Not Assigned') as skillman,
+        c.status
+      FROM Complaints c
+      LEFT JOIN Location l ON c.location_id = l.location_id
+      LEFT JOIN Colonies col ON l.colony_number = col.ColonyNumber
+      LEFT JOIN Skillmen s ON c.skillman_id = s.id
+      WHERE c.customer_id = @customerId
+      AND c.complaint_id != @complaintId
+      ORDER BY c.launched_at DESC
+    `;
+    
+    // Create request
+    const request = pool.request();
+    request.input('customerId', sql.Int, customerId);
+    request.input('complaintId', sql.VarChar(25), complaintId);
+    
+    // Execute query
+    const result = await request.query(queryString);
+    
+    // Send the results as JSON
+    res.json(result.recordset);
+    
+  } catch (error) {
+    console.error('Database query error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  } finally {
+    // Close the connection
+    if (pool) {
+      await pool.close();
+    }
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Whatsapp API to send reviewing request
+app.post('/api/send-reviewing-request', async (req, res) => {
+    const { phoneNumber, complaintId } = req.body;
+
+    if (!phoneNumber || !complaintId) {
+        return res.status(400).json({ message: 'Phone number and complaint ID are required' });
+    }
+
+    // Check if WhatsApp client is ready
+    if (!client || !client.info) {
+        console.error('WhatsApp client is not ready');
+        return res.status(503).json({ 
+            message: 'WhatsApp service is currently unavailable. Please try again later.' 
+        });
+    }
+
+    let pool;
+    try {
+        // Connect to database
+        pool = await sql.connect(dbConfig);
+        
+        // Check if complaint exists and get details
+        const complaintQuery = `
+            SELECT c.complaint_id, c.status, c.skillman_id, s.name as skillman_name,
+                   cust.phone_number, cust.full_name
+            FROM Complaints c
+            LEFT JOIN Skillmen s ON c.skillman_id = s.id
+            INNER JOIN Customers cust ON c.customer_id = cust.customer_id
+            WHERE c.complaint_id = @complaintId
+        `;
+
+        const complaintResult = await pool.request()
+            .input('complaintId', sql.VarChar(25), complaintId)
+            .query(complaintQuery);
+
+        if (complaintResult.recordset.length === 0) {
+            return res.status(404).json({ message: 'Complaint not found' });
+        }
+
+        const complaint = complaintResult.recordset[0];
+        const customerName = complaint.full_name;
+        const skillmanName = complaint.skillman_name || 'our technician';
+
+        // Check if complaint is completed - if not, return error to frontend
+        if (complaint.status !== 'Completed') {
+            return res.status(400).json({ 
+                message: 'Complaint has not been completed yet',
+                complaintStatus: complaint.status
+            });
+        }
+
+        // Check if feedback already exists and is reviewed
+        const existingFeedbackQuery = `
+            SELECT feedback_id, status, rating 
+            FROM ComplaintFeedback 
+            WHERE complaint_id = @complaintId AND status = 'reviewed'
+        `;
+
+        const existingFeedbackResult = await pool.request()
+            .input('complaintId', sql.VarChar(25), complaintId)
+            .query(existingFeedbackQuery);
+
+        // If complaint has already been reviewed, return error
+        if (existingFeedbackResult.recordset.length > 0) {
+            const feedback = existingFeedbackResult.recordset[0];
+            return res.status(400).json({ 
+                message: 'This complaint has already been reviewed',
+                complaintStatus: complaint.status,
+                existingRating: feedback.rating,
+                feedbackStatus: feedback.status
+            });
+        }
+
+        // Check for existing ComplaintFeedback records for this customer
+        const customerFeedbackQuery = `
+            SELECT cf.feedback_id, cf.status 
+            FROM ComplaintFeedback cf
+            INNER JOIN Complaints c ON cf.complaint_id = c.complaint_id
+            INNER JOIN Customers cust ON c.customer_id = cust.customer_id
+            WHERE cust.phone_number = @phoneNumber AND cf.status = 'awaiting'
+        `;
+
+        const customerFeedbackResult = await pool.request()
+            .input('phoneNumber', sql.NVarChar(20), phoneNumber)
+            .query(customerFeedbackQuery);
+
+        // Update any existing 'awaiting' records for this customer to 'not_reviewed'
+        if (customerFeedbackResult.recordset.length > 0) {
+            await pool.request()
+                .input('phoneNumber', sql.NVarChar(20), phoneNumber)
+                .query(`
+                    UPDATE cf 
+                    SET cf.status = 'not_reviewed'
+                    FROM ComplaintFeedback cf
+                    INNER JOIN Complaints c ON cf.complaint_id = c.complaint_id
+                    INNER JOIN Customers cust ON c.customer_id = cust.customer_id
+                    WHERE cust.phone_number = @phoneNumber AND cf.status = 'awaiting'
+                `);
+        }
+
+        // Check if feedback record already exists for this complaint (but not reviewed)
+        const feedbackQuery = `
+            SELECT feedback_id, status 
+            FROM ComplaintFeedback 
+            WHERE complaint_id = @complaintId AND status != 'reviewed'
+        `;
+
+        const feedbackResult = await pool.request()
+            .input('complaintId', sql.VarChar(25), complaintId)
+            .query(feedbackQuery);
+
+        let feedbackExists = feedbackResult.recordset.length > 0;
+
+        // Create or update feedback record
+        if (feedbackExists) {
+            // Update existing record to 'awaiting'
+            await pool.request()
+                .input('complaintId', sql.VarChar(25), complaintId)
+                .query(`
+                    UPDATE ComplaintFeedback 
+                    SET status = 'awaiting', created_at = GETDATE()
+                    WHERE complaint_id = @complaintId
+                `);
+        } else {
+            // Create new feedback record
+            await pool.request()
+                .input('complaintId', sql.VarChar(25), complaintId)
+                .query(`
+                    INSERT INTO ComplaintFeedback (complaint_id, status)
+                    VALUES (@complaintId, 'awaiting')
+                `);
+        }
+
+        // Prepare WhatsApp message
+        let message = `Respected ${customerName},\n\n`;
+        message += `Your complaint #${complaintId} has been successfully resolved!\n\n`;
+        message += `Please rate ${skillmanName}'s service:\n`;
+        message += `0️⃣ - Not resolved\n`;
+        message += `1️⃣ - Poor\n`;
+        message += `2️⃣ - Fair\n`;
+        message += `3️⃣ - Good\n`;
+        message += `4️⃣ - Very Good\n`;
+        message += `5️⃣ - Excellent\n\n`;
+        message += `Reply with your rating (0-5) with a review.\n\n`;
+        message += `4 (your review here)`;
+
+        // Format phone number
+        let digitsOnly = phoneNumber.replace(/\D/g, '');
+        
+        // Convert to international format for Pakistan numbers
+        let internationalNumber;
+        
+        if (digitsOnly.startsWith('92') && digitsOnly.length === 12) {
+            internationalNumber = digitsOnly;
+        } else if (digitsOnly.startsWith('92') && digitsOnly.length > 12) {
+            internationalNumber = digitsOnly.substring(0, 12);
+        } else if (digitsOnly.startsWith('3') && digitsOnly.length === 10) {
+            internationalNumber = '92' + digitsOnly;
+        } else if (digitsOnly.startsWith('03') && digitsOnly.length === 11) {
+            internationalNumber = '92' + digitsOnly.substring(1);
+        } else if (digitsOnly.startsWith('0') && digitsOnly.length === 11) {
+            internationalNumber = '92' + digitsOnly.substring(1);
+        } else if (digitsOnly.length === 9 || digitsOnly.length === 10) {
+            internationalNumber = '92' + digitsOnly;
+        } else {
+            internationalNumber = digitsOnly.length > 12 ? digitsOnly.substring(0, 12) : digitsOnly;
+            console.warn(`Unknown phone number format: ${phoneNumber}, using: ${internationalNumber}`);
+        }
+        
+        const whatsappId = `${internationalNumber}@c.us`;
+
+        // Send WhatsApp message
+        await client.sendMessage(whatsappId, message);
+        
+        console.log(`WhatsApp review request sent to ${internationalNumber} for complaint ${complaintId}`);
+
+        res.json({ 
+            message: 'Review request sent successfully',
+            complaintStatus: complaint.status,
+            feedbackUpdated: !feedbackExists
+        });
+
+    } catch (error) {
+        console.error('Error in send-reviewing-request:', error);
+        
+        // Handle specific WhatsApp errors
+        if (error.message.includes('Evaluation failed') || error.message.includes('not found')) {
+            return res.status(503).json({ 
+                message: 'WhatsApp service temporarily unavailable. Please try again later.',
+                error: 'WhatsApp client error'
+            });
+        }
+        
+        res.status(500).json({ 
+            message: 'Internal server error', 
+            error: error.message 
+        });
+    } finally {
+        if (pool) {
+            await pool.close();
+        }
+    }
+});
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -231,6 +1084,72 @@ app.post('/logout', async (req, res) => {
 
 
 
+
+
+
+app.get('/api/count-based-on-priority', async (req, res) => {
+  // Verify Authorization header exists
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized - No token provided' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  
+  try {
+    let pool = await sql.connect(dbConfig);
+    
+    // Verify token validity
+    const tokenCheck = await pool.request()
+      .input('token', sql.VarChar(255), token)
+      .query('SELECT id FROM Users WHERE token = @token');
+
+    if (tokenCheck.recordset.length === 0) {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+    }
+
+    // Query to get counts by priority
+    const result = await pool.request()
+      .query(`
+        SELECT 
+          priority,
+          COUNT(*) as count
+        FROM Complaints
+        GROUP BY priority
+      `);
+
+    // Format the results
+    const counts = {
+      immediate: 0,
+      urgent: 0,
+      routine: 0,
+      deferred: 0
+    };
+
+    result.recordset.forEach(row => {
+      const priority = row.priority.toLowerCase();
+      if (counts.hasOwnProperty(priority)) {
+        counts[priority] = row.count;
+      }
+    });
+
+    res.json({
+      success: true,
+      counts: counts
+    });
+
+  } catch (error) {
+    console.error('Error fetching priority counts:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message
+    });
+  } finally {
+    // Close the connection
+    //await sql.close();
+  }
+});
 
 
 
@@ -2112,6 +3031,88 @@ async function generateComplaintId(category, pool) {
   return `HT${month}${year}${categoryCode}-${newNumber}`;
 }
 
+// Function to send WhatsApp message to customer
+// Function to send WhatsApp message to customer
+async function sendWhatsAppMessageToCustomer(customerId, complaintId, skillmanName, pool) {
+  try {
+    // Check if WhatsApp client is ready
+    if (!client || !client.info) {
+      console.error('WhatsApp client is not ready');
+      return;
+    }
+    
+    // Get customer details from database
+    const customerResult = await pool.request()
+      .input('customerId', sql.Int, customerId)
+      .query('SELECT full_name, phone_number FROM Customers WHERE customer_id = @customerId');
+    
+    if (customerResult.recordset.length === 0) {
+      console.error('Customer not found for ID:', customerId);
+      return;
+    }
+    
+    const customer = customerResult.recordset[0];
+    let phoneNumber = customer.phone_number;
+    const customerName = customer.full_name;
+    
+    // Normalize phone number - remove all non-digit characters
+    let digitsOnly = phoneNumber.replace(/\D/g, '');
+    
+    // Convert to international format for Pakistan numbers
+    let internationalNumber;
+    
+    if (digitsOnly.startsWith('92') && digitsOnly.length === 12) {
+      // Already in international format: 923001234567
+      internationalNumber = digitsOnly;
+    } else if (digitsOnly.startsWith('92') && digitsOnly.length > 12) {
+      // International format with extra digits, take first 12
+      internationalNumber = digitsOnly.substring(0, 12);
+    } else if (digitsOnly.startsWith('3') && digitsOnly.length === 10) {
+      // Local format without zero: 3001234567 -> 923001234567
+      internationalNumber = '92' + digitsOnly;
+    } else if (digitsOnly.startsWith('03') && digitsOnly.length === 11) {
+      // Local format with zero: 03001234567 -> 923001234567
+      internationalNumber = '92' + digitsOnly.substring(1);
+    } else if (digitsOnly.startsWith('0') && digitsOnly.length === 11) {
+      // Other local formats starting with 0
+      internationalNumber = '92' + digitsOnly.substring(1);
+    } else if (digitsOnly.length === 9 || digitsOnly.length === 10) {
+      // Assume it's a local number without country code
+      internationalNumber = '92' + digitsOnly;
+    } else {
+      // Unknown format, try to use as is but limit to 12 digits
+      internationalNumber = digitsOnly.length > 12 ? digitsOnly.substring(0, 12) : digitsOnly;
+      console.warn(`Unknown phone number format: ${phoneNumber}, using: ${internationalNumber}`);
+    }
+    
+    const whatsappId = `${internationalNumber}@c.us`;
+    
+    // Create appropriate message based on whether skillman is assigned
+    let message;
+    if (skillmanName && skillmanName !== "will be assigned shortly") {
+      //message = `${customerName}, your complaint (ID: ${complaintId}) has been launched successfully. Our skillman ${skillmanName} is on the way to solve your problem.`;
+      message = `${customerName}, your complaint (ID: ${complaintId}) 
+Has been launched successfully. ✅
+Our skillman ${skillmanName} is on the way to solve your problem.👨🏻‍🔧
+        `;
+    } else {
+      //message = `${customerName}, your complaint (ID: ${complaintId}) has been launched successfully. We will assign a skillman to your problem shortly and keep you updated.`;
+      message = `${customerName}, your complaint (ID: ${complaintId})
+Has been launched successfully.✅
+We will assign a skillman to your problem shortly and keep you updated.👍🏻
+        `;
+    }
+    
+    // Send WhatsApp message using the direct method
+    await client.sendMessage(whatsappId, message);
+    
+    console.log(`WhatsApp message sent to ${phoneNumber} (international: ${internationalNumber})`);
+  } catch (error) {
+    console.error('Error sending WhatsApp message:', error.message);
+    // Don't throw error to avoid affecting the main complaint creation flow
+  }
+}
+
 // POST endpoint for creating complaints
 app.post('/complaints', async (req, res) => {
   // Verify Authorization header exists
@@ -2216,6 +3217,22 @@ app.post('/complaints', async (req, res) => {
           `);
       }
     }
+
+    // Get skillman name for the message
+    let skillmanName = "will be assigned shortly";
+    if (primarySkillmanId) {
+      const skillmanResult = await pool.request()
+        .input('skillmanId', sql.Int, primarySkillmanId)
+        .query('SELECT name FROM Skillmen WHERE id = @skillmanId');
+      
+      if (skillmanResult.recordset.length > 0) {
+        skillmanName = skillmanResult.recordset[0].name;
+      }
+    }
+
+    // Send WhatsApp message to customer (non-blocking)
+    sendWhatsAppMessageToCustomer(customerId, complaintId, skillmanName, pool)
+      .catch(error => console.error('Error in sending WhatsApp message:', error));
 
     res.status(201).json({
       success: true,
@@ -2419,6 +3436,7 @@ app.get('/api/complaints', async (req, res) => {
 
 
 // API endpoint to update complaint status
+/*
 app.post('/api/complaints/update-status', async (req, res) => {
   // Verify Authorization header exists
   const authHeader = req.headers.authorization;
@@ -2526,6 +3544,140 @@ app.post('/api/complaints/update-status', async (req, res) => {
     });
   }
 });
+*/
+// API endpoint to update complaint status
+app.post('/api/complaints/update-status', async (req, res) => {
+  // Verify Authorization header exists
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized - No token provided' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  
+  try {
+    let pool = await sql.connect(dbConfig);
+
+    // Step 1: Verify token exists in Users table
+    const tokenCheck = await pool.request()
+      .input('token', sql.VarChar(255), token)
+      .query('SELECT id FROM Users WHERE token = @token');
+
+    if (tokenCheck.recordset.length === 0) {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+    }
+    
+    const { complaint_id, status } = req.body;
+
+    // Validate input
+    if (!complaint_id || !status) {
+      return res.status(400).json({
+        success: false,
+        message: 'complaint_id and status are required'
+      });
+    }
+
+    // Check if status is valid (including SNA)
+    const validStatuses = ['In-Progress', 'Completed', 'Deffered', 'Un-Assigned', 'SNA'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid status value'
+      });
+    }
+
+    // Get complaint + helper info
+    const checkResult = await pool.request()
+      .input('complaint_id', sql.VarChar(25), complaint_id)
+      .query(`
+        SELECT c.complaint_id, c.skillman_id, ch.skillman_id AS helper_id
+        FROM Complaints c
+        LEFT JOIN ComplaintsHelpers ch ON c.complaint_id = ch.complaint_id
+        WHERE c.complaint_id = @complaint_id
+      `);
+
+    if (checkResult.recordset.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Complaint not found'
+      });
+    }
+
+    const skillmanId = checkResult.recordset[0].skillman_id;
+    const helperIds = checkResult.recordset.map(r => r.helper_id).filter(id => id !== null);
+
+    // Update complaint status and set completed_at if status is 'Completed'
+    if (status === 'Completed') {
+      await pool.request()
+        .input('complaint_id', sql.VarChar(25), complaint_id)
+        .input('status', sql.NVarChar(20), status)
+        .query(`
+          UPDATE Complaints
+          SET status = @status,
+              completed_at = GETDATE()
+          WHERE complaint_id = @complaint_id
+        `);
+    } else {
+      await pool.request()
+        .input('complaint_id', sql.VarChar(25), complaint_id)
+        .input('status', sql.NVarChar(20), status)
+        .query(`
+          UPDATE Complaints
+          SET status = @status
+          WHERE complaint_id = @complaint_id
+        `);
+    }
+
+    // If status is Deffered or SNA → set skillman and helpers to Active
+    if (status === 'Deffered' || status === 'SNA') {
+      if (skillmanId) {
+        await pool.request()
+          .input('skillman_id', sql.Int, skillmanId)
+          .query(`
+            UPDATE Skillmen
+            SET status = 'Active'
+            WHERE id = @skillman_id
+          `);
+      }
+      
+      if (helperIds.length > 0) {
+        // Create a parameterized query for multiple helper IDs
+        const helperIdList = helperIds.map((id, index) => `@helper_id_${index}`).join(',');
+        const request = pool.request();
+        
+        helperIds.forEach((id, index) => {
+          request.input(`helper_id_${index}`, sql.Int, id);
+        });
+        
+        await request.query(`
+          UPDATE Skillmen
+          SET status = 'Active'
+          WHERE id IN (${helperIdList})
+        `);
+      }
+    }
+
+    res.json({
+      success: true,
+      message: `Complaint status updated to ${status} successfully`
+    });
+
+  } catch (error) {
+    console.error('Error updating complaint status:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message
+    });
+  } finally {
+    // Close the connection pool
+    try {
+      await sql.close();
+    } catch (err) {
+      console.error('Error closing connection:', err);
+    }
+  }
+});
 
 
 
@@ -2610,6 +3762,84 @@ app.get('/api/complaints/:complaintId/previous-skillman', async (req, res) => {
 
 
 
+// Function to send WhatsApp message when skillman is assigned/changed
+async function sendSkillmanAssignmentMessage(customerId, complaintId, skillmanName, isReassignment, pool) {
+  try {
+    // Check if WhatsApp client is ready
+    if (!client || !client.info) {
+      console.error('WhatsApp client is not ready');
+      return;
+    }
+    
+    // Get customer details from database
+    const customerResult = await pool.request()
+      .input('customerId', sql.Int, customerId)
+      .query('SELECT full_name, phone_number FROM Customers WHERE customer_id = @customerId');
+    
+    if (customerResult.recordset.length === 0) {
+      console.error('Customer not found for ID:', customerId);
+      return;
+    }
+    
+    const customer = customerResult.recordset[0];
+    let phoneNumber = customer.phone_number;
+    const customerName = customer.full_name;
+    
+    // Normalize phone number - remove all non-digit characters
+    let digitsOnly = phoneNumber.replace(/\D/g, '');
+    
+    // Convert to international format for Pakistan numbers
+    let internationalNumber;
+    
+    if (digitsOnly.startsWith('92') && digitsOnly.length === 12) {
+      // Already in international format: 923001234567
+      internationalNumber = digitsOnly;
+    } else if (digitsOnly.startsWith('92') && digitsOnly.length > 12) {
+      // International format with extra digits, take first 12
+      internationalNumber = digitsOnly.substring(0, 12);
+    } else if (digitsOnly.startsWith('3') && digitsOnly.length === 10) {
+      // Local format without zero: 3001234567 -> 923001234567
+      internationalNumber = '92' + digitsOnly;
+    } else if (digitsOnly.startsWith('03') && digitsOnly.length === 11) {
+      // Local format with zero: 03001234567 -> 923001234567
+      internationalNumber = '92' + digitsOnly.substring(1);
+    } else if (digitsOnly.startsWith('0') && digitsOnly.length === 11) {
+      // Other local formats starting with 0
+      internationalNumber = '92' + digitsOnly.substring(1);
+    } else if (digitsOnly.length === 9 || digitsOnly.length === 10) {
+      // Assume it's a local number without country code
+      internationalNumber = '92' + digitsOnly;
+    } else {
+      // Unknown format, try to use as is but limit to 12 digits
+      internationalNumber = digitsOnly.length > 12 ? digitsOnly.substring(0, 12) : digitsOnly;
+      console.warn(`Unknown phone number format: ${phoneNumber}, using: ${internationalNumber}`);
+    }
+    
+    const whatsappId = `${internationalNumber}@c.us`;
+    
+    // Create appropriate message based on whether it's a new assignment or reassignment
+    let message;
+    if (isReassignment) {
+      //message = `${customerName}, your complaint (ID: ${complaintId}) has been reassigned. Our new skillman ${skillmanName} is on the way to solve your problem.`;
+      message = `${customerName}, your complaint (ID: ${complaintId}) 
+Has been reassigned to our new skillman ${skillmanName}.👨🏻‍🔧
+They are on the way to solve your problem.`;
+    } else {
+      //message = `${customerName}, your complaint (ID: ${complaintId}) has been assigned to our skillman ${skillmanName}. They are on the way to solve your problem.`;
+      message = `${customerName}, your complaint (ID: ${complaintId}) 
+Has been assigned to our skillman ${skillmanName}.👨🏻‍🔧 
+They are on the way to solve your problem.`;
+    }
+    
+    // Send WhatsApp message using the direct method
+    await client.sendMessage(whatsappId, message);
+    
+    console.log(`WhatsApp assignment message sent to ${phoneNumber} (international: ${internationalNumber})`);
+  } catch (error) {
+    console.error('Error sending WhatsApp assignment message:', error.message);
+    // Don't throw error to avoid affecting the main assignment flow
+  }
+}
 
 app.post('/api/complaints/assign-skillman', async (req, res) => {
   // Verify Authorization header exists
@@ -2637,11 +3867,12 @@ app.post('/api/complaints/assign-skillman', async (req, res) => {
     if (tokenCheck.recordset.length === 0) {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
-    // 1. Get the previous skillman assigned to this complaint
+
+    // 1. Get the previous skillman assigned to this complaint and customer ID
     const prevResult = await pool.request()
       .input('complaintId', sql.VarChar(25), complaintId)
       .query(`
-        SELECT skillman_id FROM Complaints WHERE complaint_id = @complaintId
+        SELECT skillman_id, customer_id FROM Complaints WHERE complaint_id = @complaintId
       `);
 
     if (prevResult.recordset.length === 0) {
@@ -2649,6 +3880,7 @@ app.post('/api/complaints/assign-skillman', async (req, res) => {
     }
 
     const prevSkillmanId = prevResult.recordset[0].skillman_id;
+    const customerId = prevResult.recordset[0].customer_id;
 
     // 2. Set previous skillman status to 'Active' (if there was one and it's different from the new one)
     if (prevSkillmanId && prevSkillmanId !== skillmanId) {
@@ -2661,7 +3893,18 @@ app.post('/api/complaints/assign-skillman', async (req, res) => {
         `);
     }
 
-    // 3. Update the complaint's skillman and set status to 'In-Progress'
+    // 3. Get the new skillman's name for the WhatsApp message
+    const skillmanResult = await pool.request()
+      .input('skillmanId', sql.Int, skillmanId)
+      .query('SELECT name FROM Skillmen WHERE id = @skillmanId');
+    
+    if (skillmanResult.recordset.length === 0) {
+      return res.status(404).json({ success: false, message: 'Skillman not found' });
+    }
+    
+    const skillmanName = skillmanResult.recordset[0].name;
+
+    // 4. Update the complaint's skillman and set status to 'In-Progress'
     const result = await pool.request()
       .input('complaintId', sql.VarChar(25), complaintId)
       .input('skillmanId', sql.Int, skillmanId)
@@ -2671,7 +3914,7 @@ app.post('/api/complaints/assign-skillman', async (req, res) => {
         WHERE complaint_id = @complaintId
       `);
 
-    // 4. Set new skillman's status to 'In-Progress'
+    // 5. Set new skillman's status to 'In-Progress'
     await pool.request()
       .input('skillmanId', sql.Int, skillmanId)
       .query(`
@@ -2679,6 +3922,11 @@ app.post('/api/complaints/assign-skillman', async (req, res) => {
         SET status = 'In-Progress'
         WHERE id = @skillmanId
       `);
+
+    // 6. Send WhatsApp message to customer about the assignment
+    const isReassignment = prevSkillmanId !== null && prevSkillmanId !== skillmanId;
+    sendSkillmanAssignmentMessage(customerId, complaintId, skillmanName, isReassignment, pool)
+      .catch(error => console.error('Error in sending WhatsApp assignment message:', error));
 
     if (result.rowsAffected[0] > 0) {
       res.json({ success: true, message: 'Skillman assigned successfully' });
@@ -3470,6 +4718,71 @@ app.get('/complaints-report', async (req, res) => {
 
 
 
+
+
+
+
+
+
+
+// Rating Report
+// API endpoint to get rating reports
+app.get('/ratings', async (req, res) => {
+  try {
+    // Connect to the database
+    await sql.connect(dbConfig);
+    
+    // SQL query to get rating data
+    const query = `
+      SELECT 
+        c.complaint_id,
+        c.launched_at as date,
+        cu.full_name as [user],
+        cu.phone_number as number,
+        c.category as type,
+        CONCAT(c.nature, '/', c.type) as complaint_category,
+        col.Name as colony,
+        loc.building_number as building,
+        cf.rating,
+        cf.review,
+        cf.created_at as feedback_date
+      FROM Complaints c
+      INNER JOIN Customers cu ON c.customer_id = cu.customer_id
+      INNER JOIN Location loc ON c.location_id = loc.location_id
+      INNER JOIN Colonies col ON loc.colony_number = col.ColonyNumber
+      INNER JOIN ComplaintFeedback cf ON c.complaint_id = cf.complaint_id
+      WHERE cf.rating IS NOT NULL
+      ORDER BY cf.created_at DESC
+    `;
+    
+    // Execute the query
+    const result = await sql.query(query);
+    
+    // Format the data for the frontend
+    const ratingsData = result.recordset.map(item => ({
+      date: item.date,
+      complaintNumber: item.complaint_id,
+      user: item.user,
+      number: item.number,
+      type: item.type,
+      category: item.complaint_category,
+      colony: item.colony,
+      building: item.building,
+      rating: item.rating,
+      review: item.review || 'No review provided'
+    }));
+    
+    // Send the response
+    res.json(ratingsData);
+    
+  } catch (error) {
+    console.error('Database error:', error);
+    res.status(500).json({ error: 'Failed to fetch rating data' });
+  } finally {
+    // Close the connection
+    await sql.close();
+  }
+});
 
 
 
