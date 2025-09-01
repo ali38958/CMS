@@ -234,7 +234,7 @@ client.on('message', async (message) => {
             console.error('Error processing message:', error);
         } finally {
             if (pool) {
-                await pool.close();
+                //await pool.close();
             }
         }
 
@@ -261,11 +261,28 @@ function normalizeToLocalFormat(phoneNumber) {
 
 // Helper function to process rating and review
 async function processRatingReview(pool, phoneNumber, messageBody, complaintId, customer) {
-    const ratingMatch = messageBody.match(/^([0-5])\s*(.*)$/);
+    const ratingMatch = messageBody.match(/^([0-5])[.\s]+(.*)$/);
     
+    //here 
+    const statusCheckQuery = `
+        SELECT status 
+        FROM ComplaintFeedback
+        WHERE complaint_id = @complaintId
+    `;
+
+    const statusResult = await pool.request()
+        .input('complaintId', sql.VarChar(25), complaintId)
+        .query(statusCheckQuery);
+
+    if (statusResult.recordset.length > 0 && statusResult.recordset[0].status === 'reviewed') {
+        console.log(`Complaint ${complaintId} already reviewed by ${phoneNumber}`);
+        await sendMessage(formatPhoneNumber(phoneNumber), "Your review has already been processed. You cannot submit another review for this complaint.");
+        return;
+    }
+
     if (!ratingMatch) {
         console.log(`Invalid rating format from ${phoneNumber}: ${messageBody}`);
-        await sendMessage(phoneNumber, "Please send your rating in the format: '5 Your review here'. Rating should be 0-5 followed by your comments.");
+        await sendMessage(phoneNumber, "Please send your rating in the format: '5 (Your review here)'. Rating should be 0-5 followed by your comments.");
         return;
     }
 
@@ -485,7 +502,7 @@ app.post('/api/decrypt-id', async (req, res) => {
     // Close database connection if it was opened
     if (pool) {
       try {
-        await pool.close();
+        //await pool.close();
       } catch (closeError) {
         console.error('Error closing database connection:', closeError);
       }
@@ -660,7 +677,7 @@ app.get('/api/users-history', async (req, res) => {
   } finally {
     // Close the connection
     if (pool) {
-      await pool.close();
+      //await pool.close();
     }
   }
 });
@@ -876,7 +893,7 @@ app.post('/api/send-reviewing-request', async (req, res) => {
         });
     } finally {
         if (pool) {
-            await pool.close();
+            //await pool.close();
         }
     }
 });
@@ -3629,7 +3646,7 @@ app.post('/api/complaints/update-status', async (req, res) => {
     }
 
     // If status is Deffered or SNA → set skillman and helpers to Active
-    if (status === 'Deffered' || status === 'SNA') {
+    if (status === 'Deffered' || status === 'SNA' || status === 'Completed') {
       if (skillmanId) {
         await pool.request()
           .input('skillman_id', sql.Int, skillmanId)
@@ -3672,7 +3689,7 @@ app.post('/api/complaints/update-status', async (req, res) => {
   } finally {
     // Close the connection pool
     try {
-      await sql.close();
+      //await sql.close();
     } catch (err) {
       console.error('Error closing connection:', err);
     }
@@ -4780,7 +4797,7 @@ app.get('/ratings', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch rating data' });
   } finally {
     // Close the connection
-    await sql.close();
+    //await sql.close();
   }
 });
 
@@ -4815,4 +4832,3 @@ process.on('SIGINT', async () => {
   }
   process.exit();
 });
-
