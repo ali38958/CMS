@@ -74,6 +74,387 @@ async function testConnection() {
 
 
 
+
+
+
+
+// Admin APIs
+
+// Helper function to execute queries
+async function executeQuery(query, params = {}) {
+  try {
+    const request = pool.request();
+    for (const key in params) {
+      request.input(key, params[key]);
+    }
+    const result = await request.query(query);
+    return result;
+  } catch (error) {
+    console.error('Query execution error:', error);
+    throw error;
+  }
+}
+
+// API Routes
+
+// Get all pages
+app.get('/api/pages', async (req, res) => {
+  try {
+    const result = await executeQuery('SELECT page as id, page as name FROM Pages');
+    res.json(result.recordset);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch pages' });
+  }
+});
+
+// Get all users
+// In the backend API, update the /api/users endpoint:
+
+// Get all users
+app.get('/api/users', async (req, res) => {
+  try {
+    const usersResult = await executeQuery(`
+      SELECT 
+        id, 
+        name as username, 
+        receiver as role, 
+        COALESCE(is_active, 'Active') as status
+      FROM Users
+    `);
+    
+    // Get access permissions for each user
+    const usersWithPermissions = await Promise.all(
+      usersResult.recordset.map(async (user) => {
+        const permissionsResult = await executeQuery(
+          'SELECT page FROM UserAccess WHERE user_id = @userId',
+          { userId: user.id }
+        );
+        
+        const accessPermissions = permissionsResult.recordset.map(item => item.page);
+        
+        return {
+          id: user.id,
+          username: user.username,
+          role: user.role,
+          status: user.status,
+          accessPermissions: accessPermissions
+        };
+      })
+    );
+    
+    res.json(usersWithPermissions);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ error: 'Failed to fetch users' });
+  }
+});
+
+// Also update the /api/users/:id endpoint:
+app.get('/api/users/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const userResult = await executeQuery(
+      `SELECT 
+        id, 
+        name as username, 
+        receiver as role, 
+        COALESCE(is_active, 'Active') as status 
+       FROM Users WHERE id = @id`,
+      { id }
+    );
+    
+    if (userResult.recordset.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    const permissionsResult = await executeQuery(
+      'SELECT page FROM UserAccess WHERE user_id = @id',
+      { id }
+    );
+    
+    const user = userResult.recordset[0];
+    const accessPermissions = permissionsResult.recordset.map(item => item.page);
+    
+    res.json({
+      id: user.id,
+      username: user.username,
+      role: user.role,
+      status: user.status,
+      accessPermissions: accessPermissions
+    });
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    res.status(500).json({ error: 'Failed to fetch user' });
+  }
+});
+
+// Create a new user
+app.post('/api/users', async (req, res) => {
+  try {
+    const { id, username, password, role, status, accessPermissions } = req.body;
+    
+    // Validate required fields
+    if (!id || !username || !password) {
+      return res.status(400).json({ error: 'ID, username, and password are required' });
+    }
+    
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+    
+    // Start transaction
+    const transaction = new sql.Transaction(pool);
+    await transaction.begin();
+    
+    try {
+      // Insert user
+      const request = new sql.Request(transaction);
+      request.input('id', sql.VarChar, id);
+      request.input('name', sql.VarChar, username);
+      request.input('password', sql.VarChar, hashedPassword);
+      request.input('receiver', sql.VarChar, role);
+      request.input('status', sql.VarChar, status || 'Active');
+      
+      await request.query(`
+        INSERT INTO Users (id, name, password, receiver, is_active)
+        VALUES (@id, @name, @password, @receiver, @status)
+      `);
+      
+      // Insert access permissions
+      if (accessPermissions && accessPermissions.length > 0) {
+        for (const page of accessPermissions) {
+          const permRequest = new sql.Request(transaction);
+          permRequest.input('user_id', sql.VarChar, id);
+          permRequest.input('page', sql.VarChar, page);
+          
+          await permRequest.query(`
+            INSERT INTO UserAccess (user_id, page)
+            VALUES (@user_id, @page)
+          `);
+        }
+      }
+      
+      await transaction.commit();
+      res.status(201).json({ message: 'User created successfully' });
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
+  } catch (error) {
+    console.error('Error creating user:', error);
+    if (error.number === 2627) { // SQL Server unique constraint violation
+      res.status(400).json({ error: 'User ID already exists' });
+    } else {
+      res.status(500).json({ error: 'Failed to create user' });
+    }
+  }
+});
+
+// Update a user
+app.put('/api/users/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { username, password, role, status, accessPermissions } = req.body;
+    
+    // Start transaction
+    const transaction = new sql.Transaction(pool);
+    await transaction.begin();
+    
+    try {
+      // Update user
+      const request = new sql.Request(transaction);
+      request.input('id', sql.VarChar, id);
+      request.input('name', sql.VarChar, username);
+      request.input('receiver', sql.VarChar, role);
+      request.input('status', sql.VarChar, status || 'Active');
+      
+      let query = `
+        UPDATE Users 
+        SET name = @name, receiver = @receiver, is_active = @status
+        WHERE id = @id
+      `;
+      
+      // Update password if provided
+      if (password) {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        request.input('password', sql.VarChar, hashedPassword);
+        query = `
+          UPDATE Users 
+          SET name = @name, password = @password, receiver = @receiver, is_active = @status
+          WHERE id = @id
+        `;
+      }
+      
+      await request.query(query);
+      
+      // Update access permissions
+      // First, remove existing permissions
+      const deleteRequest = new sql.Request(transaction);
+      deleteRequest.input('user_id', sql.VarChar, id);
+      await deleteRequest.query('DELETE FROM UserAccess WHERE user_id = @user_id');
+      
+      // Then add new permissions
+      if (accessPermissions && accessPermissions.length > 0) {
+        for (const page of accessPermissions) {
+          const permRequest = new sql.Request(transaction);
+          permRequest.input('user_id', sql.VarChar, id);
+          permRequest.input('page', sql.VarChar, page);
+          
+          await permRequest.query(`
+            INSERT INTO UserAccess (user_id, page)
+            VALUES (@user_id, @page)
+          `);
+        }
+      }
+      
+      await transaction.commit();
+      res.json({ message: 'User updated successfully' });
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
+  } catch (error) {
+    console.error('Error updating user:', error);
+    res.status(500).json({ error: 'Failed to update user' });
+  }
+});
+
+// Delete a user
+app.delete('/api/users/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Start transaction
+    const transaction = new sql.Transaction(pool);
+    await transaction.begin();
+    
+    try {
+      // First delete user permissions
+      const permRequest = new sql.Request(transaction);
+      permRequest.input('user_id', sql.VarChar, id);
+      await permRequest.query('DELETE FROM UserAccess WHERE user_id = @user_id');
+      
+      // Then delete the user
+      const userRequest = new sql.Request(transaction);
+      userRequest.input('id', sql.VarChar, id);
+      await userRequest.query('DELETE FROM Users WHERE id = @id');
+      
+      await transaction.commit();
+      res.json({ message: 'User deleted successfully' });
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    res.status(500).json({ error: 'Failed to delete user' });
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// APIs for authentication
+// API endpoint to get allowed pages for a user
+app.get('/api/allowed-pages', async (req, res) => {
+  let pool;
+  try {
+    // Get token from Authorization header
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    
+    if (!token) {
+      return res.status(401).json({ success: false, message: 'Access token required' });
+    }
+    
+    // Create database connection
+    pool = await sql.connect(dbConfig);
+    
+    // Query to get user ID from token
+    const userQuery = `
+      SELECT id 
+      FROM Users 
+      WHERE token = @token AND is_active = 'Active'
+    `;
+    
+    const userResult = await pool.request()
+      .input('token', sql.VarChar(255), token)
+      .query(userQuery);
+    
+    if (userResult.recordset.length === 0) {
+      return res.status(403).json({ success: false, message: 'Invalid or expired token' });
+    }
+    
+    // Get user ID from result
+    const userId = userResult.recordset[0].id;
+    
+    // Query to get allowed pages for the user
+    const pagesQuery = `
+      SELECT p.page 
+      FROM Pages p
+      INNER JOIN UserAccess ua ON p.page = ua.page
+      WHERE ua.user_id = @userId
+      ORDER BY p.page
+    `;
+    
+    const pagesResult = await pool.request()
+      .input('userId', sql.VarChar(20), userId)
+      .query(pagesQuery);
+    
+    // Extract page names from result
+    const allowedPages = pagesResult.recordset.map(row => row.page);
+    
+    res.json({
+      success: true,
+      allowedPages: allowedPages
+    });
+    
+  } catch (error) {
+    console.error('Database error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Internal server error' 
+    });
+  } finally {
+    // Close the connection
+    if (pool) {
+      //await pool.close();
+    }
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Whatsapp login
 // --- WhatsApp Client ---
 let client = new Client();
@@ -684,6 +1065,75 @@ app.get('/api/users-history', async (req, res) => {
 
 
 
+
+
+
+// Retrieve Helper skillmen for complaint details
+app.get('/api/helpers', async (req, res) => {
+  const { complaintId } = req.query;
+  //console.log('Helper call with id: '+complaintId);
+  
+
+  // Validate complaintId parameter
+  if (!complaintId) {
+    console.log("ID not found");
+    return res.status(400).json({
+      success: false,
+      message: 'complaintId parameter is required'
+    });
+  }
+
+  try {
+    // Create connection pool
+    const pool = await sql.connect(dbConfig);
+    
+    //console.log('Creating query');
+    // Query to get all skillmen assigned to the specific complaint
+    const query = `
+      SELECT 
+        s.id,
+        s.name,
+        s.phoneNumber as phone,
+        s.designation,
+        s.subdivision,
+        s.status
+      FROM Skillmen s
+      INNER JOIN ComplaintsHelpers ch ON s.id = ch.skillman_id
+      WHERE ch.complaint_id = @complaintId
+      ORDER BY s.name
+    `;
+    
+    // Execute the query
+    const result = await pool.request()
+      .input('complaintId', sql.VarChar(25), complaintId)
+      .query(query);
+    
+    // Close the connection
+    //await pool.close();
+    
+    // Format the response
+    const helpers = result.recordset.map(helper => ({
+      id: helper.id,
+      name: helper.name,
+      phone: helper.phone,
+      designation: helper.designation,
+      subdivision: helper.subdivision,
+      status: helper.status
+    }));
+    
+    //console.log('Data sent');
+    // Return the helpers data
+    res.json(helpers);
+    
+  } catch (error) {
+    console.error('Database error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to retrieve helper data',
+      error: error.message
+    });
+  }
+});
 
 
 
@@ -3169,7 +3619,7 @@ app.post('/complaints', async (req, res) => {
 
     let status;
     if (priority === 'deferred') {
-      status = 'Deffered';
+      status = 'Deferred';
     } else {
       status = (primarySkillmanId || helperSkillmenIds.length > 0)
         ? 'In-Progress'
@@ -3266,6 +3716,65 @@ app.post('/complaints', async (req, res) => {
       message: 'Failed to create complaint',
       error: error.message
     });
+  }
+});
+
+
+
+// Add this endpoint to your Express server
+app.get('/api/customers/:customerId/complaints', async (req, res) => {
+  try {
+    // Verify Authorization header exists
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Unauthorized - No token provided' });
+    }
+
+    const token = authHeader.split(' ')[1];
+    const { customerId } = req.params;
+    
+    // Validate customer ID
+    if (!customerId || isNaN(parseInt(customerId))) {
+      return res.status(400).json({ error: 'Valid customer ID is required' });
+    }
+
+    const pool = await sql.connect(dbConfig);
+    
+    // Verify token validity
+    const tokenCheck = await pool.request()
+      .input('token', sql.VarChar(255), token)
+      .query('SELECT id FROM Users WHERE token = @token');
+
+    if (tokenCheck.recordset.length === 0) {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+    }
+
+    // Query to get complaints for the specific customer
+    const query = `
+      SELECT 
+        c.complaint_id as id,
+        CONVERT(DATE, c.launched_at) as date,
+        CONCAT(loc.building_number, ', ', col.Name) as location,
+        c.nature,
+        c.type as natureType,
+        s.name as skillman,
+        c.status
+      FROM Complaints c
+      LEFT JOIN Location loc ON c.location_id = loc.location_id
+      LEFT JOIN Colonies col ON loc.colony_number = col.ColonyNumber
+      LEFT JOIN Skillmen s ON c.skillman_id = s.id
+      WHERE c.customer_id = @customerId
+      ORDER BY c.launched_at DESC
+    `;
+    
+    const result = await pool.request()
+      .input('customerId', sql.Int, parseInt(customerId))
+      .query(query);
+    
+    res.json(result.recordset);
+  } catch (error) {
+    console.error('Error fetching customer complaints:', error);
+    res.status(500).json({ error: 'Failed to fetch complaint history' });
   }
 });
 
@@ -3485,7 +3994,7 @@ app.post('/api/complaints/update-status', async (req, res) => {
     }
 
     // Check if status is valid
-    const validStatuses = ['In-Progress', 'Completed', 'Deffered', 'Un-Assigned'];
+    const validStatuses = ['In-Progress', 'Completed', 'Deferred', 'Un-Assigned'];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({
         success: false,
@@ -3529,8 +4038,8 @@ app.post('/api/complaints/update-status', async (req, res) => {
       `;
     }
 
-    // If status is NOT Deffered → set skillman and helpers to Active
-    if (status !== 'Deffered') {
+    // If status is NOT Deferred → set skillman and helpers to Active
+    if (status !== 'Deferred') {
       if (skillmanId) {
         await sql.query`
           UPDATE Skillmen
@@ -3595,7 +4104,7 @@ app.post('/api/complaints/update-status', async (req, res) => {
     }
 
     // Check if status is valid (including SNA)
-    const validStatuses = ['In-Progress', 'Completed', 'Deffered', 'Un-Assigned', 'SNA'];
+    const validStatuses = ['In-Progress', 'Completed', 'Deferred', 'Un-Assigned', 'SNA'];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({
         success: false,
@@ -3645,8 +4154,9 @@ app.post('/api/complaints/update-status', async (req, res) => {
         `);
     }
 
-    // If status is Deffered or SNA → set skillman and helpers to Active
-    if (status === 'Deffered' || status === 'SNA' || status === 'Completed') {
+
+    // If status is Deferred or SNA → set skillman and helpers to Active
+    if (status === 'Deferred' || status === 'SNA' || status === 'Completed') {
       if (skillmanId) {
         await pool.request()
           .input('skillman_id', sql.Int, skillmanId)
@@ -3673,6 +4183,9 @@ app.post('/api/complaints/update-status', async (req, res) => {
         `);
       }
     }
+    
+    //Whatsapp call for Complaints
+    sendWhatsappToCustomerForStatusUpdate(complaint_id, pool);
 
     res.json({
       success: true,
@@ -3697,6 +4210,96 @@ app.post('/api/complaints/update-status', async (req, res) => {
 });
 
 
+
+async function sendWhatsappToCustomerForStatusUpdate(complaintId, pool) {
+    try {
+        // Check if client is available and ready - more comprehensive check
+        if (!client || typeof client.sendMessage !== 'function' || !client.info || !client.pupPage) {
+            console.log('WhatsApp client not available, skipping message sending');
+            return { success: false, message: 'WhatsApp client not available' };
+        }
+
+        // Additional check to see if client is actually connected and authenticated
+        if (client.pupPage && client.pupPage.isClosed()) {
+            console.log('WhatsApp client page is closed, skipping message sending');
+            return { success: false, message: 'WhatsApp client not connected' };
+        }
+
+        // Query to get customer phone number, complaint status, and skillman name
+        const query = `
+            SELECT c.phone_number, comp.status, comp.complaint_id, s.name as skillman_name
+            FROM Complaints comp
+            INNER JOIN Customers c ON comp.customer_id = c.customer_id
+            LEFT JOIN Skillmen s ON comp.skillman_id = s.id
+            WHERE comp.complaint_id = @complaintId
+        `;
+
+        const request = pool.request();
+        request.input('complaintId', complaintId);
+        
+        const result = await request.query(query);
+        
+        if (result.recordset.length === 0) {
+            console.error(`Complaint with ID ${complaintId} not found`);
+            return { success: false, message: 'Complaint not found' };
+        }
+
+        const { phone_number, status, complaint_id, skillman_name } = result.recordset[0];
+        
+        // Format the phone number using the existing function
+        const formattedPhoneNumber = formatPhoneNumber(phone_number);
+        
+        // Create the message based on status
+        let message = '';
+        
+        switch (status) {
+            case 'Completed':
+                message = `Your complaint #${complaint_id} has been resolved. Thank you for your patience!`;
+                break;
+                
+            case 'Deferred':
+                message = `Your complaint #${complaint_id} has been rescheduled. We'll notify you of the new timing shortly.`;
+                break;
+                
+            case 'SNA':
+                message = `Due to technical issues, your complaint #${complaint_id} will be rescheduled. We apologize for the inconvenience.`;
+                break;
+                
+            case 'In-Progress':
+                const skillmanInfo = skillman_name ? ` Our technician ${skillman_name} is on the way.` : '';
+                message = `Your complaint #${complaint_id} is now in progress.${skillmanInfo} Thank you for your patience!`;
+                break;
+                
+            default:
+                console.error(`Unknown status: ${status}`);
+                return { success: false, message: `Unknown status: ${status}` };
+        }
+
+        // Send the WhatsApp message using the existing client
+        const chatId = `${formattedPhoneNumber}@c.us`;
+        
+        // Final check before sending
+        if (!client.sendMessage || typeof client.sendMessage !== 'function') {
+            console.error('WhatsApp client sendMessage function not available');
+            return { success: false, message: 'WhatsApp client not ready' };
+        }
+
+        // Send the message with error handling
+        try {
+            await client.sendMessage(chatId, message);
+            console.log(`WhatsApp message sent successfully to ${formattedPhoneNumber} for complaint ${complaint_id}`);
+            return { success: true, message: 'Message sent successfully' };
+        } catch (sendError) {
+            console.error('Error sending WhatsApp message:', sendError);
+            return { success: false, message: 'Failed to send message' };
+        }
+        
+    } catch (error) {
+        console.error('Error in sendWhatsappToCustomerForStatusUpdate:', error);
+        // Don't throw the error, just return a failure response
+        return { success: false, message: error.message };
+    }
+}
 
 
 
@@ -4475,7 +5078,7 @@ app.post('/api/subdiv-report', async (req, res) => {
         COUNT(CASE WHEN status = 'In-Progress' THEN 1 END) AS inprogress,
         COUNT(CASE WHEN status = 'Completed' THEN 1 END) AS completed,
         COUNT(CASE WHEN status = 'Un-Assigned' THEN 1 END) AS sna,
-        COUNT(CASE WHEN status = 'Deffered' THEN 1 END) AS deferred,
+        COUNT(CASE WHEN status = 'Deferred' THEN 1 END) AS deferred,
         COUNT(*) AS total
       FROM Complaints
       ${whereClause}
@@ -4798,6 +5401,199 @@ app.get('/ratings', async (req, res) => {
   } finally {
     // Close the connection
     //await sql.close();
+  }
+});
+
+
+
+
+
+
+
+
+// API endpoint to get all skillman summary data
+app.get('/api/all-skillman-summary', async (req, res) => {
+  try {
+    // Connect to the database
+    await sql.connect(dbConfig);
+    
+    // Query to get skillman performance data - only count reviewed feedback for rating
+    const query = `
+      SELECT 
+        s.id,
+        s.name,
+        s.phoneNumber as phone,
+        s.designation,
+        COUNT(c.complaint_id) as totalComplaints,
+        SUM(CASE WHEN c.status = 'In-Progress' THEN 1 ELSE 0 END) as inProgress,
+        SUM(CASE WHEN c.status = 'Completed' THEN 1 ELSE 0 END) as completed,
+        AVG(CASE WHEN cf.status = 'reviewed' THEN ISNULL(cf.rating, 0) ELSE NULL END) as rating,
+        SUM(CASE 
+            WHEN c.completed_at IS NOT NULL AND c.assigned_at IS NOT NULL 
+            THEN DATEDIFF(MINUTE, c.assigned_at, c.completed_at) / 60.0
+            ELSE 0 
+        END) as totalHours,
+        CASE 
+            WHEN SUM(CASE WHEN c.status = 'Completed' THEN 1 ELSE 0 END) > 0
+            THEN SUM(CASE 
+                    WHEN c.completed_at IS NOT NULL AND c.assigned_at IS NOT NULL 
+                    THEN DATEDIFF(MINUTE, c.assigned_at, c.completed_at) / 60.0
+                    ELSE 0 
+                END) / NULLIF(SUM(CASE WHEN c.status = 'Completed' THEN 1 ELSE 0 END), 0)
+            ELSE 0
+        END as averageHours,
+        CASE 
+            WHEN COUNT(c.complaint_id) > 0
+            THEN (SUM(CASE WHEN c.status = 'Completed' THEN 1 ELSE 0 END) * 100.0) / COUNT(c.complaint_id)
+            ELSE 0
+        END as productivity,
+        COUNT(CASE WHEN cf.status = 'reviewed' THEN 1 ELSE NULL END) as reviewedFeedbacks
+      FROM Skillmen s
+      LEFT JOIN Complaints c ON s.id = c.skillman_id
+      LEFT JOIN ComplaintFeedback cf ON c.complaint_id = cf.complaint_id
+      WHERE s.status = 'Active'
+      GROUP BY s.id, s.name, s.phoneNumber, s.designation
+      ORDER BY s.name
+    `;
+    
+    const result = await sql.query(query);
+    
+    // Format the data for the frontend
+    const skillmanData = result.recordset.map(row => {
+      // Format time values to 1 decimal place
+      const totalHours = parseFloat(row.totalHours).toFixed(1);
+      const averageHours = parseFloat(row.averageHours).toFixed(1);
+      
+      // Handle rating - if no reviewed feedbacks, set rating to 0, otherwise format to 1 decimal place
+      const rating = row.reviewedFeedbacks > 0 ? parseFloat(row.rating).toFixed(1) : '0.0';
+      
+      return {
+        id: row.id,
+        name: row.name,
+        phone: row.phone,
+        designation: row.designation,
+        totalComplaints: row.totalComplaints,
+        inProgress: row.inProgress,
+        completed: row.completed,
+        rating: rating,
+        timeSpent: `${totalHours}h`,
+        averageTime: `${averageHours}hrs`,
+        productivity: parseFloat(row.productivity).toFixed(1) + '%'
+      };
+    });
+    
+    res.json(skillmanData);
+  } catch (error) {
+    console.error('Database error:', error);
+    res.status(500).json({ error: 'Failed to fetch skillman data' });
+  } finally {
+    // Close the connection
+    //await sql.close();
+  }
+});
+
+
+
+
+
+
+
+// POST endpoint to retrieve complaints for a specific skillman with filters
+app.post('/api/retrieve-complaints-for-one-skillman', async (req, res) => {
+  const { skillmanName, status, type, fromDate, toDate } = req.body;
+
+  try {
+    // Validate required parameter
+    if (!skillmanName) {
+      return res.status(400).json({ error: 'Skillman name is required' });
+    }
+
+    // Create database connection pool
+    const pool = await sql.connect(dbConfig);
+
+    // Build the base query
+    let query = `
+      SELECT 
+        c.complaint_id,
+        CONVERT(VARCHAR, c.launched_at, 23) as launched_date,
+        CONVERT(VARCHAR, c.completed_at, 23) as completion_date,
+        c.nature as category,
+        l.building_number as building,
+        u.name as launched_by,
+        cust.full_name as customer,
+        c.status,
+        -- Calculate hours taken from assigned time to completion time
+        CASE 
+          WHEN c.assigned_at IS NOT NULL AND c.completed_at IS NOT NULL 
+          THEN ROUND(DATEDIFF(SECOND, c.assigned_at, c.completed_at) / 3600.0, 2)
+          ELSE NULL 
+        END as hours_taken,
+        -- Format the time values for display
+        FORMAT(c.assigned_at, 'yyyy-MM-dd HH:mm:ss') as assigned_time,
+        FORMAT(c.completed_at, 'yyyy-MM-dd HH:mm:ss') as completed_time,
+        -- Include the original launched_at for proper sorting
+        c.launched_at
+      FROM Complaints c
+      INNER JOIN Skillmen s ON c.skillman_id = s.id
+      INNER JOIN Users u ON c.receiver_id = u.id
+      INNER JOIN Customers cust ON c.customer_id = cust.customer_id
+      INNER JOIN Location l ON c.location_id = l.location_id
+      INNER JOIN Colonies col ON l.colony_number = col.ColonyNumber
+      WHERE s.name = @skillmanName
+        AND c.status NOT IN ('Deferred', 'SNA')
+    `;
+
+    // Add filters based on request parameters
+    const params = [{ name: 'skillmanName', type: sql.VarChar, value: skillmanName }];
+
+    if (status && status !== '') {
+      query += ` AND c.status = @status`;
+      params.push({ name: 'status', type: sql.VarChar, value: status });
+    }
+
+    if (type && type !== '') {
+      query += ` AND c.type = @type`;
+      params.push({ name: 'type', type: sql.VarChar, value: type });
+    }
+
+    if (fromDate && fromDate !== '') {
+      query += ` AND c.launched_at >= @fromDate`;
+      params.push({ name: 'fromDate', type: sql.DateTime, value: fromDate });
+    }
+
+    if (toDate && toDate !== '') {
+      // Add one day to include the entire end date
+      const nextDay = new Date(toDate);
+      nextDay.setDate(nextDay.getDate() + 1);
+      
+      query += ` AND c.launched_at < @toDate`;
+      params.push({ name: 'toDate', type: sql.DateTime, value: nextDay.toISOString().split('T')[0] });
+    }
+
+    // Order by launch date (newest first) - This ensures ALL results are in descending order
+    query += ` ORDER BY c.launched_at DESC`;
+
+    // Execute the query
+    const request = pool.request();
+    
+    // Add all parameters to the request
+    params.forEach(param => {
+      request.input(param.name, param.type, param.value);
+    });
+    
+    const result = await request.query(query);
+
+    // Remove the raw launched_at from the response since we don't need to expose it
+    const cleanedResults = result.recordset.map(item => {
+      const { launched_at, ...rest } = item;
+      return rest;
+    });
+
+    // Return the results
+    res.json(cleanedResults);
+  } catch (error) {
+    console.error('Database error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
