@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+  <script src="server-url.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       if (!document.querySelector('link[href*="font-awesome"]')) {
@@ -11,77 +12,11 @@
     });
   </script>
 
-  <script>  
-    setTimeout(() => {
-      console.log("2 seconds later...");
-    }, 2000); // 2000 milliseconds = 2 seconds
-    
-    // Variables to store user data
-    let complaintReceiverName = '';
-    let complaintReceiverId = null;
-
-    async function verifyAuthToken() {
-      const authToken = localStorage.getItem('authToken');
-      
-      if (!authToken) {
-        console.log('No authToken found in localStorage');
-        alert('Authentication failed: No token found');
-        window.location.href = 'login.html';
-        return;
-      }
-
-      try {
-        console.log('Attempting to verify authToken...');
-        
-        const response = await fetch('http://localhost:3000/verify-token-get-receiver', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        console.log('API Response:', data);
-
-        if (data.success) {
-          console.log('Token verification successful for user:', data.user.name);
-
-          localStorage.setItem('UserId', data.user.name);
-          
-          // Store user data in localStorage
-          localStorage.setItem('currentUser', JSON.stringify(data.user));
-          
-          // Store user ID in variable
-          complaintReceiverId = data.user.id;
-          console.log('Current user ID:', complaintReceiverId);
-          
-          // Store receiver name
-          complaintReceiverName = data.receiver?.name || 'Unknown';
-          console.log('Complaint receiver name:', complaintReceiverName);
-          
-        } else {
-          console.log('Token verification failed:', data.message || 'No error message provided');
-          //alert('Authentication failed: ' + (data.message || 'Invalid token'));
-          showNotification('Authentication failed: ' + (data.message || 'Invalid token'), 'error');
-          window.location.href = 'login.html';
-        }
-      } catch (error) {
-        console.error('Error during token verification:', error);
-        //alert('Authentication failed: ' + error.message);
-        showNotification('Authentication failed: ' + error.message, 'error')
-        window.location.href = 'login.html';
-      }
-    }
-
-    // Call the function when the page loads
-    document.addEventListener('DOMContentLoaded', verifyAuthToken);
-
+  <script>
+    const page = 'launch-complaints';
   </script>
+
+  <script src="verification.js"></script>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -97,6 +32,8 @@
       scrollbar-width: thin;
       scroll-behavior: smooth;
       scrollbar-color: rgb(138, 119, 119) transparent;
+      user-select: none;
+      -webkit-overflow-scrolling: touch; /* smooth scroll on mobile */
     }
 
     body {
@@ -237,8 +174,7 @@
     }
 
     .content {
-      width: 100%;
-      max-width: 95vw;
+      width: 95%;
       margin: 0 auto;
       padding: 20px;
       background-color: white;
@@ -379,6 +315,180 @@
     #all-complaints, #natures, #delay-complaints {
       text-decoration: none;
       color: inherit;
+    }
+
+    .history-button {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 12px 20px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 900;
+      transition: all 0.3s ease;
+      opacity: 0;
+      transform: translateY(20px);
+      pointer-events: none;
+    }
+
+    .history-button.visible {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .history-button:hover {
+      background-color: #9e1e1e;
+      transform: translateY(-2px);
+    }
+
+    /* History Panel Styles */
+    .history-panel {
+      position: fixed;
+      top: 0;
+      right: -40vw; /* Start off-screen */
+      width: 40vw;
+      height: 100vh;
+      background: white;
+      box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+      z-index: 1000;
+      transition: right 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .history-panel.active {
+      right: 0;
+    }
+
+    .history-header {
+      padding: 15px 20px;
+      background-color: var(--primary);
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .history-header h3 {
+      font-size: 18px;
+      margin: 0;
+    }
+
+    .history-close {
+      display: flex;
+      flex-direction: row-reverse;
+      background: none;
+      border: none;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .history-content {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    /* Complaints History Table Styles */
+    .complaints-history-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      border-radius: 5px;
+      overflow: hidden;
+      background: white;
+      font-size: 13px;
+      overflow-x: auto;
+      border: 1px solid #ffc4c4; /* Add outer border instead of individual cell borders */
+    }
+
+    .complaints-history-table th {
+      background: rgba(136, 28, 28, 0.1);
+      color: var(--primary);
+      font-weight: 700;
+      padding: 10px 12px;
+      text-align: center;
+      font-size: 14px;
+      border: 1px solid #ffc4c4; /* vertical line color */
+    }
+    
+    .complaints-history-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      vertical-align: middle;
+      border: 1px solid #ffc4c4; /* vertical line color */
+      cursor: default;
+      vertical-align: top;
+      height: 60px;
+    }
+    
+    .complaints-history-table tr:hover:not(tfoot tr) {
+      background: rgba(136, 28, 28, 0.05);
+    }
+
+    /* Overlay for when history panel is open */
+    .history-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .history-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      
+      .history-close {
+        display: flex;
+        flex-direction: row-reverse;
+      }
+
+      .history-panel {
+        width: 85%;
+        right: -85%;
+      }
+
+      .complaints-history-table td {
+        padding: 5px;
+        font-size: 12px;
+      }
+      
+      .history-button {
+        bottom: 20px;
+        right: 20px;
+        padding: 10px 16px;
+        font-size: 14px;
+        width: 100px;
+      }
+
+      .history-close {
+        height: 30px;
+        width: 30px;
+        display: flex;
+        flex-direction: row-reverse;
+      }
     }
 
     /* Improved Launch Complaint Form */
@@ -1315,8 +1425,19 @@ label {
       color: rgb(172, 172, 172);
     }
 
+    .hamburger {
+      display: none;
+    }
+
     /* Responsive */
     @media (max-width: 480px) {
+      .complaints-content {
+        padding: 15px;
+      }
+      .logo {
+        flex-direction: column;
+      }
+
       .priority-options {
         flex-direction: column;
         gap: 10px;
@@ -1342,6 +1463,153 @@ label {
       margin-top:20px;
       margin-bottom:10px;
     }
+
+
+    /* Responsive header */
+    @media (max-width: 768px) {
+      .report-type .report-option {
+        padding: 10px 20px;
+        font-size: 15px;
+      }
+
+      label {
+        font-size: 15px;
+      }
+
+      select {
+        font-size: 15px;
+        height: 35px;
+        padding: 1px 5px;
+      }
+
+      .btn {
+        font-size: 15px;
+      }
+
+      .report-header h1 {
+        font-size: 20px;
+      }
+      
+      .logo h2 {
+        font-size: 16px;
+      }
+
+      .nav-container {
+        margin-left: 0;
+        justify-content: center;
+        display: none;
+      }
+      
+      .nav-item {
+        padding: 12px 15px;
+        font-size: 14px;
+      }
+
+      .content {
+        margin-top: 0px;
+        width: 100%;
+        padding: 10px 5px;
+      }
+      
+      header {
+        /*flex-direction: column;*/
+        height: auto;
+        padding: 5px;
+        gap: 15px;
+        margin-top: 0px;
+      }
+      
+      .logo {
+        margin-bottom: 0px;
+      }
+
+      .logo .logo-image {
+        width: 60px;
+        height: auto;
+        margin-bottom: 0px;
+        padding: 2px;
+      }
+
+      .user h2 {
+        font-size: 14px;
+        margin: 0px;
+      }
+      
+      .logout-btn {
+        padding: 4px 8px;
+        font-size: 15px;
+        font-weight: 650;
+      }
+
+      .hamburger {
+        display: flex;
+        height: 35px;
+        width: 35px;
+        background-color: rgba(0,0,0,0.2);
+        cursor: pointer;
+        padding: 8px;
+        margin-right: 10px;
+        border-radius: 4px;
+      }
+
+      .hamburger i {
+        font-size: 20px;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+      }
+
+      .navigation-block {
+        right: 0;
+        width: 100vw;
+        top: 55px;
+        border-radius: 0;
+      }
+
+      /* By default, hide the menu off-screen to the right */
+      .navigation-block {
+        position: fixed;
+        top: 60px;
+        right: -250px; /* Hide off-screen to the right */
+        display: flex;
+        flex-direction: column;
+        background-color: var(--primary);
+        width: 220px;
+        border-radius: 8px;
+        padding: 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        z-index: 999;
+        transition: right 0.3s ease-in-out; /* Smooth slide animation */
+        border: 2px solid rgba(0, 0, 0, 0.1);
+      }
+
+      /* Each nav item */
+      .navigation-block .navi-block-items {
+        color: white;
+        padding: 12px;
+        font-size: 16px;
+        text-decoration: none;
+        transition: background 0.2s ease;
+        font-weight: 500;
+      }
+
+      .navigation-block .navi-block-items:hover {
+        background: rgba(255,255,255,0.1);
+        border-radius: 5px;
+      }
+
+      /* Show menu when active - slide in from right */
+      .navigation-block.active {
+        right: 10px; /* Slide into view from the right */
+      }
+
+      .navigation-block div {
+        background-color: rgba(0, 0, 0, 0.1);
+      }
+    }
+    
 
   </style>
 </head>
@@ -1570,6 +1838,39 @@ label {
     </div>
   </div>
 </div>
+
+
+
+  <div class="history-overlay" id="historyOverlay"></div>
+  
+  <button class="history-button" id="historyButton">
+    <i class="fas fa-history"></i> History
+  </button>
+  
+  <div class="history-panel" id="historyPanel">
+    <div class="history-header">
+      <h3><i class="fas fa-history"></i> Complaint History</h3>
+      <button class="history-close" id="historyClose">&times;</button>
+    </div>
+    <div class="history-content">
+      <table class="complaints-history-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Date</th>
+            <th>Location</th>
+            <th>Nature</th>
+            <th>Nature Type</th>
+            <th>Skillman</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="historyTableBody">
+          <!-- History data will be populated here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
   
 
 
@@ -1585,19 +1886,29 @@ label {
     <div class="user">
       <h2 id="user-id">Unknown</h2>
       <button class="logout-btn" id="logout-btn">Logout</button>
+      <div class="hamburger">
+        <i class="fas fa-bars" id="hamburger-btn"></i>
+        <div class="navigation-block">
+          <a href="dashboard.html" class="navi-block-items">Dashboard</a>
+          <div href="launch-complaints.html" class="navi-block-items active">Complaints</div>
+          <a href="all-users.html" class="navi-block-items">Users</a>
+          <a href="complaints-report.html" class="navi-block-items">Reporting</a>
+          <a href="admin-panel.html" class="navi-block-items">Admin</a>
+        </div>
+      </div>
     </div>
   </header>
 
   <div class="nav-bar">
     <div class="nav-container">
-      <a href="#" class="nav-item">
+      <a href="dashboard.html" class="nav-item">
         <i class="fas fa-chart-line"></i>
         Dashboard
       </a>
-      <a href="#" class="nav-item active">
+      <div class="nav-item active">
         <i class="fas fa-ticket-alt"></i>
         Complaints
-      </a>
+      </div>
       <a href="all-users.html" class="nav-item">
         <i class="fas fa-users"></i>
         Users
@@ -1610,9 +1921,13 @@ label {
         <i class="fas fa-boxes"></i>
         Stock
       </a-->
-      <a href="complaint-reporting.html" class="nav-item">
+      <a href="complaints-report.html" class="nav-item">
         <i class="fas fa-file-alt"></i>
         Reporting
+      </a>
+      <a href="admin-panel.html" class="nav-item">
+        <i class="fas fa-file-alt"></i>
+        Admin
       </a>
     </div>
   </div>
@@ -1708,22 +2023,142 @@ label {
       </div>
     </div>
   </div>
+  
+<script>
+  const hamburgerBtn = document.getElementById("hamburger-btn");
+  const navBlock = document.querySelector(".navigation-block");
 
+  // Toggle navigation on hamburger click
+  hamburgerBtn.addEventListener("click", (e) => {
+    e.stopPropagation(); // Prevent click from bubbling to document
+    navBlock.classList.toggle("active");
+  });
+
+  // Close navigation when clicking outside
+  document.addEventListener("click", (e) => {
+    // Check if click is outside the navigation block and hamburger button
+    if (!navBlock.contains(e.target) && e.target !== hamburgerBtn) {
+      navBlock.classList.remove("active");
+    }
+  });
+
+  // Optional: Prevent clicks inside navigation from closing it
+  navBlock.addEventListener("click", (e) => {
+    e.stopPropagation();
+  });
+</script>
+
+<script>
+  // Add this script to control navigation visibility based on backend permissions
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        const authToken = localStorage.getItem('authToken');
+        if (!authToken) {
+            console.error('No authentication token found');
+            return;
+        }
+
+        // Fetch allowed pages from backend
+        const response = await fetch(`${SERVER_URL}/api/allowed-pages`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch allowed pages');
+        }
+
+        const data = await response.json();
+        
+        if (data.success && data.allowedPages) {
+            // Hide all navigation items first
+            hideAllNavigationItems();
+            
+            // Show only allowed pages
+            showAllowedNavigationItems(data.allowedPages);
+        }
+    } catch (error) {
+        console.error('Error fetching allowed pages:', error);
+        // In case of error, you might want to show a default set of navigation items
+        // or handle it according to your application's requirements
+    }
+});
+
+function hideAllNavigationItems() {
+    // Hide header navigation items
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+        if (!item.classList.contains('active')) {
+            item.style.display = 'none';
+        }
+    });
+    
+    // Hide hamburger menu navigation items
+    const hamburgerItems = document.querySelectorAll('.navi-block-items');
+    hamburgerItems.forEach(item => {
+        if (!item.classList.contains('active')) {
+            item.style.display = 'none';
+        }
+    });
+    
+    // Hide sidebar navigation items
+    const sidebarItems = document.querySelectorAll('.complaints-option');
+    sidebarItems.forEach(item => {
+        if (!item.classList.contains('active')) {
+            item.style.display = 'none';
+        }
+    });
+}
+
+function showAllowedNavigationItems(allowedPages) {
+    // Show header navigation items that are allowed
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+        const pageName = getPageNameFromHref(item.getAttribute('href'));
+        if (allowedPages.includes(pageName) || item.classList.contains('active')) {
+            item.style.display = 'flex';
+        }
+    });
+    
+    // Show hamburger menu navigation items that are allowed
+    const hamburgerItems = document.querySelectorAll('.navi-block-items');
+    hamburgerItems.forEach(item => {
+        const pageName = getPageNameFromHref(item.getAttribute('href'));
+        if (allowedPages.includes(pageName) || item.classList.contains('active')) {
+            item.style.display = 'block';
+        }
+    });
+    
+    // Show sidebar navigation items that are allowed
+    const sidebarItems = document.querySelectorAll('.complaints-option');
+    sidebarItems.forEach(item => {
+        const pageName = getPageNameFromHref(item.getAttribute('href'));
+        if (allowedPages.includes(pageName) || item.classList.contains('active')) {
+            item.style.display = 'flex';
+        }
+    });
+}
+
+function getPageNameFromHref(href) {
+    if (!href) return '';
+    
+    // Extract page name from href (e.g., "dashboard.html" -> "dashboard")
+    const pageWithExtension = href.split('/').pop();
+    return pageWithExtension.split('.')[0];
+}
+</script>
   <script>
           
-    document.getElementById("user-id").textContent = 'Unknown';
-
-    let USER_ID = localStorage.getItem('UserId');
-
-    document.getElementById("user-id").textContent = USER_ID;
     
-    if(document.getElementById("user-id").textContent != USER_ID) {
-      setTimeout(() => {
-        location.reload();
-      }, 500); // 500 ms = 0.5 sec
-    }
-
-    localStorage.removeItem('UserId');
+    let USER_ID = localStorage.getItem('UserId');
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById("user-id").textContent = USER_ID;
+      localStorage.removeItem('UserId');
+    });
     
     // Javascript for notification area
     /**
@@ -1764,8 +2199,6 @@ function showNotification(message, type = 'success', duration = 3000) {
 }
  
 
-    const SERVER_URL = 'http://localhost:3000';
-
   document.addEventListener('DOMContentLoaded', function() {
 
     // DOM Elements
@@ -1782,6 +2215,7 @@ function showNotification(message, type = 'success', duration = 3000) {
         const data = await response.json();
 
         if (response.ok) {
+          document.getElementById('user-id').textContent = 'Unknown';
           console.log('Logout success:', data);
           //alert('Logged out successfully!');
           // 👇 you can add more procedural lines here
@@ -1790,7 +2224,7 @@ function showNotification(message, type = 'success', duration = 3000) {
           localStorage.removeItem('authToken');
           setTimeout(() => {
             window.location.href = 'login.html';
-          }, 1000); // 1000 ms = 1 sec
+          }, 500); // 1000 ms = 1 sec
         } else {
           console.error('Logout failed:', data);
           alert('Logout failed!');
@@ -2326,6 +2760,92 @@ function hideAllErrors() {
     document.getElementById('email-error').style.display = 'none';
     document.getElementById('phone-error').style.display = 'none';
 }
+
+
+
+// User's History
+
+    const historyButton = document.getElementById('historyButton');
+    const historyPanel = document.getElementById('historyPanel');
+    const historyOverlay = document.getElementById('historyOverlay');
+    const historyClose = document.getElementById('historyClose');
+    const historyTableBody = document.getElementById('historyTableBody');
+    const userStatus = document.getElementById('user-status');
+
+    // Show history button when user is found
+    function showHistoryButton() {
+      historyButton.classList.add('visible');
+    }
+
+    // Hide history button
+    function hideHistoryButton() {
+      historyButton.classList.remove('visible');
+    }
+
+    // Toggle history panel
+    function toggleHistoryPanel() {
+      historyPanel.classList.toggle('active');
+      historyOverlay.classList.toggle('active');
+    }
+
+    // Close history panel
+    function closeHistoryPanel() {
+      historyPanel.classList.remove('active');
+      historyOverlay.classList.remove('active');
+    }
+
+    // Fetch and display complaint history
+    async function fetchComplaintHistory(customerId) {
+      try {
+        const authToken = localStorage.getItem('authToken');
+        const response = await fetch(`${SERVER_URL}/api/customers/${customerId}/complaints`, {
+          headers: {
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch complaint history');
+        }
+
+        const complaints = await response.json();
+        populateHistoryTable(complaints);
+      } catch (error) {
+        console.error('Error fetching complaint history:', error);
+        historyTableBody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--gray);">Error loading complaint history</td></tr>`;
+      }
+    }
+
+    // Populate history table with data
+    function populateHistoryTable(complaints) {
+      if (!complaints || complaints.length === 0) {
+        historyTableBody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--gray);">No complaint history found</td></tr>`;
+        return;
+      }
+
+      historyTableBody.innerHTML = '';
+      complaints.forEach(complaint => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${complaint.id || 'N/A'}</td>
+          <td>${complaint.date ? new Date(complaint.date).toLocaleDateString() : 'N/A'}</td>
+          <td>${complaint.location || 'N/A'}</td>
+          <td>${complaint.nature || 'N/A'}</td>
+          <td>${complaint.natureType || 'N/A'}</td>
+          <td>${complaint.skillman || 'N/A'}</td>
+          <td>${complaint.status || 'N/A'}</td>
+        `;
+        historyTableBody.appendChild(row);
+      });
+    }
+
+    // Event Listeners
+    historyButton.addEventListener('click', toggleHistoryPanel);
+    historyClose.addEventListener('click', closeHistoryPanel);
+    historyOverlay.addEventListener('click', closeHistoryPanel);
+    ////////////////////////////////////////////////////////////
+
  
 
   // Modal functionality with API integration
@@ -2387,6 +2907,7 @@ try {
   if (!response.ok) {
     throw new Error('Failed to search customer');
     showNotification('Failed to search customer', 'error');
+    hideHistoryButton();
   }
 
   const result = await response.json();
@@ -2400,6 +2921,8 @@ try {
     
     userStatus.textContent = '✅ User found';
     userStatus.style.color = 'green';
+    showHistoryButton();
+    fetchComplaintHistory(customerId);
 
     // Populate location dropdown
     if (result.locations && result.locations.length > 0) {
@@ -2415,6 +2938,7 @@ try {
     // ❌ User not found - open modal
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
+    hideHistoryButton();
     if (/\d/.test(customerSearch.value)) {
       customerPhone.value = customerSearch.value;
     } else {
@@ -2990,14 +3514,6 @@ function formatPriority(priority) {
     // Initialize the app
     init();
 });
-
-
-
-
-
-
-
-
 
 
 // Get the launch complaint form// Get the launch complaint form
