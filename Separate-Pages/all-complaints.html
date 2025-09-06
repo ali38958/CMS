@@ -1,76 +1,10 @@
 <!DOCTYPE html>
-  <script>  
-    setTimeout(() => {
-      console.log("2 seconds later...");
-    }, 2000); // 2000 milliseconds = 2 seconds
-    
-    // Variables to store user data
-    let complaintReceiverName = '';
-    let complaintReceiverId = null;
-
-    async function verifyAuthToken() {
-      const authToken = localStorage.getItem('authToken');
-      
-      if (!authToken) {
-        console.log('No authToken found in localStorage');
-        alert('Authentication failed: No token found');
-        window.location.href = 'login.html';
-        return;
-      }
-
-      try {
-        console.log('Attempting to verify authToken...');
-        
-        const response = await fetch('http://localhost:3000/verify-token-get-receiver', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        console.log('API Response:', data);
-
-        if (data.success) {
-          console.log('Token verification successful for user:', data.user.name);
-
-          localStorage.setItem('UserId', data.user.name);
-          
-          // Store user data in localStorage
-          localStorage.setItem('currentUser', JSON.stringify(data.user));
-          
-          // Store user ID in variable
-          complaintReceiverId = data.user.id;
-          console.log('Current user ID:', complaintReceiverId);
-          
-          // Store receiver name
-          complaintReceiverName = data.receiver?.name || 'Unknown';
-          console.log('Complaint receiver name:', complaintReceiverName);
-          
-        } else {
-          console.log('Token verification failed:', data.message || 'No error message provided');
-          //alert('Authentication failed: ' + (data.message || 'Invalid token'));
-          showNotification('Authentication failed: ' + (data.message || 'Invalid token'), 'error');
-          window.location.href = 'login.html';
-        }
-      } catch (error) {
-        console.error('Error during token verification:', error);
-        //alert('Authentication failed: ' + error.message);
-        showNotification('Authentication failed: ' + error.message, 'error')
-        window.location.href = 'login.html';
-      }
-    }
-
-    // Call the function when the page loads
-    document.addEventListener('DOMContentLoaded', verifyAuthToken);
-
-  </script>
 <html lang="en">
+<script src="server-url.js"></script>
+  <script>
+    const page = 'all-complaints';
+  </script>
+  <script src="verification.js"></script>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -87,6 +21,7 @@
       scroll-behavior: smooth;
       scrollbar-color: rgb(138, 119, 119) transparent;
       user-select: none;
+      -webkit-overflow-scrolling: touch; /* smooth scroll on mobile */
     }
 
     body {
@@ -225,8 +160,7 @@
     }
 
     .content {
-      width: 100%;
-      max-width: 95vw;
+      width: 95%;
       margin: 0 auto;
       padding: 20px;
       background-color: white;
@@ -524,7 +458,7 @@
       color: white;
     }
     
-    .status-deffered {
+    .status-deferred {
       background: #0f0f0f;
       color: white;
     }
@@ -1350,13 +1284,13 @@
 }
 
 /* Deferred button - Black */
-.mark-complaint-option[data-status="Deffered"] {
+.mark-complaint-option[data-status="Deferred"] {
   background-color: #000000;
   color: white;
   border: 1px solid #000000;
 }
 
-.mark-complaint-option[data-status="Deffered"]:hover {
+.mark-complaint-option[data-status="Deferred"]:hover {
   background-color: #333333;
   border-color: #333333;
 }
@@ -1419,6 +1353,7 @@
   gap: 24px;
   margin-bottom: 28px;
   justify-content: center;
+  flex-wrap: wrap;
 }
 
 .priority-box {
@@ -1559,6 +1494,10 @@
   .filter-group {
     min-width: 100%;
   }
+
+  .complaints-history-table {
+    border-radius: 0px;
+  }
 }
 
 
@@ -1588,7 +1527,8 @@
       }
       
       .content {
-        padding: 15px;
+        padding: 0px;
+        width: 100%;
       }
       
       .summary-action-bar {
@@ -1629,10 +1569,6 @@
 
       .report-header h1 {
         font-size: 20px;
-      }
-
-      .logo {
-        flex-direction: column;
       }
       
       .logo h2 {
@@ -1679,9 +1615,15 @@
       }
       
       .logout-btn {
-        padding: 4px 8px;
-        font-size: 15px;
-        font-weight: 650;
+        background-color: white;
+        color: rgb(136, 28, 28);
+        border: none;
+        padding: 6px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background-color 0.3s;
+        border: 1px solid white;
       }
 
       .hamburger {
@@ -1843,25 +1785,6 @@
     height: auto;
   }
 
-  /*
-  .complaints-history-table th,
-  .complaints-history-table td {
-    padding: 6px 8px;
-    white-space: nowrap;
-  }
-  
-  .complaints-history-table th:nth-child(n+4),
-  .complaints-history-table td:nth-child(n+4) {
-    display: none; 
-  }/* Hide less important columns on mobile */
-  
-  /* Show essential columns only /
-  .complaints-history-table th:nth-child(-n+3),
-  .complaints-history-table td:nth-child(-n+3),
-  .complaints-history-table th:nth-last-child(-n+2),
-  .complaints-history-table td:nth-last-child(-n+2) {
-    display: table-cell;
-  }*/
   
   /* Action button adjustments */
   .action-dropdown-btn {
@@ -1882,6 +1805,10 @@
 }
 
 @media (max-width: 480px) {
+  .complaints-history-table {
+    border-radius: 0px;
+  }
+
   h2 {
     size: 5px;
   }
@@ -1932,8 +1859,7 @@
   
   /* Make sure content doesn't overflow */
   .content {
-    padding: 10px;
-    margin: 5px;
+    padding: 0px;
   }
   
   .complaints-content {
@@ -1992,13 +1918,13 @@
   .priority-box:hover {
     transform: translateX(5px) scale(1.02);
   }
+
+  .complaints-history-table {
+    border-radius: 0px;
+  }
 }
 
-@media (max-width: 480px) {
-  .priority-box {
-    padding: 15px 10px;
-    height: auto;
-  }
+@media (max-width: 768px) {
   
   .priority-icon {
     font-size: 2rem;
@@ -2007,7 +1933,7 @@
 
   .priority-icon i {
     margin-top: 0.6rem;
-    font-size: 1rem;
+    font-size: 2rem;
   }
   
   .priority-box .priority-label {
@@ -2018,6 +1944,11 @@
   
   .priority-count {
     font-size: 0.99rem;
+  }
+  
+  .priority-box {
+    padding: 30px 10px;
+    height: 50px;
   }
 
 
@@ -2045,7 +1976,7 @@
     
     <!-- Modal Footer -->
     <div class="mark-complaint-modal-footer">
-      <button class="mark-complaint-option" data-status="Deffered">
+      <button class="mark-complaint-option" data-status="Deferred">
         <i class="fas fa-calendar-alt"></i> Deferred
       </button>
       <button class="mark-complaint-option" data-status="SNA">
@@ -2124,9 +2055,10 @@
         <i class="fas fa-bars" id="hamburger-btn"></i>
         <div class="navigation-block">
           <a href="dashboard.html" class="navi-block-items">Dashboard</a>
-          <a href="launch-complaints.html" class="navi-block-items">Complaints</a>
+          <div class="navi-block-items active">Complaints</div>
           <a href="all-users.html" class="navi-block-items">Users</a>
-          <div class="navi-block-items active"">Reporting</div>
+          <a href="complaints-report.html" class="navi-block-items">Reporting</a>
+          <a href="admin-panel.html" class="navi-block-items"">Admin</a>
         </div>
         </div>
       </div>
@@ -2134,14 +2066,14 @@
 
   <div class="nav-bar">
     <div class="nav-container">
-      <a href="#" class="nav-item">
+      <a href="dashboard.html" class="nav-item">
         <i class="fas fa-chart-line"></i>
         Dashboard
       </a>
-      <a href="#" class="nav-item active">
+      <div class="nav-item active">
         <i class="fas fa-ticket-alt"></i>
         Complaints
-      </a>
+      </div>
       <a href="all-users.html" class="nav-item">
         <i class="fas fa-users"></i>
         Users
@@ -2154,9 +2086,13 @@
         <i class="fas fa-boxes"></i>
         Stock
       </a-->
-      <a href="#" class="nav-item">
+      <a href="complaints-report.html" class="nav-item">
         <i class="fas fa-file-alt"></i>
         Reporting
+      </a>
+      <a href="admin-panel.html" class="nav-item">
+        <i class="fas fa-file-alt"></i>
+        Admin
       </a>
     </div>
   </div>
@@ -2253,7 +2189,7 @@
                 <option value="In-Progress">In-Progress</option>
                 <option value="Completed">Completed</option>
                 <option value="Un-Assigned">Un-Assigned</option>
-                <option value="Deffered">Deferred</option>
+                <option value="Deferred">Deferred</option>
               </select>
             </div>
 
@@ -2353,6 +2289,109 @@
   });
 </script>
 
+<script>
+  // Add this script to control navigation visibility based on backend permissions
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        const authToken = localStorage.getItem('authToken');
+        if (!authToken) {
+            console.error('No authentication token found');
+            return;
+        }
+
+        // Fetch allowed pages from backend
+        const response = await fetch(`${SERVER_URL}/api/allowed-pages`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch allowed pages');
+        }
+
+        const data = await response.json();
+        
+        if (data.success && data.allowedPages) {
+            // Hide all navigation items first
+            hideAllNavigationItems();
+            
+            // Show only allowed pages
+            showAllowedNavigationItems(data.allowedPages);
+        }
+    } catch (error) {
+        console.error('Error fetching allowed pages:', error);
+        // In case of error, you might want to show a default set of navigation items
+        // or handle it according to your application's requirements
+    }
+});
+
+function hideAllNavigationItems() {
+    // Hide header navigation items
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+        if (!item.classList.contains('active')) {
+            item.style.display = 'none';
+        }
+    });
+    
+    // Hide hamburger menu navigation items
+    const hamburgerItems = document.querySelectorAll('.navi-block-items');
+    hamburgerItems.forEach(item => {
+        if (!item.classList.contains('active')) {
+            item.style.display = 'none';
+        }
+    });
+    
+    // Hide sidebar navigation items
+    const sidebarItems = document.querySelectorAll('.complaints-option');
+    sidebarItems.forEach(item => {
+        if (!item.classList.contains('active')) {
+            item.style.display = 'none';
+        }
+    });
+}
+
+function showAllowedNavigationItems(allowedPages) {
+    // Show header navigation items that are allowed
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+        const pageName = getPageNameFromHref(item.getAttribute('href'));
+        if (allowedPages.includes(pageName) || item.classList.contains('active')) {
+            item.style.display = 'flex';
+        }
+    });
+    
+    // Show hamburger menu navigation items that are allowed
+    const hamburgerItems = document.querySelectorAll('.navi-block-items');
+    hamburgerItems.forEach(item => {
+        const pageName = getPageNameFromHref(item.getAttribute('href'));
+        if (allowedPages.includes(pageName) || item.classList.contains('active')) {
+            item.style.display = 'block';
+        }
+    });
+    
+    // Show sidebar navigation items that are allowed
+    const sidebarItems = document.querySelectorAll('.complaints-option');
+    sidebarItems.forEach(item => {
+        const pageName = getPageNameFromHref(item.getAttribute('href'));
+        if (allowedPages.includes(pageName) || item.classList.contains('active')) {
+            item.style.display = 'flex';
+        }
+    });
+}
+
+function getPageNameFromHref(href) {
+    if (!href) return '';
+    
+    // Extract page name from href (e.g., "dashboard.html" -> "dashboard")
+    const pageWithExtension = href.split('/').pop();
+    return pageWithExtension.split('.')[0];
+}
+</script>
+
   <script>
 
     let USER_ID = localStorage.getItem('UserId');
@@ -2402,9 +2441,6 @@
     status: '',
     search: ''
   };
-
-
-    const SERVER_URL = 'http://localhost:3000';
     
   document.addEventListener('DOMContentLoaded', function() {
 
@@ -2620,12 +2656,6 @@ function initializeActionButtonListeners(row) {
         console.log(`Printing complaint #${complaintId}`);
       });
       
-      // Mark complaint button
-      // Mark complaint button
-      row.querySelector('.mark-complaint-btn')?.addEventListener('click', function(e) {
-        e.preventDefault();
-        openMarkComplaintModal(complaintId);
-      });
     });
   }
 
@@ -2633,7 +2663,6 @@ function initializeActionButtonListeners(row) {
 // JS for Skillman Modal
 // Skillman Assignment Modal Functionality
 document.addEventListener('DOMContentLoaded', function() {
-  const SERVER_URL = 'http://localhost:3000';
   
   // ========== Main Complaints Table Functionality ==========
   let currentPage = 1;
@@ -2826,8 +2855,8 @@ document.addEventListener('DOMContentLoaded', function() {
       const status = complaint.status.toLowerCase();
       
       switch(status) {
-        case 'deffered':
-          statusClass = 'status-deffered';
+        case 'deferred':
+          statusClass = 'status-deferred';
           actionOptions = `
             <a href="#" class="complaint-details-btn"><i class="fas fa-info-circle"></i> Complaint Details</a>
             <a href="#" class="change-skillman-btn"><i class="fas fa-user-edit"></i> Change Skillman</a>
@@ -2939,101 +2968,122 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Update pagination controls
-    // Update pagination controls
-    function updatePagination() {
-      const totalPages = Math.ceil(totalItems / itemsPerPage);
-      const startItem = (currentPage - 1) * itemsPerPage + 1;
-      const endItem = Math.min(currentPage * itemsPerPage, totalItems);
-      
-      paginationInfo.textContent = `Showing ${startItem} to ${endItem} of ${totalItems} entries`;
-      
-      // Clear existing pagination buttons
-      paginationControls.innerHTML = '';
-      
-      // Previous button
-      const prevBtn = document.createElement('button');
-      prevBtn.className = `page-btn prev-btn ${currentPage === 1 ? 'disabled' : ''}`;
-      prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i> Prev';
-      prevBtn.addEventListener('click', () => {
-        if (currentPage > 1) {
-          currentPage--;
-          fetchComplaints();
-        }
-      });
-      paginationControls.appendChild(prevBtn);
-      
-      // Page buttons with ellipsis for many pages
-      const maxVisiblePages = 7;
-      let startPage, endPage;
-      
-      if (totalPages <= maxVisiblePages) {
-        // Show all pages if total pages is less than max visible
-        startPage = 1;
-        endPage = totalPages;
-      } else {
-        // Calculate start and end pages with current page in the middle
-        startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-        endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-        
-        // Adjust if we're at the beginning or end
-        if (endPage - startPage + 1 < maxVisiblePages) {
-          startPage = Math.max(1, endPage - maxVisiblePages + 1);
-        }
-      }
-      
-      // Add first page and ellipsis if needed
-      if (startPage > 1) {
-        addPageButton(1);
-        if (startPage > 2) {
-          addEllipsis();
-        }
-      }
-      
-      // Add page buttons
-      for (let i = startPage; i <= endPage; i++) {
-        addPageButton(i);
-      }
-      
-      // Add last page and ellipsis if needed
-      if (endPage < totalPages) {
-        if (endPage < totalPages - 1) {
-          addEllipsis();
-        }
-        addPageButton(totalPages);
-      }
-      
-      // Next button
-      const nextBtn = document.createElement('button');
-      nextBtn.className = `page-btn next-btn ${currentPage === totalPages ? 'disabled' : ''}`;
-      nextBtn.innerHTML = 'Next <i class="fas fa-chevron-right"></i>';
-      nextBtn.addEventListener('click', () => {
-        if (currentPage < totalPages) {
-          currentPage++;
-          fetchComplaints();
-        }
-      });
-      paginationControls.appendChild(nextBtn);
-      
-      // Helper functions
-      function addPageButton(pageNumber) {
-        const pageBtn = document.createElement('button');
-        pageBtn.className = `page-btn ${pageNumber === currentPage ? 'active' : ''}`;
-        pageBtn.textContent = pageNumber;
-        pageBtn.addEventListener('click', () => {
-          currentPage = pageNumber;
-          fetchComplaints();
-        });
-        paginationControls.appendChild(pageBtn);
-      }
-      
-      function addEllipsis() {
-        const ellipsis = document.createElement('span');
-        ellipsis.textContent = '...';
-        ellipsis.style.padding = '8px 12px';
-        ellipsis.style.color = '#6c757d';
-        paginationControls.appendChild(ellipsis);
-      }
+// Update the updatePagination function with proper ellipsis handling
+function updatePagination() {
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startItem = (currentPage - 1) * itemsPerPage + 1;
+  const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+  
+  paginationInfo.textContent = `Showing ${startItem} to ${endItem} of ${totalItems} entries`;
+  
+  // Clear existing pagination buttons
+  paginationControls.innerHTML = '';
+  
+  // Previous button
+  const prevBtn = document.createElement('button');
+  prevBtn.className = `page-btn prev-btn ${currentPage === 1 ? 'disabled' : ''}`;
+  prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i> Prev';
+  prevBtn.addEventListener('click', () => {
+    if (currentPage > 1) {
+      currentPage--;
+      fetchComplaints();
     }
+  });
+  paginationControls.appendChild(prevBtn);
+  
+  // Page buttons with ellipsis logic
+  const maxVisiblePages = 7;
+  const ellipsisThreshold = 3; // Show ellipsis after this many pages
+  
+  let startPage, endPage;
+  
+  if (totalPages <= maxVisiblePages) {
+    // Show all pages if total pages is less than max visible
+    startPage = 1;
+    endPage = totalPages;
+  } else {
+    // Calculate start and end pages
+    if (currentPage <= ellipsisThreshold + 1) {
+      // Near the beginning
+      startPage = 1;
+      endPage = maxVisiblePages - 2; // Reserve space for ellipsis and last page
+    } else if (currentPage >= totalPages - ellipsisThreshold) {
+      // Near the end
+      startPage = totalPages - maxVisiblePages + 3; // Reserve space for first page and ellipsis
+      endPage = totalPages;
+    } else {
+      // In the middle
+      startPage = currentPage - Math.floor((maxVisiblePages - 4) / 2);
+      endPage = currentPage + Math.floor((maxVisiblePages - 4) / 2);
+    }
+    
+    // Ensure boundaries
+    startPage = Math.max(1, startPage);
+    endPage = Math.min(totalPages, endPage);
+  }
+  
+  // Add first page and ellipsis if needed
+  if (startPage > 1) {
+    addPageButton(1);
+    if (startPage > 2) {
+      addEllipsis();
+    }
+  }
+  
+  // Add page buttons
+  for (let i = startPage; i <= endPage; i++) {
+    addPageButton(i);
+  }
+  
+  // Add last page and ellipsis if needed
+  if (endPage < totalPages) {
+    if (endPage < totalPages - 1) {
+      addEllipsis();
+    }
+    addPageButton(totalPages);
+  }
+  
+  // Next button
+  const nextBtn = document.createElement('button');
+  nextBtn.className = `page-btn next-btn ${currentPage === totalPages ? 'disabled' : ''}`;
+  nextBtn.innerHTML = 'Next <i class="fas fa-chevron-right"></i>';
+  nextBtn.addEventListener('click', () => {
+    if (currentPage < totalPages) {
+      currentPage++;
+      fetchComplaints();
+    }
+  });
+  paginationControls.appendChild(nextBtn);
+  
+  // Helper functions
+  function addPageButton(pageNumber) {
+    // Skip if this page button would be an ellipsis
+    if (document.querySelector(`.page-btn[data-page="${pageNumber}"]`)) return;
+    
+    const pageBtn = document.createElement('button');
+    pageBtn.className = `page-btn ${pageNumber === currentPage ? 'active' : ''}`;
+    pageBtn.textContent = pageNumber;
+    pageBtn.dataset.page = pageNumber;
+    pageBtn.addEventListener('click', () => {
+      currentPage = pageNumber;
+      fetchComplaints();
+    });
+    paginationControls.appendChild(pageBtn);
+  }
+  
+  function addEllipsis() {
+    // Check if ellipsis already exists to prevent duplicates
+    if (document.querySelector('.pagination-ellipsis')) return;
+    
+    const ellipsis = document.createElement('span');
+    ellipsis.textContent = '...';
+    ellipsis.className = 'pagination-ellipsis';
+    ellipsis.style.padding = '8px 12px';
+    ellipsis.style.color = '#6c757d';
+    ellipsis.style.cursor = 'default';
+    paginationControls.appendChild(ellipsis);
+  }
+}
   
   // Initialize event listeners for table rows
   function initializeRowEventListeners() {
@@ -3386,7 +3436,7 @@ if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
       
       if (!selectedPrimary && selectedHelpers.length === 0) {
         //alert('Please select at least one skillman (primary or helper)');
-        showNotification('Please select at least one skillman (primary or helper)', 'error', 3000);
+        showNotification('Please select a skillman (primary)', 'error', 3000);
         return;
       }
       
@@ -3438,6 +3488,7 @@ if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
               const statusSelect = row.querySelector('.editable-select[data-field="status"]');
               if (statusSelect) {
                 statusSelect.value = 'In-Progress';
+                statusSelect.dispatchEvent(new Event('change'));
               }
               
               const actionDropdown = row.querySelector('.action-dropdown-content');
@@ -3886,16 +3937,6 @@ function populateDropdown(dropdownId, options) {
 }
 
 
-
-
-
-
-
-
-
-
-
-
 // Mark Complaint Modal Functions
 function openMarkComplaintModal(complaintId) {
   const modal = document.getElementById('markComplaintModalBackdrop');
@@ -3945,8 +3986,8 @@ function updateComplaintStatus(status) {
     case 'completed':
       statusClass = 'status-completed';
       break;
-    case 'deffered':
-      statusClass = 'status-deffered';
+    case 'deferred':
+      statusClass = 'status-deferred';
       break;
     case 'sna':
       statusClass = 'status-sna';
@@ -3981,14 +4022,24 @@ function updateComplaintStatus(status) {
     if (data.success) {
       // Update action dropdown based on new status
       const actionDropdown = row.querySelector('.action-dropdown-content');
-      if (actionDropdown && status === 'Completed') {
-        actionDropdown.innerHTML = `
-          <a href="#" class="complaint-details-btn"><i class="fas fa-info-circle"></i> Complaint Details</a>
-          <a href="#" class="print-complaint-btn"><i class="fas fa-print"></i> Print Complaint</a>
-        `;
+      if (actionDropdown) {
+        if (status === 'Completed') {
+          actionDropdown.innerHTML = `
+            <a href="#" class="complaint-details-btn"><i class="fas fa-info-circle"></i> Complaint Details</a>
+            <a href="#" class="print-complaint-btn"><i class="fas fa-print"></i> Print Complaint</a>
+          `;
+        } else {
+          // Update for other statuses if needed
+          actionDropdown.innerHTML = `
+            <a href="#" class="complaint-details-btn"><i class="fas fa-info-circle"></i> Complaint Details</a>
+            <a href="#" class="change-skillman-btn"><i class="fas fa-user-edit"></i> Change Skillman</a>
+            <a href="#" class="mark-complaint-btn"><i class="fas fa-check"></i> Mark Complaint</a>
+            <a href="#" class="print-complaint-btn"><i class="fas fa-print"></i> Print Complaint</a>
+          `;
+        }
         
-        // Re-attach event listeners
-        initializeActionButtonListeners(row);
+        // Re-attach event listeners to the updated dropdown
+        initializeRowEventListenersForRow(row);
       }
       
       showNotification(`Complaint marked as ${status} successfully!`, 'success', 3000);
@@ -4008,6 +4059,46 @@ function updateComplaintStatus(status) {
     // Re-enable buttons
     buttons.forEach(btn => btn.disabled = false);
   });
+}
+
+// Add this helper function to initialize event listeners for a specific row
+function initializeRowEventListenersForRow(row) {
+  const complaintId = row.dataset.complaintId;
+  
+  // Complaint details button
+  row.querySelector('.complaint-details-btn')?.addEventListener('click', function(e) {
+    e.preventDefault();
+    handleComplaintDetailsClick(complaintId);
+  });
+  
+  // Print complaint button
+  row.querySelector('.print-complaint-btn')?.addEventListener('click', function(e) {
+    e.preventDefault();
+    console.log(`Printing complaint #${complaintId}`);
+  });
+  
+  // Reinitialize the dropdown functionality
+  const dropdownBtn = row.querySelector('.action-dropdown-btn');
+  const dropdownContent = row.querySelector('.action-dropdown-content');
+  
+  if (dropdownBtn && dropdownContent) {
+    // Remove any existing event listeners
+    dropdownBtn.replaceWith(dropdownBtn.cloneNode(true));
+    const newDropdownBtn = row.querySelector('.action-dropdown-btn');
+    
+    // Add new event listener
+    newDropdownBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      
+      // Hide all other dropdowns first
+      document.querySelectorAll('.action-dropdown-content').forEach(dc => {
+        if (dc !== dropdownContent) dc.style.display = 'none';
+      });
+
+      // Toggle this dropdown
+      dropdownContent.style.display = dropdownContent.style.display === 'block' ? 'none' : 'block';
+    });
+  }
 }
 
 // Initialize Mark Complaint Modal
@@ -4080,10 +4171,10 @@ function setupMarkComplaintModalListeners() {
   });
 }
 
-// Call this function when the DOM is loaded
+/*/ Call this function when the DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
   setupMarkComplaintModalListeners();
-});
+});*/
 
 // Make sure the openMarkComplaintModal function stores the complaint ID correctly
 function openMarkComplaintModal(complaintId) {
