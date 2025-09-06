@@ -1,5 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+  <script src="server-url.js"></script>
+  <script>
+    const page = 'launch-complaints';
+  </script>
+  <script src="verification.js"></script>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -11,6 +16,12 @@
       padding: 0;
       box-sizing: border-box;
       font-family: Arial, sans-serif;
+      cursor: default;
+      scrollbar-width: thin;
+      scroll-behavior: smooth;
+      scrollbar-color: rgb(138, 119, 119) transparent;
+      -webkit-overflow-scrolling: touch; /* smooth scroll on mobile */
+      user-select: none;
     }
 
     body {
@@ -32,6 +43,23 @@
       margin-bottom: 30px;
       position: relative;
       z-index: 10;
+    }
+    
+    /* Variables */
+    :root {
+      --primary: rgb(136, 28, 28);
+      --secondary: #8c2f2f;
+      --accent: #4caf50;
+      --warning: #ff9800;
+      --danger: #f44336;
+      --light: #f8f9fa;
+      --dark: #212529;
+      --gray: #6c757d;
+      --card-bg: rgba(255, 255, 255, 0.95);
+      --nav-bg: rgba(255, 255, 255, 0.85);
+      --nav-active: rgba(136, 28, 28, 0.15);
+      --nav-hover: rgba(136, 28, 28, 0.08);
+      --success: #4caf50;
     }
 
     .nav-bar {
@@ -149,14 +177,74 @@
     }
 
     .content {
-      width: 100%;
-      max-width: 1800px;
+      width: 95vw;
       margin: 0 auto;
       padding: 20px;
       background-color: white;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       border-radius: 8px;
       margin-top: 20px;
+    }
+    /* Notification Styles */
+    .notification-area {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1100;
+      max-width: 350px;
+      width: 100%;
+    }
+
+    .notification {
+      padding: 15px 20px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+      animation: slideIn 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+    }
+
+    .notification::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 4px;
+      width: 100%;
+      background: rgba(255,255,255,0.5);
+      animation: progress 3s linear;
+    }
+
+    .notification.success {
+      background: #4CAF50;
+    }
+
+    .notification.error {
+      background: #F44336;
+    }
+
+    .notification.warning {
+      background: #FF9800;
+    }
+
+    .notification.info {
+      background: #2196F3;
+    }
+
+    @keyframes progress {
+      from { width: 100%; }
+      to { width: 0%; }
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
     }
     
     /* Complaints Section */
@@ -244,6 +332,7 @@
       border: 1px solid #ddd;
       border-radius: 6px 0 0 6px;
       font-size: 16px;
+      cursor: text;
     }
     
     .search-box button {
@@ -277,7 +366,7 @@
       color: rgb(136, 28, 28);
       font-weight: 700;
       padding: 10px 12px;
-      text-align: left;
+      text-align: center;
       font-size: 14px;
     }
     
@@ -288,6 +377,7 @@
       border-left: 1px solid #f3f3f3;
       cursor: default;
       vertical-align: top;
+      height: 60px;
     }
     
     .complaints-history-table tr:hover {
@@ -381,6 +471,10 @@
       padding: 20px;
     }
 
+    .hamburger {
+      display: none;
+    }
+
     @media (max-width: 1200px) {
       .complaints-history-table {
         display: block;
@@ -430,6 +524,14 @@
         justify-content: center;
       }
 
+      .content {
+        padding: 1px;
+      }
+
+      .complaints-content {
+        padding: 20px;
+      }
+
       .search-box {
         flex-direction: column;
       }
@@ -449,9 +551,165 @@
         text-decoration: none;
         color: inherit;
     }
+    
+    @media (max-width: 450px) {
+      .logo {
+        flex-direction: column;
+      }
+    }
+
+    /* Responsive header */
+    @media (max-width: 768px) {
+      .complaints-history-table td {
+        height: 35px;
+      }
+
+      .report-type .report-option {
+        padding: 10px 20px;
+        font-size: 15px;
+      }
+
+      label {
+        font-size: 15px;
+      }
+
+      select {
+        font-size: 15px;
+        height: 35px;
+      }
+
+      .btn {
+        font-size: 15px;
+      }
+
+      .report-header h1 {
+        font-size: 20px;
+      }
+      
+      .logo h2 {
+        font-size: 16px;
+      }
+
+      .nav-container {
+        margin-left: 0;
+        justify-content: center;
+        display: none;
+      }
+      
+      .nav-item {
+        padding: 12px 15px;
+        font-size: 14px;
+      }
+
+      .content {
+        margin-top: 0px;
+        width: 100vw;
+      }
+      
+      header {
+        /*flex-direction: column;*/
+        height: auto;
+        padding: 5px;
+        gap: 15px;
+        margin-top: 0px;
+      }
+      
+      .logo {
+        margin-bottom: 0px;
+      }
+
+      .logo .logo-image {
+        width: 60px;
+        height: auto;
+        margin-bottom: 0px;
+        padding: 2px;
+      }
+
+      .user h2 {
+        font-size: 14px;
+        margin: 0px;
+      }
+      
+      .logout-btn {
+        padding: 4px 8px;
+        font-size: 15px;
+        font-weight: 650;
+      }
+
+      .hamburger {
+        display: flex;
+        height: 35px;
+        width: 35px;
+        background-color: rgba(0,0,0,0.2);
+        cursor: pointer;
+        padding: 8px;
+        margin-right: 10px;
+        border-radius: 4px;
+      }
+
+      .hamburger i {
+        font-size: 20px;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+      }
+
+      .navigation-block {
+        right: 0;
+        width: 100vw;
+        top: 55px;
+        border-radius: 0;
+      }
+
+      /* By default, hide the menu off-screen to the right */
+      .navigation-block {
+        position: fixed;
+        top: 60px;
+        right: -250px; /* Hide off-screen to the right */
+        display: flex;
+        flex-direction: column;
+        background-color: var(--primary);
+        width: 220px;
+        border-radius: 8px;
+        padding: 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        z-index: 999;
+        transition: right 0.3s ease-in-out; /* Smooth slide animation */
+        border: 2px solid rgba(0, 0, 0, 0.1);
+      }
+
+      /* Each nav item */
+      .navigation-block .navi-block-items {
+        color: white;
+        padding: 12px;
+        font-size: 16px;
+        text-decoration: none;
+        transition: background 0.2s ease;
+        font-weight: 500;
+      }
+
+      .navigation-block .navi-block-items:hover {
+        background: rgba(255,255,255,0.1);
+        border-radius: 5px;
+      }
+
+      /* Show menu when active - slide in from right */
+      .navigation-block.active {
+        right: 10px; /* Slide into view from the right */
+      }
+
+      .navigation-block div {
+        background-color: rgba(0, 0, 0, 0.1);
+      }
+    }
   </style>
 </head>
 <body>
+  <!-- Notification Container (place this in your HTML) -->
+  <div class="notification-area" id="notification-area"></div>
+
   <header>
     <div class="logo">
       <div class="logo-image">
@@ -461,36 +719,50 @@
     </div>
 
     <div class="user">
-      <h2>CH HAND</h2>
-      <button class="logout-btn">Logout</button>
-    </div>
+      <h2 id="user-id">Unknown</h2>
+      <button class="logout-btn" id="logout-btn">Logout</button>
+      <div class="hamburger">
+        <i class="fas fa-bars" id="hamburger-btn"></i>
+        <div class="navigation-block">
+          <a href="dashboard.html" class="navi-block-items">Dashboard</a>
+          <div class="navi-block-items active">Complaints</div>
+          <a href="all-users.html" class="navi-block-items">Users</a>
+          <a href="complaints-report.html" class="navi-block-items"">Reporting</a>
+          <a href="admin-panel.html" class="navi-block-items">Admin</a>
+        </div>
+        </div>
+      </div>
   </header>
 
   <div class="nav-bar">
     <div class="nav-container">
-      <a href="#" class="nav-item">
+      <a href="dashboard.html" class="nav-item">
         <i class="fas fa-chart-line"></i>
         Dashboard
       </a>
-      <a href="#" class="nav-item active">
+      <div href="launch-complaints.html" class="nav-item active">
         <i class="fas fa-ticket-alt"></i>
         Complaints
-      </a>
+      </div>
       <a href="all-users.html" class="nav-item">
         <i class="fas fa-users"></i>
         Users
       </a>
-      <a href="#" class="nav-item">
+      <!--a href="#" class="nav-item">
         <i class="fas fa-store"></i>
         Store
       </a>
       <a href="#" class="nav-item">
         <i class="fas fa-boxes"></i>
         Stock
-      </a>
-      <a href="#" class="nav-item">
+      </a-->
+      <a href="complaints-report.html" class="nav-item">
         <i class="fas fa-file-alt"></i>
         Reporting
+      </a>
+      <a href="admin-panel.html" class="nav-item">
+        <i class="fas fa-file-alt"></i>
+        Admin
       </a>
     </div>
   </div>
@@ -541,10 +813,10 @@
 
             <div class="pagination-controls" id="pagination-controls">
               <button class="page-btn prev-btn disabled">
-                <i class="fas fa-chevron-left"></i>
+                <i class="fas fa-chevron-left"></i> Prev
               </button>
               <button class="page-btn active">1</button>
-              <button class="page-btn next-btn disabled">
+              <button class="page-btn next-btn disabled">Next 
                 <i class="fas fa-chevron-right"></i>
               </button>
             </div>
@@ -583,7 +855,175 @@
     </div>
   </div>
 
+<script>
+  const hamburgerBtn = document.getElementById("hamburger-btn");
+  const navBlock = document.querySelector(".navigation-block");
+
+  // Toggle navigation on hamburger click
+  hamburgerBtn.addEventListener("click", (e) => {
+    e.stopPropagation(); // Prevent click from bubbling to document
+    navBlock.classList.toggle("active");
+  });
+
+  // Close navigation when clicking outside
+  document.addEventListener("click", (e) => {
+    // Check if click is outside the navigation block and hamburger button
+    if (!navBlock.contains(e.target) && e.target !== hamburgerBtn) {
+      navBlock.classList.remove("active");
+    }
+  });
+
+  // Optional: Prevent clicks inside navigation from closing it
+  navBlock.addEventListener("click", (e) => {
+    e.stopPropagation();
+  });
+</script>
+
+<script>
+  // Add this script to control navigation visibility based on backend permissions
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        const authToken = localStorage.getItem('authToken');
+        if (!authToken) {
+            console.error('No authentication token found');
+            return;
+        }
+
+        // Fetch allowed pages from backend
+        const response = await fetch(`${SERVER_URL}/api/allowed-pages`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch allowed pages');
+        }
+
+        const data = await response.json();
+        
+        if (data.success && data.allowedPages) {
+            // Hide all navigation items first
+            hideAllNavigationItems();
+            
+            // Show only allowed pages
+            showAllowedNavigationItems(data.allowedPages);
+        }
+    } catch (error) {
+        console.error('Error fetching allowed pages:', error);
+        // In case of error, you might want to show a default set of navigation items
+        // or handle it according to your application's requirements
+    }
+});
+
+function hideAllNavigationItems() {
+    // Hide header navigation items
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+        if (!item.classList.contains('active')) {
+            item.style.display = 'none';
+        }
+    });
+    
+    // Hide hamburger menu navigation items
+    const hamburgerItems = document.querySelectorAll('.navi-block-items');
+    hamburgerItems.forEach(item => {
+        if (!item.classList.contains('active')) {
+            item.style.display = 'none';
+        }
+    });
+    
+    // Hide sidebar navigation items
+    const sidebarItems = document.querySelectorAll('.complaints-option');
+    sidebarItems.forEach(item => {
+        if (!item.classList.contains('active')) {
+            item.style.display = 'none';
+        }
+    });
+}
+
+function showAllowedNavigationItems(allowedPages) {
+    // Show header navigation items that are allowed
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+        const pageName = getPageNameFromHref(item.getAttribute('href'));
+        if (allowedPages.includes(pageName) || item.classList.contains('active')) {
+            item.style.display = 'flex';
+        }
+    });
+    
+    // Show hamburger menu navigation items that are allowed
+    const hamburgerItems = document.querySelectorAll('.navi-block-items');
+    hamburgerItems.forEach(item => {
+        const pageName = getPageNameFromHref(item.getAttribute('href'));
+        if (allowedPages.includes(pageName) || item.classList.contains('active')) {
+            item.style.display = 'block';
+        }
+    });
+    
+    // Show sidebar navigation items that are allowed
+    const sidebarItems = document.querySelectorAll('.complaints-option');
+    sidebarItems.forEach(item => {
+        const pageName = getPageNameFromHref(item.getAttribute('href'));
+        if (allowedPages.includes(pageName) || item.classList.contains('active')) {
+            item.style.display = 'flex';
+        }
+    });
+}
+
+function getPageNameFromHref(href) {
+    if (!href) return '';
+    
+    // Extract page name from href (e.g., "dashboard.html" -> "dashboard")
+    const pageWithExtension = href.split('/').pop();
+    return pageWithExtension.split('.')[0];
+}
+</script>
+
   <script>
+
+    
+    let USER_ID = localStorage.getItem('UserId');
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById("user-id").textContent = USER_ID;
+      localStorage.removeItem('UserId');
+    });
+
+    function showNotification(message, type = 'success', duration = 3000) {
+      const notificationArea = document.getElementById('notification-area');
+      
+      // Create notification element
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      
+      // Set icon based on type
+      let icon;
+      switch(type) {
+        case 'success': icon = 'fa-check-circle'; break;
+        case 'error': icon = 'fa-exclamation-circle'; break;
+        case 'warning': icon = 'fa-exclamation-triangle'; break;
+        default: icon = 'fa-info-circle';
+      }
+      
+      notification.innerHTML = `
+        <i class="fas ${icon}"></i>
+        ${message}
+      `;
+      
+      // Add to notification area
+      notificationArea.appendChild(notification);
+      
+      // Auto-remove after duration
+      setTimeout(() => {
+        notification.style.opacity = '0';
+        setTimeout(() => notification.remove(), 300);
+      }, duration);
+    }
+
+
     document.addEventListener('DOMContentLoaded', function() {
       // DOM elements
       const tableBody = document.getElementById('complaints-table-body');
@@ -650,7 +1090,7 @@
         tableBody.innerHTML = '';
         
         // Build API URL with query parameters
-        const apiUrl = new URL('http://localhost:3000/api/delay-complaints');
+        const apiUrl = new URL(SERVER_URL+'/api/delay-complaints');
         apiUrl.searchParams.append('page', currentPage);
         apiUrl.searchParams.append('limit', itemsPerPage);
         
@@ -659,10 +1099,23 @@
           apiUrl.searchParams.append('search', searchQuery);
         }
         
-        fetch(apiUrl)
+        const authToken = localStorage.getItem('authToken');
+
+        fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          }
+        })
           .then(response => {
+            showNotification('Fetching Complaints', 'info');
             if (!response.ok) {
               throw new Error('Network response was not ok');
+              showNotification('Network response was not ok', 'error');
+            }
+            if(response) {
+              showNotification('Complaints loaded successfully');
             }
             return response.json();
           })
@@ -673,12 +1126,14 @@
               updatePagination();
             } else {
               throw new Error(data.message || 'Failed to fetch complaints');
+              showNotification(data.message || 'Failed to fetch complaints', 'error');
             }
           })
           .catch(error => {
             console.error('Error:', error);
             errorElement.style.display = 'block';
             errorElement.textContent = `Error: ${error.message}`;
+            showNotification('Error'+error, 'error');
           })
           .finally(() => {
             loadingElement.style.display = 'none';
@@ -709,7 +1164,7 @@
           // Determine status class
           let statusClass = '';
           switch(complaint.status.toLowerCase()) {
-            case 'in progress':
+            case 'in-progress':
               statusClass = 'status-in-progress';
               break;
             case 'completed':
@@ -718,7 +1173,7 @@
             case 'deffered':
               statusClass = 'status-deffered';
               break;
-            case 'unassigned':
+            case 'un-assigned':
               statusClass = 'status-un-assigned';
               break;
           }
@@ -751,7 +1206,7 @@
         // Previous button
         const prevBtn = document.createElement('button');
         prevBtn.className = `page-btn prev-btn ${currentPage === 1 ? 'disabled' : ''}`;
-        prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+        prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i> Prev';
         prevBtn.addEventListener('click', () => {
           if (currentPage > 1) {
             currentPage--;
@@ -823,7 +1278,7 @@
         // Next button
         const nextBtn = document.createElement('button');
         nextBtn.className = `page-btn next-btn ${currentPage === totalPages ? 'disabled' : ''}`;
-        nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+        nextBtn.innerHTML = 'Next <i class="fas fa-chevron-right"></i>';
         nextBtn.addEventListener('click', () => {
           if (currentPage < totalPages) {
             currentPage++;
