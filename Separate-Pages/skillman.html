@@ -1,9 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+  <script src="server-url.js"></script>
+  <script>
+    const page = 'launch-complaints';
+  </script>
+  <script src="verification.js"></script>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Secured CMS - Users</title>
+  <title>MES CMS - Users</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     * {
@@ -161,6 +166,26 @@
       align-items: center;
       padding: 0 25px;
       margin-bottom: 30px;
+    }
+
+    /* Variables */
+    :root {
+      --primary: rgb(136, 28, 28);
+      --primary-light: rgba(136, 28, 28, 0.1);
+      --primary-light-2: rgba(136, 28, 28, 0.05);
+      --secondary: #8c2f2f;
+      --accent: #4caf50;
+      --warning: #ff9800;
+      --danger: #f44336;
+      --light: #f8f9fa;
+      --dark: #212529;
+      --gray: #6c757d;
+      --card-bg: rgba(255, 255, 255, 0.95);
+      --nav-bg: rgba(255, 255, 255, 0.85);
+      --nav-active: rgba(136, 28, 28, 0.15);
+      --nav-hover: rgba(136, 28, 28, 0.08);
+      --success: #4caf50;
+      --border-radius: 12px;
     }
 
     .nav-bar {
@@ -492,12 +517,14 @@
       color: rgb(136, 28, 28);
       font-weight: 700;
       padding: 16px;
-      text-align: left;
+      text-align: center;
     }
     
     .users-table td {
       padding: 14px 16px;
       border-bottom: 1px solid rgba(0,0,0,0.05);
+      height: 60px;
+      border-left: 1px solid #f3f3f3; /* vertical line color */
     }
     
     .users-table tr:hover {
@@ -747,7 +774,6 @@
       }
       
       header {
-        flex-direction: column;
         text-align: center;
         gap: 20px;
       }
@@ -759,7 +785,6 @@
       
       .user {
         margin-top: 10px;
-        flex-direction: column;
       }
       
       .user-info {
@@ -831,6 +856,163 @@
       background: none;
     }
     
+    
+    
+    @media (max-width: 500px) {
+      .logo {
+        flex-direction: column;
+      }
+    }
+
+    .hamburger {
+      display: none;
+    }
+
+    /* Responsive header */
+    @media (max-width: 768px) {
+      .report-type .report-option {
+        padding: 10px 20px;
+        font-size: 15px;
+      }
+
+      label {
+        font-size: 15px;
+      }
+
+      select {
+        font-size: 15px;
+        height: 50px;
+      }
+
+      .btn {
+        font-size: 15px;
+      }
+
+      .report-header h1 {
+        font-size: 20px;
+      }
+      
+      .logo h2 {
+        font-size: 16px;
+      }
+
+      .nav-container {
+        margin-left: 0;
+        justify-content: center;
+        display: none;
+      }
+      
+      .nav-item {
+        padding: 12px 15px;
+        font-size: 14px;
+      }
+
+      .content {
+        margin-top: 0px;
+        width: 100vw;
+        padding: 10px;
+      }
+      
+      header {
+        /*flex-direction: column;*/
+        height: auto;
+        padding: 5px;
+        gap: 15px;
+        margin-top: 0px;
+      }
+      
+      .logo {
+        margin-bottom: 0px;
+      }
+
+      .logo .logo-image {
+        width: 60px;
+        height: auto;
+        margin-bottom: 0px;
+        padding: 2px;
+      }
+
+      .user h2 {
+        font-size: 14px;
+        margin: 0px;
+        margin-top: auto;
+        margin-bottom: auto;
+      }
+      
+      .logout-btn {
+        padding: 4px 8px;
+        font-size: 15px;
+        font-weight: 650;
+      }
+
+      .hamburger {
+        display: flex;
+        height: 35px;
+        width: 35px;
+        background-color: rgba(0,0,0,0.2);
+        cursor: pointer;
+        padding: 8px;
+        margin-right: 10px;
+        border-radius: 4px;
+      }
+
+      .hamburger i {
+        font-size: 20px;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+      }
+
+      .navigation-block {
+        right: 0;
+        width: 100vw;
+        top: 55px;
+        border-radius: 0;
+      }
+
+      /* By default, hide the menu off-screen to the right */
+      .navigation-block {
+        position: fixed;
+        top: 60px;
+        right: -250px; /* Hide off-screen to the right */
+        display: flex;
+        flex-direction: column;
+        background-color: var(--primary);
+        width: 220px;
+        border-radius: 8px;
+        padding: 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        z-index: 999;
+        transition: right 0.3s ease-in-out; /* Smooth slide animation */
+        border: 2px solid rgba(0, 0, 0, 0.1);
+      }
+
+      /* Each nav item */
+      .navigation-block .navi-block-items {
+        color: white;
+        padding: 12px;
+        font-size: 16px;
+        text-decoration: none;
+        transition: background 0.2s ease;
+        font-weight: 500;
+      }
+
+      .navigation-block .navi-block-items:hover {
+        background: rgba(255,255,255,0.1);
+        border-radius: 5px;
+      }
+
+      /* Show menu when active - slide in from right */
+      .navigation-block.active {
+        right: 10px; /* Slide into view from the right */
+      }
+
+      .navigation-block div {
+        background-color: rgba(0, 0, 0, 0.1);
+      }
+    }
   </style>
 </head>
 <body>
@@ -864,15 +1046,12 @@
             <label for="skillman-subdivision">Subdivision *</label>
             <select id="skillman-subdivision" class="form-control" required>
               <option value="">Select Subdivision</option>
-              <option value="B&R-I, E&M-I">B&R-I (E&M-I)</option>
-              <option value="B&R-II, E&M-I">B&R-II (E&M-I)</option>
-              <option value="B&R-III, E&M-I">B&R-III (E&M-I)</option>
-              <option value="B&R-I, E&M-II">B&R-I (E&M-II)</option>
-              <option value="B&R-II, E&M-II">B&R-II (E&M-II)</option>
-              <option value="B&R-III, E&M-II">B&R-III (E&M-II)</option>
-              <option value="B&R-I, E&M-II">B&R-I (F&S-I)</option>
-              <option value="B&R-II, E&M-II">B&R-II (F&S-I)</option>
-              <option value="B&R-III, E&M-II">B&R-III (F&S-I)</option>
+              <option value="B&R-I">B&R-I</option>
+              <option value="B&R-II">B&R-II</option>
+              <option value="B&R-III">B&R-III</option>
+              <option value="E&M-I">E&M-I</option>
+              <option value="E&M-II">E&M-II</option>
+              <option value="-">-</option>
             </select>
           </div>
         </div>
@@ -1005,36 +1184,50 @@
       <div class="logo-image">
         <img src="logo.jpg" alt="logo image">
       </div>
-      <h2>Secured CMS</h2>
+      <h2>MES CMS</h2>
     </div>
 
     <div class="user">
-      <h2>CH HAND</h2>
-      <button class="logout-btn">Logout</button>
-    </div>
+      <h2 id="user-id">Unknown</h2>
+      <button class="logout-btn" id="logout-btn">Logout</button>
+      <div class="hamburger">
+        <i class="fas fa-bars" id="hamburger-btn"></i>
+        <div class="navigation-block">
+          <a href="dashboard.html" class="navi-block-items">Dashboard</a>
+          <a href="launch-complaints.html" class="navi-block-items">Complaints</a>
+          <div href="all-users.html" class="navi-block-items">Users</div>
+          <a href="complaints-report.html" class="navi-block-items">Reporting</a>
+          <a href="admin-panel.html" class="navi-block-items">Admin</a>
+        </div>
+        </div>
+      </div>
   </header>
 
   <div class="nav-bar">
     <div class="nav-container">
-      <a href="#" class="nav-item" onclick="showNavTab('dashboard')">
+      <a href="dashboard.html" class="nav-item">
         <i class="fas fa-chart-line"></i>
         Dashboard
       </a>
-      <a href="launch-complaints.html" class="nav-item" onclick="showNavTab('complaints')">
+      <a href="launch-complaints.html" class="nav-item">
         <i class="fas fa-ticket-alt"></i>
         Complaints
       </a>
-      <a href="#" class="nav-item active" id="active">
+      <div class="nav-item active" id="active">
         <i class="fas fa-users"></i>
         Users
-      </a>
-      <a href="#" class="nav-item" onclick="showNavTab('store')">
+      </div>
+      <!--a href="#" class="nav-item">
         <i class="fas fa-store"></i>
         Store
-      </a>
-      <a href="#" class="nav-item" onclick="showNavTab('reporting')">
+      </a-->
+      <a href="complaints-report.html" class="nav-item">
         <i class="fas fa-file-alt"></i>
         Reporting
+      </a>
+      <a href="admin-panel.html" class="nav-item">
+        <i class="fas fa-file-alt"></i>
+        Admin
       </a>
     </div>
   </div>
@@ -1132,10 +1325,182 @@
       </div>
     </div>
   </div>
+  <script>
+  const hamburgerBtn = document.getElementById("hamburger-btn");
+  const navBlock = document.querySelector(".navigation-block");
+
+  // Toggle navigation on hamburger click
+  hamburgerBtn.addEventListener("click", (e) => {
+    e.stopPropagation(); // Prevent click from bubbling to document
+    navBlock.classList.toggle("active");
+  });
+
+  // Close navigation when clicking outside
+  document.addEventListener("click", (e) => {
+    // Check if click is outside the navigation block and hamburger button
+    if (!navBlock.contains(e.target) && e.target !== hamburgerBtn) {
+      navBlock.classList.remove("active");
+    }
+  });
+
+  // Optional: Prevent clicks inside navigation from closing it
+  navBlock.addEventListener("click", (e) => {
+    e.stopPropagation();
+  });
+</script>
 
 <script>
-    // API Configuration
-    const API_BASE_URL = 'http://localhost:3000';
+  // Add this script to control navigation visibility based on backend permissions
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        const authToken = localStorage.getItem('authToken');
+        if (!authToken) {
+            console.error('No authentication token found');
+            return;
+        }
+
+        // Fetch allowed pages from backend
+        const response = await fetch(`${SERVER_URL}/api/allowed-pages`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch allowed pages');
+        }
+
+        const data = await response.json();
+        
+        if (data.success && data.allowedPages) {
+            // Hide all navigation items first
+            hideAllNavigationItems();
+            
+            // Show only allowed pages
+            showAllowedNavigationItems(data.allowedPages);
+        }
+    } catch (error) {
+        console.error('Error fetching allowed pages:', error);
+        // In case of error, you might want to show a default set of navigation items
+        // or handle it according to your application's requirements
+    }
+});
+
+function hideAllNavigationItems() {
+    // Hide header navigation items
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+        if (!item.classList.contains('active')) {
+            item.style.display = 'none';
+        }
+    });
+    
+    // Hide hamburger menu navigation items
+    const hamburgerItems = document.querySelectorAll('.navi-block-items');
+    hamburgerItems.forEach(item => {
+        if (!item.classList.contains('active')) {
+            item.style.display = 'none';
+        }
+    });
+    
+    // Hide sidebar navigation items
+    const sidebarItems = document.querySelectorAll('.users-option');
+    sidebarItems.forEach(item => {
+        if (!item.classList.contains('active')) {
+            item.style.display = 'none';
+        }
+    });
+}
+
+function showAllowedNavigationItems(allowedPages) {
+    // Show header navigation items that are allowed
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+        const pageName = getPageNameFromHref(item.getAttribute('href'));
+        if (allowedPages.includes(pageName) || item.classList.contains('active')) {
+            item.style.display = 'flex';
+        }
+    });
+    
+    // Show hamburger menu navigation items that are allowed
+    const hamburgerItems = document.querySelectorAll('.navi-block-items');
+    hamburgerItems.forEach(item => {
+        const pageName = getPageNameFromHref(item.getAttribute('href'));
+        if (allowedPages.includes(pageName) || item.classList.contains('active')) {
+            item.style.display = 'block';
+        }
+    });
+    
+    // Show sidebar navigation items that are allowed
+    const sidebarItems = document.querySelectorAll('.users-option');
+    sidebarItems.forEach(item => {
+        const pageName = getPageNameFromHref(item.getAttribute('href'));
+        if (allowedPages.includes(pageName) || item.classList.contains('active')) {
+            item.style.display = 'flex';
+        }
+    });
+}
+
+function getPageNameFromHref(href) {
+    if (!href) return '';
+    
+    // Extract page name from href (e.g., "dashboard.html" -> "dashboard")
+    const pageWithExtension = href.split('/').pop();
+    return pageWithExtension.split('.')[0];
+}
+</script>
+
+<script>
+  
+    let USER_ID = localStorage.getItem('UserId');
+    
+  document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById("user-id").textContent = USER_ID;
+    localStorage.removeItem('UserId');
+  });
+
+  
+    
+  document.addEventListener('DOMContentLoaded', function() {
+
+    // DOM Elements
+    const logoutBtn = document.getElementById('logout-btn');
+    
+    logoutBtn.addEventListener('click', async () => {
+      try {
+        const authToken = localStorage.getItem('authToken');
+        const response = await fetch(SERVER_URL+'/logout', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${authToken}`,'Content-Type': 'application/json' }
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          document.getElementById("user-id").textContent = 'Unknown';
+          console.log('Logout success:', data);
+          alert('Logged out successfully!');
+          
+          // 👇 you can add more procedural lines here
+          // e.g., redirect:
+          setTimeout(() => {
+            window.location.href = 'login.html';
+          }, 1000); // 1000 ms = 1 sec
+
+        } else {
+          console.error('Logout failed:', data);
+          alert('Logout failed!');
+        }
+
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Something went wrong!');
+      }
+    });
+    
+  });
     
     // State Management
     let skillmen = [];
@@ -1170,8 +1535,15 @@
     // Fetch Skillmen
     async function fetchSkillmen(page = 1, limit = 10, search = '') {
       try {
+        const authToken = localStorage.getItem('authToken');
         showNotification('Loading skillmen data...', 'warning');
-        const response = await fetch(`${API_BASE_URL}/skillmen?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`);
+        const response = await fetch(`${SERVER_URL}/skillmen?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          }
+        });
         
         if (!response.ok) {
           throw new Error(`Failed to fetch skillmen: ${response.status}`);
@@ -1208,10 +1580,12 @@
     // Add Skillman
     async function addSkillman(skillmanData) {
       try {
-        const response = await fetch(`${API_BASE_URL}/skillmen`, {
+        const authToken = localStorage.getItem('authToken');
+        const response = await fetch(`${SERVER_URL}/skillmen`, {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
           },
           body: JSON.stringify(skillmanData)
         });
@@ -1235,10 +1609,12 @@
     // Update Skillman
     async function updateSkillman(id, skillmanData) {
       try {
-        const response = await fetch(`${API_BASE_URL}/skillmen/${id}`, {
+        const authToken = localStorage.getItem('authToken');
+        const response = await fetch(`${SERVER_URL}/skillmen/${id}`, {
           method: 'PUT',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
           },
           body: JSON.stringify(skillmanData)
         });
@@ -1262,7 +1638,13 @@
     // Fetch Designations
     async function fetchDesignations() {
       try {
-        const response = await fetch(`${API_BASE_URL}/designations`);
+        const authToken = localStorage.getItem('authToken');
+        const response = await fetch(`${SERVER_URL}/designations`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          }});
         
         if (!response.ok) {
           throw new Error(`Failed to fetch designations: ${response.status}`);
@@ -1283,10 +1665,12 @@
     // Add Designation
     async function addDesignation(designationData) {
       try {
-        const response = await fetch(`${API_BASE_URL}/designations`, {
+        const authToken = localStorage.getItem('authToken');
+        const response = await fetch(`${SERVER_URL}/designations`, {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
           },
           body: JSON.stringify(designationData)
         });
@@ -1310,10 +1694,12 @@
     // Update Designation
     async function updateDesignation(oldName, newName) {
       try {
-        const response = await fetch(`${API_BASE_URL}/designations/${encodeURIComponent(oldName)}`, {
+        const authToken = localStorage.getItem('authToken');
+        const response = await fetch(`${SERVER_URL}/designations/${encodeURIComponent(oldName)}`, {
           method: 'PUT',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
           },
           body: JSON.stringify({ name: newName })
         });
@@ -1337,8 +1723,13 @@
     // Delete Designation
     async function deleteDesignation(name) {
       try {
-        const response = await fetch(`${API_BASE_URL}/designations/${encodeURIComponent(name)}`, {
-          method: 'DELETE'
+        const authToken = localStorage.getItem('authToken');
+        const response = await fetch(`${SERVER_URL}/designations/${encodeURIComponent(name)}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          }
         });
         
         if (!response.ok) {
@@ -1740,5 +2131,83 @@
       };
     });
   </script>
+  <script>
+// Update Skillman Pagination with ellipsis
+function updateSkillmanPagination() {
+  const paginationControls = document.getElementById('skillman-pagination-controls');
+  const totalPages = Math.ceil(totalSkillmen / skillmanEntriesPerPage);
+  
+  let html = '';
+  
+  if (totalPages > 1) {
+    // Previous button
+    html += `<button class="pagination-btn" ${currentSkillmanPage === 1 ? 'disabled' : ''} id="skillman-prev-page">
+      <i class="fas fa-chevron-left"></i>
+    </button>`;
+    
+    // Always show first page
+    html += `<button class="pagination-btn ${1 === currentSkillmanPage ? 'active' : ''}" data-page="1">1</button>`;
+    
+    // Calculate start and end pages with ellipsis logic
+    let startPage, endPage;
+    
+    if (totalPages <= 5) {
+      // Show all pages if 5 or fewer
+      startPage = 2;
+      endPage = totalPages - 1;
+    } else {
+      // Determine which pages to show with ellipsis
+      if (currentSkillmanPage <= 3) {
+        // Near the beginning
+        startPage = 2;
+        endPage = 4;
+        html += `<span class="pagination-ellipsis">...</span>`;
+      } else if (currentSkillmanPage >= totalPages - 2) {
+        // Near the end
+        startPage = totalPages - 3;
+        endPage = totalPages - 1;
+        html += `<span class="pagination-ellipsis">...</span>`;
+      } else {
+        // In the middle
+        startPage = currentSkillmanPage - 1;
+        endPage = currentSkillmanPage + 1;
+        html += `<span class="pagination-ellipsis">...</span>`;
+      }
+    }
+    
+    // Add page numbers
+    for (let i = startPage; i <= endPage; i++) {
+      html += `<button class="pagination-btn ${i === currentSkillmanPage ? 'active' : ''}" data-page="${i}">${i}</button>`;
+    }
+    
+    // Add ellipsis and last page if needed
+    if (totalPages > 5 && currentSkillmanPage < totalPages - 2) {
+      html += `<span class="pagination-ellipsis">...</span>`;
+    }
+    
+    // Always show last page if there's more than 1 page
+    if (totalPages > 1) {
+      html += `<button class="pagination-btn ${totalPages === currentSkillmanPage ? 'active' : ''}" data-page="${totalPages}">${totalPages}</button>`;
+    }
+    
+    // Next button
+    html += `<button class="pagination-btn" ${currentSkillmanPage === totalPages ? 'disabled' : ''} id="skillman-next-page">
+      <i class="fas fa-chevron-right"></i>
+    </button>`;
+  }
+  
+  paginationControls.innerHTML = html;
+}
+
+// Add CSS for ellipsis
+const style = document.createElement('style');
+style.textContent = `
+  .pagination-ellipsis {
+    padding: 8px 5px;
+    color: #6c757d;
+  }
+`;
+document.head.appendChild(style);
+</script>
 </body>
 </html>
