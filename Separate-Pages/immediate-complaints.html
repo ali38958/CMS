@@ -1,5 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+  <script src="server-url.js"></script>
+  <script>
+    const page = 'launch-complaints';
+  </script>
+  <script src="verification.js"></script>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -11,6 +16,10 @@
       padding: 0;
       box-sizing: border-box;
       font-family: Arial, sans-serif;
+      cursor: default;
+      scrollbar-width: thin;
+      scroll-behavior: smooth;
+      scrollbar-color: rgb(138, 119, 119) transparent;
     }
 
     body {
@@ -227,6 +236,16 @@
     .notification.info {
       background: #2196F3;
     }
+    
+    @keyframes progress {
+      from { width: 100%; }
+      to { width: 0%; }
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
 
     /* Complaints Section */
     .complaints-section-container {
@@ -389,6 +408,7 @@
       border-bottom: 1px solid rgba(0,0,0,0.05);
       vertical-align: middle;
       height: 60px;
+      border-left: 1px solid #f3f3f3; /* vertical line color */
     }
     
     .complaints-history-table tr:hover {
@@ -532,7 +552,7 @@
       border: 1px solid rgba(0,0,0,0.1);
     }
 
-    #launch-complaints,#natures, #delay-complaints {
+    #launch-complaints,#natures, #delay-complaints, #all-complaints {
         text-decoration: none;
         color: inherit;
     }
@@ -671,6 +691,153 @@
   background-color: #9e1e1e;
 }
 
+@media (max-width: 500px) {
+  .logo {
+    flex-direction: column;
+  }
+
+  .panel-title {
+    font-size: medium;
+  }
+}
+
+    .hamburger {
+      display: none;
+    }
+    /* Responsive header */
+    @media (max-width: 768px) {
+      .report-type .report-option {
+        padding: 10px 20px;
+        font-size: 15px;
+      }
+
+      .btn {
+        font-size: 15px;
+      }
+
+      .report-header h1 {
+        font-size: 20px;
+      }
+      
+      .logo h2 {
+        font-size: 16px;
+      }
+
+      .nav-container {
+        margin-left: 0;
+        justify-content: center;
+        display: none;
+      }
+      
+      .nav-item {
+        padding: 12px 15px;
+        font-size: 14px;
+      }
+
+      .content {
+        margin-top: 0px;
+        width: 100%;
+        padding: 10px 5px;
+      }
+      
+      header {
+        /*flex-direction: column;*/
+        height: auto;
+        padding: 5px;
+        gap: 15px;
+        margin-top: 0px;
+      }
+      
+      .logo {
+        margin-bottom: 0px;
+      }
+
+      .logo .logo-image {
+        width: 60px;
+        height: auto;
+        margin-bottom: 0px;
+        padding: 2px;
+      }
+
+      .user h2 {
+        font-size: 14px;
+        margin: 0px;
+      }
+      
+      .logout-btn {
+        padding: 4px 8px;
+        font-size: 15px;
+        font-weight: 650;
+      }
+
+      .hamburger {
+        display: flex;
+        height: 35px;
+        width: 35px;
+        background-color: rgba(0,0,0,0.2);
+        cursor: pointer;
+        padding: 8px;
+        margin-right: 10px;
+        border-radius: 4px;
+      }
+
+      .hamburger i {
+        font-size: 20px;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+      }
+
+      .navigation-block {
+        right: 0;
+        width: 100vw;
+        top: 55px;
+        border-radius: 0;
+      }
+
+      /* By default, hide the menu off-screen to the right */
+      .navigation-block {
+        position: fixed;
+        top: 60px;
+        right: -250px; /* Hide off-screen to the right */
+        display: flex;
+        flex-direction: column;
+        background-color: var(--primary);
+        width: 220px;
+        border-radius: 8px;
+        padding: 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        z-index: 999;
+        transition: right 0.3s ease-in-out; /* Smooth slide animation */
+        border: 2px solid rgba(0, 0, 0, 0.1);
+      }
+
+      /* Each nav item */
+      .navigation-block .navi-block-items {
+        color: white;
+        padding: 12px;
+        font-size: 16px;
+        text-decoration: none;
+        transition: background 0.2s ease;
+        font-weight: 500;
+      }
+
+      .navigation-block .navi-block-items:hover {
+        background: rgba(255,255,255,0.1);
+        border-radius: 5px;
+      }
+
+      /* Show menu when active - slide in from right */
+      .navigation-block.active {
+        right: 10px; /* Slide into view from the right */
+      }
+
+      .navigation-block div {
+        background-color: rgba(0, 0, 0, 0.1);
+      }
+    }
 
 
   </style>
@@ -688,36 +855,50 @@
     </div>
 
     <div class="user">
-      <h2>CH HAND</h2>
-      <button class="logout-btn">Logout</button>
+      <h2 id="user-id">Unknown</h2>
+      <button class="logout-btn" id="logout-btn">Logout</button>
+      <div class="hamburger">
+        <i class="fas fa-bars" id="hamburger-btn"></i>
+        <div class="navigation-block">
+          <a href="dashboard.html" class="navi-block-items">Dashboard</a>
+          <div class="navi-block-items active">Complaints</div>
+          <a href="all-users.html" class="navi-block-items">Users</a>
+          <a href="complaints-report.html" class="navi-block-items">Reporting</a>
+          <a href="admin-panel.html" class="navi-block-items">Admin</a>
+        </div>
+      </div>
     </div>
   </header>
 
   <div class="nav-bar">
     <div class="nav-container">
-      <a href="#" class="nav-item">
+      <a href="dashboard.html" class="nav-item">
         <i class="fas fa-chart-line"></i>
         Dashboard
       </a>
-      <a href="#" class="nav-item active">
+      <dic href="launch-complaints.html" class="nav-item active">
         <i class="fas fa-ticket-alt"></i>
         Complaints
-      </a>
+      </div>
       <a href="all-users.html" class="nav-item">
         <i class="fas fa-users"></i>
         Users
       </a>
-      <a href="#" class="nav-item">
+      <!--a href="#" class="nav-item">
         <i class="fas fa-store"></i>
         Store
       </a>
       <a href="#" class="nav-item">
         <i class="fas fa-boxes"></i>
         Stock
-      </a>
-      <a href="#" class="nav-item">
+      </a-->
+      <a href="complaints-report.html" class="nav-item">
         <i class="fas fa-file-alt"></i>
         Reporting
+      </a>
+      <a href="admin-panel.html" class="nav-item">
+        <i class="fas fa-file-alt"></i>
+        Admin
       </a>
     </div>
   </div>
@@ -729,10 +910,10 @@
           <i class="fas fa-rocket"></i>
           Launch Complaints
         </a>
-        <div class="complaints-option" data-panel="all-complaints" >
+        <a href="all-complaints.html" class="complaints-option" id="all-complaints" >
           <i class="fas fa-list"></i>
           All Complaints
-        </div>
+        </a>
         <a href="delay-complaints.html" class="complaints-option" id="delay-complaints">
           <i class="fas fa-hourglass-half"></i>
           Delay Complaints
@@ -799,7 +980,143 @@
       </div>
     </div>
   </div>
+  
 <script>
+  const hamburgerBtn = document.getElementById("hamburger-btn");
+  const navBlock = document.querySelector(".navigation-block");
+
+  // Toggle navigation on hamburger click
+  hamburgerBtn.addEventListener("click", (e) => {
+    e.stopPropagation(); // Prevent click from bubbling to document
+    navBlock.classList.toggle("active");
+  });
+
+  // Close navigation when clicking outside
+  document.addEventListener("click", (e) => {
+    // Check if click is outside the navigation block and hamburger button
+    if (!navBlock.contains(e.target) && e.target !== hamburgerBtn) {
+      navBlock.classList.remove("active");
+    }
+  });
+
+  // Optional: Prevent clicks inside navigation from closing it
+  navBlock.addEventListener("click", (e) => {
+    e.stopPropagation();
+  });
+</script>
+
+<script>
+  // Add this script to control navigation visibility based on backend permissions
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        const authToken = localStorage.getItem('authToken');
+        if (!authToken) {
+            console.error('No authentication token found');
+            return;
+        }
+
+        // Fetch allowed pages from backend
+        const response = await fetch(`${SERVER_URL}/api/allowed-pages`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch allowed pages');
+        }
+
+        const data = await response.json();
+        
+        if (data.success && data.allowedPages) {
+            // Hide all navigation items first
+            hideAllNavigationItems();
+            
+            // Show only allowed pages
+            showAllowedNavigationItems(data.allowedPages);
+        }
+    } catch (error) {
+        console.error('Error fetching allowed pages:', error);
+        // In case of error, you might want to show a default set of navigation items
+        // or handle it according to your application's requirements
+    }
+});
+
+function hideAllNavigationItems() {
+    // Hide header navigation items
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+        if (!item.classList.contains('active')) {
+            item.style.display = 'none';
+        }
+    });
+    
+    // Hide hamburger menu navigation items
+    const hamburgerItems = document.querySelectorAll('.navi-block-items');
+    hamburgerItems.forEach(item => {
+        if (!item.classList.contains('active')) {
+            item.style.display = 'none';
+        }
+    });
+    
+    // Hide sidebar navigation items
+    const sidebarItems = document.querySelectorAll('.complaints-option');
+    sidebarItems.forEach(item => {
+        if (!item.classList.contains('active')) {
+            item.style.display = 'none';
+        }
+    });
+}
+
+function showAllowedNavigationItems(allowedPages) {
+    // Show header navigation items that are allowed
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+        const pageName = getPageNameFromHref(item.getAttribute('href'));
+        if (allowedPages.includes(pageName) || item.classList.contains('active')) {
+            item.style.display = 'flex';
+        }
+    });
+    
+    // Show hamburger menu navigation items that are allowed
+    const hamburgerItems = document.querySelectorAll('.navi-block-items');
+    hamburgerItems.forEach(item => {
+        const pageName = getPageNameFromHref(item.getAttribute('href'));
+        if (allowedPages.includes(pageName) || item.classList.contains('active')) {
+            item.style.display = 'block';
+        }
+    });
+    
+    // Show sidebar navigation items that are allowed
+    const sidebarItems = document.querySelectorAll('.complaints-option');
+    sidebarItems.forEach(item => {
+        const pageName = getPageNameFromHref(item.getAttribute('href'));
+        if (allowedPages.includes(pageName) || item.classList.contains('active')) {
+            item.style.display = 'flex';
+        }
+    });
+}
+
+function getPageNameFromHref(href) {
+    if (!href) return '';
+    
+    // Extract page name from href (e.g., "dashboard.html" -> "dashboard")
+    const pageWithExtension = href.split('/').pop();
+    return pageWithExtension.split('.')[0];
+}
+</script>
+
+<script>
+    
+    let USER_ID = localStorage.getItem('UserId');
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById("user-id").textContent = USER_ID;
+      localStorage.removeItem('UserId');
+    });
+
 
     function showNotification(message, type = 'success', duration = 3000) {
       const notificationArea = document.getElementById('notification-area');
@@ -833,9 +1150,45 @@
     }
 
 
+  document.addEventListener('DOMContentLoaded', function() {
+
+    // DOM Elements
+    const logoutBtn = document.getElementById('logout-btn');
+    
+    logoutBtn.addEventListener('click', async () => {
+      try {
+        const authToken = localStorage.getItem('authToken');
+        const response = await fetch(SERVER_URL+'/logout', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${authToken}`,'Content-Type': 'application/json' }
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          console.log('Logout success:', data);
+          //alert('Logged out successfully!');
+          // 👇 you can add more procedural lines here
+          // e.g., redirect:
+          showNotification('Logging out');
+          localStorage.removeItem('authToken');
+          setTimeout(() => {
+            window.location.href = 'login.html';
+          }, 1000); // 1000 ms = 1 sec
+        } else {
+          console.error('Logout failed:', data);
+          alert('Logout failed!');
+        }
+
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Something went wrong!');
+      }
+    });
+    
+  });
 
 
-const SERVER_URL = 'http://localhost:3000'; // Change if needed
 let currentPage = 1;
 let itemsPerPage = 10;
 let totalItems = 0;
@@ -898,7 +1251,7 @@ function updatePagination() {
 
 function fetchComplaints() {
   try {
-    const url = new URL('http://localhost:3000/api/complaints-by-priority');
+    const url = new URL(SERVER_URL+'/api/complaints-by-priority');
     url.searchParams.append('page', currentPage);
     url.searchParams.append('pageSize', itemsPerPage);
     url.searchParams.append('priority', 'Immediate');
@@ -906,13 +1259,22 @@ function fetchComplaints() {
     paginationInfo.textContent = 'Loading data...';
     tableBody.innerHTML = '';
 
-    fetch(url)
+    const authToken = localStorage.getItem('authToken');
+
+    fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          }
+        })
       .then(response => response.json())
       .then(data => {
         if (data.success) {
           totalItems = data.pagination.total;
           renderTable(data.data);
           updatePagination();
+          showNotification('Complaints loaded successfully', 'success');
         } else {
           throw new Error(data.message || 'Failed to fetch complaints');
           showNotification(data.message || 'Failed to fetch complaints', 'error');
@@ -921,12 +1283,10 @@ function fetchComplaints() {
       .catch(error => {
         tableBody.innerHTML = `<tr><td colspan="11" style="text-align:center;color:red;">${error.message}</td></tr>`;
         paginationInfo.textContent = 'Error loading data';
-        showNotification('Error loading data');
+        showNotification('Error loading data', 'error');
       });
   } catch (error) {
     showNotification(error, 'error');
-  } finally {
-    showNotification('Complaints loaded successfully', 'success');
   }
 }
 
