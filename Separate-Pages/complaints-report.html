@@ -1,76 +1,10 @@
 <!DOCTYPE html>
-  <script>  
-    setTimeout(() => {
-      console.log("2 seconds later...");
-    }, 2000); // 2000 milliseconds = 2 seconds
-    
-    // Variables to store user data
-    let complaintReceiverName = '';
-    let complaintReceiverId = null;
-
-    async function verifyAuthToken() {
-      const authToken = localStorage.getItem('authToken');
-      
-      if (!authToken) {
-        console.log('No authToken found in localStorage');
-        alert('Authentication failed: No token found');
-        window.location.href = 'login.html';
-        return;
-      }
-
-      try {
-        console.log('Attempting to verify authToken...');
-        
-        const response = await fetch('http://localhost:3000/verify-token-get-receiver', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        console.log('API Response:', data);
-
-        if (data.success) {
-          console.log('Token verification successful for user:', data.user.name);
-
-          localStorage.setItem('UserId', data.user.name);
-          
-          // Store user data in localStorage
-          localStorage.setItem('currentUser', JSON.stringify(data.user));
-          
-          // Store user ID in variable
-          complaintReceiverId = data.user.id;
-          console.log('Current user ID:', complaintReceiverId);
-          
-          // Store receiver name
-          complaintReceiverName = data.receiver?.name || 'Unknown';
-          console.log('Complaint receiver name:', complaintReceiverName);
-          
-        } else {
-          console.log('Token verification failed:', data.message || 'No error message provided');
-          //alert('Authentication failed: ' + (data.message || 'Invalid token'));
-          showNotification('Authentication failed: ' + (data.message || 'Invalid token'), 'error');
-          window.location.href = 'login.html';
-        }
-      } catch (error) {
-        console.error('Error during token verification:', error);
-        //alert('Authentication failed: ' + error.message);
-        showNotification('Authentication failed: ' + error.message, 'error')
-        window.location.href = 'login.html';
-      }
-    }
-
-    // Call the function when the page loads
-    document.addEventListener('DOMContentLoaded', verifyAuthToken);
-
-  </script>
 <html lang="en">
+<script src="server-url.js"></script>
+  <script>
+    const page = 'launch-complaints';
+  </script>
+  <script src="verification.js"></script>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -86,12 +20,12 @@
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      caret-color: transparent;
+      font-family: Arial, sans-serif;
       scrollbar-width: thin;
       scroll-behavior: smooth;
       scrollbar-color: rgb(138, 119, 119) transparent;
       user-select: none;
+      -webkit-overflow-scrolling: touch; /* smooth scroll on mobile */
     }
 
     body {
@@ -113,7 +47,6 @@
       margin-bottom: 30px;
       position: relative;
       z-index: 10;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
 
 
@@ -136,15 +69,16 @@
     }
 
     .nav-item {
-      padding: 15px 25px;
+      padding: 12px 25px;
       color: white;
       text-decoration: none;
       font-weight: bold;
       transition: all 0.3s ease;
       position: relative;
+      text-align: center;
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 8px;
     }
 
     .nav-item:hover {
@@ -161,11 +95,11 @@
       content: "";
       position: absolute;
       bottom: 0;
-      left: 0;
-      width: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60%;
       height: 3px;
       background-color: white;
-      border-radius: 0 0 3px 3px;
     }
 
     .logo {
@@ -196,6 +130,9 @@
       color: white;
       font-size: 20px;
       white-space: nowrap;
+      margin-bottom: auto;
+      margin-top: auto;
+      font-weight: bold;
     }
 
     .user {
@@ -210,18 +147,22 @@
       white-space: nowrap;
       margin-top: auto;
       margin-bottom: auto;
+      text-decoration: bold;
     }
 
     .logout-btn {
       background-color: white;
       color: rgb(136, 28, 28);
       border: none;
-      padding: 6px 12px;
+      padding: 3px 12px;
       border-radius: 4px;
       cursor: pointer;
       font-weight: bold;
       transition: background-color 0.3s;
       border: 1px solid white;
+      height: 29px;
+      width: 72px;
+      font-size: 14px;
     }
 
     .logout-btn:hover {
@@ -274,13 +215,12 @@
 
     /* Reporting Section Styles */
     .content {
-      width: 100%;
-      max-width: 95vw;
+      width: 95%;
       margin: 0 auto;
-      padding: 25px;
+      padding: 20px;
       background-color: white;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-      border-radius: 16px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      border-radius: 8px;
       margin-top: 20px;
     }
 
@@ -420,8 +360,8 @@
     }
     
     .btn {
-      padding: 12px 24px;
-      border-radius: var(--border-radius);
+      padding: 14px 28px;
+      border-radius: 12px;
       font-weight: 600;
       font-size: 16px;
       cursor: pointer;
@@ -430,19 +370,18 @@
       display: inline-flex;
       align-items: center;
       gap: 10px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
     
     .btn-primary {
       background: var(--primary);
       color: white;
-      box-shadow: 0 6px 18px rgba(136, 28, 28, 0.25);
+      box-shadow: 0 6px 18px rgba(136, 28, 28, 0.2);
     }
     
     .btn-primary:hover {
-      background: #8b2323;
+      background: #a33a3a;
       transform: translateY(-3px);
-      box-shadow: 0 8px 22px rgba(136, 28, 28, 0.35);
+      box-shadow: 0 8px 22px rgba(136, 28, 28, 0.3);
     }
     /*not working*/
     .btn-primary:active {
@@ -755,6 +694,20 @@
     .hamburger {
       display: none;
     }
+
+    @media (max-width: 450px) {
+      .logo {
+        flex-direction: column;
+      }
+
+      .content {
+        padding: 5px;
+      }
+
+      .complaints-content {
+        padding: 6px 10px;
+      }
+    }
     
     /* Responsive adjustments */
     @media (max-width: 992px) {
@@ -870,6 +823,7 @@
 
       .content {
         margin-top: 0px;
+        width: 100vw;
       }
       
       header {
@@ -998,6 +952,7 @@
           <a href="launch-complaints.html" class="navi-block-items">Complaints</a>
           <a href="all-users.html" class="navi-block-items">Users</a>
           <div class="navi-block-items active"">Reporting</div>
+          <a href="admin-panel.html" class="navi-block-items">Admin</a>
         </div>
         </div>
       </div>
@@ -1026,9 +981,13 @@
         <i class="fas fa-boxes"></i>
         Stock
       </a-->
-      <a href="#" class="nav-item active">
+      <div class="nav-item active">
         <i class="fas fa-file-alt"></i>
         Reporting
+      </div>
+      <a href="admin-panel.html" class="nav-item">
+        <i class="fas fa-file-alt"></i>
+        Admin
       </a>
     </div>
   </div>
@@ -1173,39 +1132,6 @@
           </form>
         </div>
         
-
-
-
-        <!-- Sector Report Form -->
-        <div id="sector-report-form" class="report-form hidden">
-          <div class="row">
-            <div class="col-md-6">
-              <div class="form-group">
-                <label for="sector-from-date">From Date</label>
-                <input type="date" class="form-control" id="sector-from-date">
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="form-group">
-                <label for="sector-to-date">To Date</label>
-                <input type="date" class="form-control" id="sector-to-date">
-              </div>
-            </div>
-          </div>
-          
-          <div class="row">
-            <div class="col-md-12">
-              <div class="form-group">
-                <button class="btn btn-primary">
-                  <i class="fas fa-chart-bar"></i> Generate Sector Report
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-
-
   
 
         <!-- Sub Division Report Form -->
@@ -1386,6 +1312,109 @@
 </script>
 
 <script>
+  // Add this script to control navigation visibility based on backend permissions
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        const authToken = localStorage.getItem('authToken');
+        if (!authToken) {
+            console.error('No authentication token found');
+            return;
+        }
+
+        // Fetch allowed pages from backend
+        const response = await fetch(`${SERVER_URL}/api/allowed-pages`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch allowed pages');
+        }
+
+        const data = await response.json();
+        
+        if (data.success && data.allowedPages) {
+            // Hide all navigation items first
+            hideAllNavigationItems();
+            
+            // Show only allowed pages
+            showAllowedNavigationItems(data.allowedPages);
+        }
+    } catch (error) {
+        console.error('Error fetching allowed pages:', error);
+        // In case of error, you might want to show a default set of navigation items
+        // or handle it according to your application's requirements
+    }
+});
+
+function hideAllNavigationItems() {
+    // Hide header navigation items
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+        if (!item.classList.contains('active')) {
+            item.style.display = 'none';
+        }
+    });
+    
+    // Hide hamburger menu navigation items
+    const hamburgerItems = document.querySelectorAll('.navi-block-items');
+    hamburgerItems.forEach(item => {
+        if (!item.classList.contains('active')) {
+            item.style.display = 'none';
+        }
+    });
+    
+    // Hide sidebar navigation items
+    const sidebarItems = document.querySelectorAll('.complaints-option');
+    sidebarItems.forEach(item => {
+        if (!item.classList.contains('active')) {
+            item.style.display = 'none';
+        }
+    });
+}
+
+function showAllowedNavigationItems(allowedPages) {
+    // Show header navigation items that are allowed
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+        const pageName = getPageNameFromHref(item.getAttribute('href'));
+        if (allowedPages.includes(pageName) || item.classList.contains('active')) {
+            item.style.display = 'flex';
+        }
+    });
+    
+    // Show hamburger menu navigation items that are allowed
+    const hamburgerItems = document.querySelectorAll('.navi-block-items');
+    hamburgerItems.forEach(item => {
+        const pageName = getPageNameFromHref(item.getAttribute('href'));
+        if (allowedPages.includes(pageName) || item.classList.contains('active')) {
+            item.style.display = 'block';
+        }
+    });
+    
+    // Show sidebar navigation items that are allowed
+    const sidebarItems = document.querySelectorAll('.complaints-option');
+    sidebarItems.forEach(item => {
+        const pageName = getPageNameFromHref(item.getAttribute('href'));
+        if (allowedPages.includes(pageName) || item.classList.contains('active')) {
+            item.style.display = 'flex';
+        }
+    });
+}
+
+function getPageNameFromHref(href) {
+    if (!href) return '';
+    
+    // Extract page name from href (e.g., "dashboard.html" -> "dashboard")
+    const pageWithExtension = href.split('/').pop();
+    return pageWithExtension.split('.')[0];
+}
+</script>
+
+<script>
   let USER_ID = localStorage.getItem('UserId');
     
     document.addEventListener('DOMContentLoaded', function() {
@@ -1393,7 +1422,6 @@
       localStorage.removeItem('UserId');
     });
 
-    const SERVER_URL = 'http://localhost:3000';
   // Logout functionality
   document.addEventListener('DOMContentLoaded', function() {
 
@@ -1511,8 +1539,6 @@
 
     // To populate colonies and buildings
     document.addEventListener('DOMContentLoaded', function() {
-        // API base URL
-        const API_BASE_URL = 'http://localhost:3000';
         
         // DOM Elements
         const colonySelect = document.querySelector('select[name="colony"]');
@@ -1524,7 +1550,7 @@
         // Fetch colonies and their buildings from the backend
         async function fetchColoniesAndBuildings() {
             try {
-                const response = await fetch(`${API_BASE_URL}/api/colonies-with-buildings`);
+                const response = await fetch(`${SERVER_URL}/api/colonies-with-buildings`);
                 if (!response.ok) {
                     throw new Error('Failed to fetch colonies and buildings');
                 }
@@ -1584,8 +1610,6 @@
 
     // To populate categories and natures
     document.addEventListener('DOMContentLoaded', function() {
-        // API base URL
-        const API_BASE_URL = 'http://localhost:3000';
         
         // DOM Elements
         const categorySelect = document.querySelector('select[name="category"]');
@@ -1597,7 +1621,7 @@
         // Fetch categories and their natures from the backend
         async function fetchCategoriesAndNatures() {
             try {
-                const response = await fetch(`${API_BASE_URL}/api/categories-with-natures`);
+                const response = await fetch(`${SERVER_URL}/api/categories-with-natures`);
                 if (!response.ok) {
                     throw new Error('Failed to fetch categories and natures');
                 }
@@ -1723,7 +1747,7 @@ async function fetchComplaintsData(filters = {}) {
             }
         }
 
-        const response = await fetch(`http://localhost:3000/complaints-report?${queryParams}`);
+        const response = await fetch(SERVER_URL+`/complaints-report?${queryParams}`);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -1748,6 +1772,10 @@ function getFilterValues() {
         toDate: document.getElementById('to-date').value
     };
 }
+
+// Function to generate table in a new tab
+
+// Function to generate table in a new tab
 
 // Function to generate table in a new tab
 function generateReportTable(data, filters) {
@@ -1784,8 +1812,7 @@ function generateReportTable(data, filters) {
                 }
                 th { 
                     background-color: #f2f2f2; 
-                    position: sticky;
-                    top: 0;
+                    position: relative;
                 }
                 .report-header { 
                     margin-bottom: 20px; 
@@ -1806,6 +1833,28 @@ function generateReportTable(data, filters) {
                     body { margin: 0; }
                     .no-print { display: none; }
                 }
+                    
+                @media print {
+                body { margin: 0; }
+                .no-print { display: none; }
+
+                table {
+                    border-collapse: collapse;
+                    page-break-inside: auto;
+                }
+
+                th {
+                  background-color: rgba(0, 0, 0, 0.1);
+                }
+
+                tr, td, th {
+                    page-break-inside: avoid; /* Don’t cut rows */
+                    page-break-after: auto;
+                    line-height: 1.2em;        /* consistent row spacing */
+                    min-height: 1vh;           /* ensure at least 1vh */
+                }
+            }
+
             </style>
         </head>
         <body>
@@ -1874,6 +1923,7 @@ function generateReportTable(data, filters) {
     // Return the new window for potential further operations
     return newWindow;
 }
+
 
 // Function to handle print button click
 async function handlePrintReport() {
@@ -2047,7 +2097,7 @@ document.addEventListener('DOMContentLoaded', function() {
             };
             
             // Fetch data from the server at port 3000
-            fetch('http://localhost:3000/api/subdiv-report', {
+            fetch(SERVER_URL+'/api/subdiv-report', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -2407,7 +2457,7 @@ document.addEventListener('DOMContentLoaded', function() {
             generateBtn.disabled = true;
             generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
 
-            fetch(`http://localhost:3000/api/summary-report?year=${year}`)
+            fetch(SERVER_URL+`/api/summary-report?year=${year}`)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
