@@ -1,5 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+<script src="server-url.js"></script>
+  <script>
+    const page = 'launch-complaints';
+  </script>
+  <script src="verification.js"></script>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -14,6 +19,8 @@
       scrollbar-width: thin;
       scroll-behavior: smooth;
       scrollbar-color: rgb(138, 119, 119) transparent;
+      -webkit-overflow-scrolling: touch; /* smooth scroll on mobile */
+      user-select: none;
     }
 
     body {
@@ -152,8 +159,7 @@
     }
 
     .content {
-      width: 100%;
-      max-width: 1800px;
+      width: 95%;
       margin: 0 auto;
       padding: 20px;
       background-color: white;
@@ -476,6 +482,7 @@
     /* Form Styles */
     .form-group {
       margin-bottom: 20px;
+      overflow-x: auto;
     }
     
     .form-group label {
@@ -613,7 +620,7 @@
       width: 100%;
       border-collapse: collapse;
       /*border-radius: var(--border-radius);*/
-      overflow: hidden;
+      overflow: auto;
       background: white;
     }
 
@@ -643,6 +650,108 @@
 
     .complaints-table tr:hover {
       background-color: rgba(136, 28, 28, 0.05);
+    }
+
+    
+    /* New styles for Helper table */
+
+  /* Updated Helper table styles to match complaints table */
+  /* Updated Helper table styles to match complaints table with horizontal scroll */
+  .Helpers {
+    overflow-x: auto;
+    margin-bottom: 20px;
+  }
+  
+  .helper-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    min-width: 800px; /* Ensure table has minimum width to trigger scroll if needed */
+  }
+
+  .helper-table th {
+    background: rgba(136, 28, 28, 0.1);
+    color: var(--primary);
+    font-weight: 600;
+    padding: 12px;
+    text-align: left;
+    border: 1px solid #ffc4c4; /* Match vertical line color */
+    font-size: 16px;
+    white-space: nowrap; /* Prevent header text from wrapping */
+  }
+
+  .helper-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    height: 40px;
+    border: 1px solid #f3f3f3; /* Match vertical line color */
+    font-size: 14px;
+    white-space: nowrap; /* Prevent cell content from wrapping */
+  }
+
+  .helper-table tr:hover {
+    background-color: rgba(136, 28, 28, 0.05);
+  }
+  
+  /* Custom scrollbar styling to match the site theme */
+  .Helpers::-webkit-scrollbar {
+    height: 8px;
+  }
+  
+  .Helpers::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+  
+  .Helpers::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+  }
+  
+  .Helpers::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+    
+    .helper-status {
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      display: inline-block;
+    }
+    
+    
+    .status-active {
+      background: #4CAF50;
+      color: white;
+    }
+    
+    .status-inprogress {
+      background: #F44336;
+      color: white;
+    }
+    
+    .status-inactive {
+      background: #9E9E9E;
+      color: white;
+    }
+    
+    .helper-section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .helper-search {
+      padding: 10px 15px;
+      border-radius: 6px;
+      border: 1px solid rgba(0,0,0,0.1);
+      width: 250px;
     }
     
     /* Responsive Styles */
@@ -679,6 +788,11 @@
       
       .mark-buttons .btn {
         width: 100%;
+      }
+
+      .complaints-table th, .complaints-table td {
+        font-size: 12px;
+        padding: 8px 10px;
       }
     }
     
@@ -748,6 +862,160 @@ select[multiple] {
   border-radius: 8px;
   margin-top: 15px;
 }
+
+
+    @media (max-width: 450px) {
+      .logo {
+        flex-direction: column;
+      }
+    }
+
+    .hamburger {
+      display: none;
+    }
+    /* Responsive header */
+    @media (max-width: 768px) {
+      .report-type .report-option {
+        padding: 10px 20px;
+        font-size: 15px;
+      }
+
+      label {
+        font-size: 15px;
+      }
+
+      select {
+        font-size: 15px;
+        height: 20px;
+      }
+
+      .btn {
+        font-size: 15px;
+      }
+
+      .report-header h1 {
+        font-size: 20px;
+      }
+      
+      .logo h2 {
+        font-size: 16px;
+      }
+
+      .nav-container {
+        margin-left: 0;
+        justify-content: center;
+        display: none;
+      }
+      
+      .nav-item {
+        padding: 12px 15px;
+        font-size: 14px;
+      }
+
+      .content {
+        margin-top: 0px;
+        width: 100%;
+        padding: 0px;
+      }
+      
+      header {
+        /*flex-direction: column;*/
+        height: auto;
+        padding: 5px;
+        gap: 15px;
+        margin-top: 0px;
+      }
+      
+      .logo {
+        margin-bottom: 0px;
+      }
+
+      .logo .logo-image {
+        width: 60px;
+        height: auto;
+        margin-bottom: 0px;
+        padding: 2px;
+      }
+
+      .user h2 {
+        font-size: 14px;
+        margin: 0px;
+      }
+      
+      .logout-btn {
+        padding: 4px 8px;
+        font-size: 15px;
+        font-weight: 650;
+      }
+
+      .hamburger {
+        display: flex;
+        height: 35px;
+        width: 35px;
+        background-color: rgba(0,0,0,0.2);
+        cursor: pointer;
+        padding: 8px;
+        margin-right: 10px;
+        border-radius: 4px;
+      }
+
+      .hamburger i {
+        font-size: 20px;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+      }
+
+      .navigation-block {
+        right: 0;
+        width: 100vw;
+        top: 55px;
+        border-radius: 0;
+      }
+
+      /* By default, hide the menu off-screen to the right */
+      .navigation-block {
+        position: fixed;
+        top: 60px;
+        right: -250px; /* Hide off-screen to the right */
+        display: flex;
+        flex-direction: column;
+        background-color: var(--primary);
+        width: 220px;
+        border-radius: 8px;
+        padding: 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        z-index: 999;
+        transition: right 0.3s ease-in-out; /* Smooth slide animation */
+        border: 2px solid rgba(0, 0, 0, 0.1);
+      }
+
+      /* Each nav item */
+      .navigation-block .navi-block-items {
+        color: white;
+        padding: 12px;
+        font-size: 16px;
+        text-decoration: none;
+        transition: background 0.2s ease;
+        font-weight: 500;
+      }
+
+      .navigation-block .navi-block-items:hover {
+        background: rgba(255,255,255,0.1);
+        border-radius: 5px;
+      }
+
+      /* Show menu when active - slide in from right */
+      .navigation-block.active {
+        right: 10px; /* Slide into view from the right */
+      }
+
+      .navigation-block div {
+        background-color: rgba(0, 0, 0, 0.1);
+      }
+    }
   </style>
 </head>
 <body>
@@ -763,18 +1031,28 @@ select[multiple] {
     </div>
 
     <div class="user">
-      <h2>CH HAND</h2>
-      <button class="logout-btn">Logout</button>
-    </div>
+      <h2 id="user-id">Unknown</h2>
+      <button class="logout-btn" id="logout-btn">Logout</button>
+      <div class="hamburger">
+        <i class="fas fa-bars" id="hamburger-btn"></i>
+        <div class="navigation-block">
+          <a href="dashboard.html" class="navi-block-items">Dashboard</a>
+          <a href="launch-complaints.html" class="navi-block-items active">Complaints</a>
+          <a href="all-users.html" class="navi-block-items">Users</a>
+          <a href="complaints-report.html" class="navi-block-items">Reporting</a>
+          <a href="admin-panel.html" class="navi-block-items">Admin</a>
+        </div>
+        </div>
+      </div>
   </header>
 
   <div class="nav-bar">
     <div class="nav-container">
-      <a href="#" class="nav-item">
+      <a href="dashboard.html" class="nav-item">
         <i class="fas fa-chart-line"></i>
         Dashboard
       </a>
-      <a href="#" class="nav-item">
+      <a href="launch-complaints.html" class="nav-item">
         <i class="fas fa-ticket-alt"></i>
         Complaints
       </a>
@@ -782,17 +1060,21 @@ select[multiple] {
         <i class="fas fa-users"></i>
         Users
       </a>
-      <a href="#" class="nav-item">
+      <!--a href="#" class="nav-item">
         <i class="fas fa-store"></i>
         Store
       </a>
       <a href="#" class="nav-item">
         <i class="fas fa-boxes"></i>
         Stock
-      </a>
-      <a href="complaint-reporting.html" class="nav-item">
+      </a-->
+      <a href="complaints-report.html" class="nav-item">
         <i class="fas fa-file-alt"></i>
         Reporting
+      </a>
+      <a href="admin-panel.html" class="nav-item">
+        <i class="fas fa-file-alt"></i>
+        Admin
       </a>
     </div>
   </div>
@@ -918,52 +1200,13 @@ select[multiple] {
         
         <div class="detail-tabs">
           <div class="tab active" data-tab="complaint-detail">History</div>
-          <div class="tab" data-tab="mark-complaint">Mark Complaint</div>
+          <div class="tab" data-tab="mark-complaint">Helper Skillmen</div>
         </div>
         
         <div class="tab-content active" id="complaint-detail">
           <h3>Complaint's History</h3>
           
           <div class="form-group">
-            <!--label>Select Service Providers</label>
-            <div class="checkbox-group">
-              <div class="checkbox-item">
-                <input type="checkbox" id="customer" checked>
-                <label for="customer">Customer (Tanveer Naqvi)</label>
-              </div>
-              <div class="checkbox-item">
-                <input type="checkbox" id="skillman" checked>
-                <label for="skillman">Skillman (John Doe)</label>
-              </div>
-              <div class="checkbox-item">
-                <input type="checkbox" id="building">
-                <label for="building">Building (S-III/54)</label>
-              </div>
-              <div class="checkbox-item">
-                <input type="checkbox" id="colony">
-                <label for="colony">Colony (GE DP)</label>
-              </div>
-              <div class="checkbox-item">
-                <input type="checkbox" id="sector">
-                <label for="sector">Sector (Sector 5)</label>
-              </div>
-              <div class="checkbox-item">
-                <input type="checkbox" id="area">
-                <label for="area">Area (North Area)</label>
-              </div>
-            <div-->
-
-            
-          <!--div class="form-group">
-            <label for="message">Message</label>
-            <textarea class="form-control" id="message" placeholder="Enter your message here..."></textarea>
-          </div>
-          
-          <button class="btn btn-primary">
-            <i class="fas fa-paper-plane"></i> Submit
-          </button-->
-
-
 
             <table class="complaints-table">
               <thead>
@@ -982,103 +1225,38 @@ select[multiple] {
               </tbody>
             </table>
 
-
           </div>
         </div>
         
-<div class="tab-content" id="mark-complaint">
-  <div class="mark-complaint-section">
-    <h3 class="mark-title">Update Complaint Details</h3>
-    
-    <!-- Current Assignment Section -->
-    <div class="assignment-section">
-      <h4>Current Assignment</h4>
-      <div class="current-assignment">
-        <div class="assignment-item">
-          <label>Primary Skillman:</label>
-          <span id="current-primary-skillman">Not assigned</span>
+        <div class="tab-content" id="mark-complaint">
+
+            <div class="helper-section-header">
+              <h3>Helper Skillmen</h3>
+            </div>
+          <div class="Helpers">
+            
+            <table class="helper-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Name</th>
+                  <th>Phone Number</th>
+                  <th>Designation</th>
+                  <th>Subdivision</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="helpers-table-body">
+                <!-- Will be populated dynamically -->
+                <tr>
+                  <td colspan="6" style="text-align: center; padding: 20px;">
+                    <i class="fas fa-spinner fa-spin"></i> Loading helpers data...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
-        <div class="assignment-item">
-          <label>Helper Skillmen:</label>
-          <span id="current-helper-skillmen">None assigned</span>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Update Assignment Section -->
-    <div class="update-assignment-section">
-      <h4>Update Assignment</h4>
-      
-      <div class="form-group">
-        <label for="primary-skillman">Primary Skillman</label>
-        <select class="form-control" id="primary-skillman">
-          <option value="">Select Primary Skillman</option>
-          <!-- Options will be populated dynamically -->
-        </select>
-      </div>
-      
-      <div class="form-group">
-        <label for="helper-skillmen">Helper Skillmen (Select multiple)</label>
-        <select class="form-control" id="helper-skillmen" multiple size="4">
-          <!-- Options will be populated dynamically -->
-        </select>
-        <div class="form-hint">Hold Ctrl/Cmd to select multiple helpers</div>
-      </div>
-    </div>
-    
-    <!-- Status Update Section -->
-    <div class="status-update-section">
-      <h4>Update Status</h4>
-      
-      <div class="form-group">
-        <label for="status-select">Status</label>
-        <select class="form-control" id="status-select">
-          <option value="unassigned">Unassigned</option>
-          <option value="assigned">Assigned</option>
-          <option value="in-progress">In Progress</option>
-          <option value="completed">Completed</option>
-          <option value="deferred">Deferred</option>
-          <option value="cancelled">Cancelled</option>
-        </select>
-      </div>
-      
-      <!-- Additional fields that appear based on status selection -->
-      <div class="status-dependent-fields">
-        <div class="form-group completion-reason-field" style="display: none;">
-          <label for="completion-notes">Completion Notes</label>
-          <textarea class="form-control" id="completion-notes" placeholder="Describe work completed..."></textarea>
-        </div>
-        
-        <div class="form-group deferred-reason-field" style="display: none;">
-          <label for="deferred-reason">Reason for Deferral</label>
-          <select class="form-control" id="deferred-reason">
-            <option value="">Select reason</option>
-            <option value="parts-unavailable">Parts Unavailable</option>
-            <option value="specialist-required">Specialist Required</option>
-            <option value="customer-request">Customer Request</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-        
-        <div class="form-group deferred-notes-field" style="display: none;">
-          <label for="deferred-notes">Deferral Details</label>
-          <textarea class="form-control" id="deferred-notes" placeholder="Provide details about the deferral..."></textarea>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Action Buttons -->
-    <div class="mark-buttons">
-      <button class="btn btn-primary" id="update-complaint-btn">
-        <i class="fas fa-save"></i> Update Complaint
-      </button>
-      
-      <button class="btn btn-secondary" id="cancel-update-btn">
-        <i class="fas fa-times"></i> Cancel
-      </button>
-    </div>
-  </div>
-</div>
 
       </div>
     </div>
@@ -1086,6 +1264,142 @@ select[multiple] {
 
 
 <script>
+  const hamburgerBtn = document.getElementById("hamburger-btn");
+  const navBlock = document.querySelector(".navigation-block");
+
+  // Toggle navigation on hamburger click
+  hamburgerBtn.addEventListener("click", (e) => {
+    e.stopPropagation(); // Prevent click from bubbling to document
+    navBlock.classList.toggle("active");
+  });
+
+  // Close navigation when clicking outside
+  document.addEventListener("click", (e) => {
+    // Check if click is outside the navigation block and hamburger button
+    if (!navBlock.contains(e.target) && e.target !== hamburgerBtn) {
+      navBlock.classList.remove("active");
+    }
+  });
+
+  // Optional: Prevent clicks inside navigation from closing it
+  navBlock.addEventListener("click", (e) => {
+    e.stopPropagation();
+  });
+</script>
+
+<script>
+  // Add this script to control navigation visibility based on backend permissions
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        const authToken = localStorage.getItem('authToken');
+        if (!authToken) {
+            console.error('No authentication token found');
+            return;
+        }
+
+        // Fetch allowed pages from backend
+        const response = await fetch(`${SERVER_URL}/api/allowed-pages`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch allowed pages');
+        }
+
+        const data = await response.json();
+        
+        if (data.success && data.allowedPages) {
+            // Hide all navigation items first
+            hideAllNavigationItems();
+            
+            // Show only allowed pages
+            showAllowedNavigationItems(data.allowedPages);
+        }
+    } catch (error) {
+        console.error('Error fetching allowed pages:', error);
+        // In case of error, you might want to show a default set of navigation items
+        // or handle it according to your application's requirements
+    }
+});
+
+function hideAllNavigationItems() {
+    // Hide header navigation items
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+        if (!item.classList.contains('active')) {
+            item.style.display = 'none';
+        }
+    });
+    
+    // Hide hamburger menu navigation items
+    const hamburgerItems = document.querySelectorAll('.navi-block-items');
+    hamburgerItems.forEach(item => {
+        if (!item.classList.contains('active')) {
+            item.style.display = 'none';
+        }
+    });
+    
+    // Hide sidebar navigation items
+    const sidebarItems = document.querySelectorAll('.complaints-option');
+    sidebarItems.forEach(item => {
+        if (!item.classList.contains('active')) {
+            item.style.display = 'none';
+        }
+    });
+}
+
+function showAllowedNavigationItems(allowedPages) {
+    // Show header navigation items that are allowed
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+        const pageName = getPageNameFromHref(item.getAttribute('href'));
+        if (allowedPages.includes(pageName) || item.classList.contains('active')) {
+            item.style.display = 'flex';
+        }
+    });
+    
+    // Show hamburger menu navigation items that are allowed
+    const hamburgerItems = document.querySelectorAll('.navi-block-items');
+    hamburgerItems.forEach(item => {
+        const pageName = getPageNameFromHref(item.getAttribute('href'));
+        if (allowedPages.includes(pageName) || item.classList.contains('active')) {
+            item.style.display = 'block';
+        }
+    });
+    
+    // Show sidebar navigation items that are allowed
+    const sidebarItems = document.querySelectorAll('.complaints-option');
+    sidebarItems.forEach(item => {
+        const pageName = getPageNameFromHref(item.getAttribute('href'));
+        if (allowedPages.includes(pageName) || item.classList.contains('active')) {
+            item.style.display = 'flex';
+        }
+    });
+}
+
+function getPageNameFromHref(href) {
+    if (!href) return '';
+    
+    // Extract page name from href (e.g., "dashboard.html" -> "dashboard")
+    const pageWithExtension = href.split('/').pop();
+    return pageWithExtension.split('.')[0];
+}
+</script>
+
+<script>
+  
+  let USER_ID = localStorage.getItem('UserId');
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById("user-id").textContent = USER_ID;
+      localStorage.removeItem('UserId');
+    });
+
+
 //show Notification
 function showNotification(message, type = 'success', duration = 3000) {
   const notificationArea = document.getElementById('notification-area');
@@ -1135,7 +1449,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Encrypted ID from URL:', encryptedId);
         
         // Try to decrypt with your backend API
-        const API_URL = 'http://localhost:3000';
+        const API_URL = SERVER_URL;
         decryptId(encryptedId, API_URL);
     } else {
         console.error('No encrypted ID found in URL');
@@ -1219,7 +1533,7 @@ async function decryptId(encryptedId, baseUrl) {
 async function fetchComplaintData() {
     try {
         // Use the correct parameter name (complaintId) as expected by your backend
-        const response = await fetch(`http://localhost:3000/data?complaintId=${tempComplaintId}`);
+        const response = await fetch(SERVER_URL+`/data?complaintId=${tempComplaintId}`);
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
@@ -1470,7 +1784,7 @@ function setupWhatsAppButton(phoneNumber) {
         whatsappBtn.onclick = async function() {
             try {
                 // Call the API at port 3000
-                const response = await fetch('http://localhost:3000/api/send-reviewing-request', {
+                const response = await fetch(SERVER_URL+'/api/send-reviewing-request', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -1532,7 +1846,7 @@ async function populateComplaintsTable(complaintId = null) {
         `;
         
         // Build API URL
-        let apiUrl = 'http://localhost:3000/api/users-history';
+        let apiUrl = SERVER_URL+'/api/users-history';
         if (tempComplaintId) {
             apiUrl += `?complaintId=${encodeURIComponent(tempComplaintId)}`;
         }
@@ -1683,12 +1997,129 @@ function getStatusClass(status) {
       });
   </script>
 
-  <script>
-  </script>
 
-  <script>
-    
-  </script>
+<script>
+  // Function to populate helpers table
+async function populateHelpersTable() {
+    try {
+        
+        const tableBody = document.getElementById('helpers-table-body');
+        if (!tableBody) {
+            console.error('Table body element not found!');
+            return;
+        }
+
+        // Show loading state
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="6" style="text-align: center; padding: 20px;">
+                    <i class="fas fa-spinner fa-spin"></i> Loading helpers data...
+                </td>
+            </tr>
+        `;
+
+        // Fetch data
+        const url = SERVER_URL + `/api/helpers?complaintId=${encodeURIComponent(tempComplaintId)}`;
+        
+        const response = await fetch(url);
+
+        // Check content type
+        const contentType = response.headers.get('content-type');
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Response error text:', errorText);
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const helpersData = await response.json();
+
+        // Clear table
+        tableBody.innerHTML = '';
+
+        // Check if data is empty
+        if (helpersData.length === 0) {
+            console.log('No helpers data found');
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 20px;">
+                        No helpers found for this complaint.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        // Add rows to table
+        helpersData.forEach((helper, index) => {
+            console.log('Processing helper:', helper);
+            
+            const row = document.createElement('tr');
+            
+            // Determine status class and text
+            let statusClass = '';
+            let statusText = '';
+            
+            switch(helper.status) {
+                case 'Active':
+                    statusClass = 'status-active';
+                    statusText = 'Active';
+                    break;
+                case 'In-Progress':
+                    statusClass = 'status-inprogress';
+                    statusText = 'In-Progress';
+                    break;
+                default:
+                    statusClass = 'status-inactive';
+                    statusText = 'Inactive';
+            }
+            
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${helper.name || 'N/A'}</td>
+                <td>${helper.phone || 'N/A'}</td>
+                <td>${helper.designation || 'N/A'}</td>
+                <td>${helper.subdivision || 'N/A'}</td>
+                <td><span class="helper-status ${statusClass}">${statusText}</span></td>
+            `;
+            
+            // Make the row clickable
+            row.style.cursor = 'pointer';
+            row.addEventListener('click', () => {
+                console.log('Clicked helper:', helper.id, helper.name);
+                assignHelperToComplaint(helper.id, helper.name);
+            });
+            
+            tableBody.appendChild(row);
+        });
+
+
+    } catch (error) {
+        console.error('Error in populateHelpersTable:', error);
+        const tableBody = document.getElementById('helpers-table-body');
+        if (tableBody) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 20px; color: #d32f2f;">
+                        <i class="fas fa-exclamation-circle"></i> Failed to load helpers data: ${error.message}
+                    </td>
+                </tr>
+            `;
+        }
+    }
+}
+  
+  
+  // Call the function when the Mark Complaint tab is clicked
+  document.querySelector('[data-tab="mark-complaint"]').addEventListener('click', function() {
+    // Only load data if table is empty or showing loading/error
+    const tableBody = document.getElementById('helpers-table-body');
+    if (tableBody.innerHTML.includes('Loading') || tableBody.innerHTML.includes('Failed') || tableBody.innerHTML.includes('No helpers')) {
+      populateHelpersTable();
+    }
+  });
+</script>
+
     
 </body>
 </html>
