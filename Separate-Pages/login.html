@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
+  <script src="server-url.js"></script>
   <script>
-    
     async function verifyAuthToken() {
       const authToken = localStorage.getItem('authToken');
       
@@ -15,7 +15,7 @@
       try {
         console.log('Attempting to verify authToken...');
         
-        const response = await fetch('http://localhost:3000/verify-token', {
+        const response = await fetch(SERVER_URL+'/verify-token', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -38,13 +38,13 @@
           window.location.href = 'launch-complaints.html'; // Updated path
         } else {
           console.log('Token verification failed:', data.message || 'No error message provided');
-          alert('Authentication failed: ' + (data.message || 'Invalid token'));
+          //alert('Authentication failed: ' + (data.message || 'Invalid token'));
           // Redirect to login page on failure
           //window.location.href = 'login.html';
         }
       } catch (error) {
         console.error('Error during token verification:', error);
-        alert('Authentication failed: ' + error.message);
+        //alert('Authentication failed: ' + error.message);
         // Redirect to login page on error
         //window.location.href = 'login.html';
       }
@@ -70,6 +70,11 @@
       padding: 0;
       box-sizing: border-box;
       transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+      scrollbar-width: thin;
+      scroll-behavior: smooth;
+      scrollbar-color: rgb(138, 119, 119) transparent;
+      user-select: none;
+      -webkit-overflow-scrolling: touch; /* smooth scroll on mobile */
     }
 
     html, body {
@@ -82,6 +87,7 @@
       display: flex;
       flex-direction: row;
       overflow: hidden;
+      overflow-x: hidden;
     }
 
     .auth-left {
@@ -253,8 +259,9 @@
       .auth-left, .auth-right {
         width: 100%;
         height: auto;
-        min-height: 60vh;
+        min-height: 100vh;
         padding: 50px 30px;
+        margin-right: 0px;
       }
 
       .auth-left h1 {
@@ -265,17 +272,19 @@
         font-size: 1rem;
       }
 
+      .auth-right {
+        background-color: #ffffff;
+      }
+
       .logo-circle {
         width: 140px;
         height: 140px;
       }
 
       .auth-right {
-        padding: 50px 30px;
-        padding-bottom: 20vh;
-        padding-top: 20vh;
+        padding: auto;
         margin-bottom: 20vh;
-        margin-left:5vw
+        padding-left: 13vw;
       }
     }
 
@@ -339,7 +348,7 @@
     }
 
     try {
-      const response = await fetch('http://localhost:3000/login', {
+      const response = await fetch(SERVER_URL+'/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
