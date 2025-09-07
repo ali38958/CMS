@@ -7,34 +7,45 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvg/dist/browser/canvg.min.js"></script>
   <style>
+    :root {
+      --primary-color: rgb(136, 28, 28);
+      --secondary-color: #2ecc71;
+      --accent-color: #3498db;
+      --light-gray: #eef2f5;
+      --dark-gray: #34495e;
+      --white: #ffffff;
+    }
+
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
     body {
-      background-color: #eef2f5;
+      background-color: var(--light-gray);
       color: #333;
     }
 
     header {
       width: 100%;
       height: 60px;
-      background-color: rgb(136, 28, 28);
+      background-color: var(--primary-color);
       margin-top: 36px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 0 25px;
       margin-bottom: 30px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
 
     .nav-bar {
       width: 100%;
-      background-color: rgb(136, 28, 28);
+      background-color: var(--primary-color);
       display: flex;
       justify-content: center;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
@@ -52,11 +63,12 @@
       padding: 15px 25px;
       color: white;
       text-decoration: none;
-      font-weight: bold;
+      font-weight: 600;
       transition: all 0.3s ease;
       display: flex;
       align-items: center;
       gap: 8px;
+      position: relative;
     }
 
     .nav-item:hover {
@@ -105,6 +117,7 @@
       color: white;
       font-size: 20px;
       white-space: nowrap;
+      font-weight: 600;
     }
 
     .user {
@@ -117,16 +130,17 @@
     .user h2 {
       font-size: 16px;
       white-space: nowrap;
+      font-weight: 500;
     }
 
     .logout-btn {
       background-color: white;
-      color: rgb(136, 28, 28);
+      color: var(--primary-color);
       border: none;
       padding: 6px 12px;
       border-radius: 4px;
       cursor: pointer;
-      font-weight: bold;
+      font-weight: 600;
       transition: background-color 0.3s;
       border: 1px solid white;
     }
@@ -140,7 +154,7 @@
       max-width: 1800px;
       margin: 20px auto;
       padding: 20px;
-      background-color: white;
+      background-color: var(--white);
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       border-radius: 8px;
       overflow: hidden;
@@ -155,8 +169,8 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background-color: #ffffff;
-      padding: 10px 20px;
+      background-color: var(--white);
+      padding: 15px 20px;
       margin-bottom: 20px;
       border-radius: 8px;
       box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
@@ -164,20 +178,22 @@
     }
 
     .title {
-      font-size: 20px;
-      font-weight: normal;
+      font-size: 22px;
+      font-weight: 600;
       margin: 0;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      color: var(--dark-gray);
     }
 
     #datePicker {
-      padding: 6px 10px;
+      padding: 8px 12px;
       font-size: 14px;
       border: 1px solid #ccc;
       border-radius: 4px;
       width: 180px;
+      font-weight: 500;
     }
 
     .charts-row {
@@ -192,10 +208,16 @@
     .chart-box {
       flex: 1 1 calc(33.333% - 20px);
       min-width: 300px;
-      background: #fff;
+      background: var(--white);
       padding: 20px;
       border-radius: 8px;
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      transition: transform 0.3s ease;
+      position: relative;
+    }
+
+    .chart-box:hover {
+      transform: translateY(-5px);
     }
 
     .chart-box h3 {
@@ -203,7 +225,7 @@
       margin-bottom: 15px;
       font-size: 16px;
       font-weight: 600;
-      color: #34495e;
+      color: var(--dark-gray);
       text-align: center;
     }
 
@@ -228,7 +250,7 @@
     }
 
     .table-box {
-      background: #fff;
+      background: var(--white);
       padding: 15px;
       border-radius: 8px;
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
@@ -243,7 +265,7 @@
       margin-bottom: 12px;
       font-size: 16px;
       font-weight: 600;
-      color: #34495e;
+      color: var(--dark-gray);
       text-align: center;
     }
 
@@ -261,7 +283,7 @@
 
     .data-table th, 
     .data-table td {
-      padding: 8px 12px;
+      padding: 10px 12px;
       text-align: center;
       border: 1px solid #ddd;
       font-size: 14px;
@@ -269,12 +291,16 @@
 
     .data-table th {
       background-color: #f2f2f2;
-      font-weight: bold;
+      font-weight: 600;
       white-space: nowrap;
     }
 
     .data-table tr:nth-child(even) {
       background-color: #f9f9f9;
+    }
+
+    .data-table tr:hover {
+      background-color: #f0f0f0;
     }
 
     .data-table th:nth-child(1),
@@ -293,7 +319,7 @@
     }
     
     .complaints-sidebar {
-      background: #fff;
+      background: var(--white);
       border-radius: 8px;
       padding: 20px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.08);
@@ -310,6 +336,7 @@
       align-items: center;
       gap: 12px;
       background: rgba(248, 249, 250, 0.7);
+      color: var(--dark-gray);
     }
     
     .complaints-option:hover {
@@ -318,7 +345,7 @@
     
     .complaints-option.active {
       background: rgba(136, 28, 28, 0.2);
-      color: rgb(136, 28, 28);
+      color: var(--primary-color);
       box-shadow: 0 2px 10px rgba(136, 28, 28, 0.1);
     }
     
@@ -328,7 +355,7 @@
     
     #launch-complaints, #natures {
       text-decoration: none;
-      color: rgb(136, 28, 28);
+      color: var(--primary-color);
     }
 
     /* Responsive styles */
@@ -388,7 +415,7 @@
 
       .data-table th, 
       .data-table td {
-        padding: 6px 8px;
+        padding: 8px 10px;
         font-size: 13px;
       }
     }
@@ -450,16 +477,95 @@
         font-weight: bold;
       }
     }
+
+    /* Loading spinner */
+    .spinner {
+      display: none;
+      width: 40px;
+      height: 40px;
+      margin: 20px auto;
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-radius: 50%;
+      border-top: 4px solid var(--primary-color);
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Notification Styles */
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 25px;
+      border-radius: 8px;
+      color: white;
+      font-weight: 600;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transform: translateX(110%);
+      transition: transform 0.3s ease;
+    }
+    
+    .notification.show {
+      transform: translateX(0);
+    }
+    
+    .notification.success {
+      background: #4caf50;
+    }
+    
+    .notification.error {
+      background: #f44336;
+    }
+    
+    .notification.warning {
+      background: #ff9800;
+    }
+    
+    .notification i {
+      font-size: 20px;
+    }
+    /* CSS for chart menu */
+    .chart-menu {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+    }
+
+    .chart-menu select {
+      border: 1px solid #ddd;
+      background: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+      color: #333;
+    }
+
+    /* Removed pagination styles */
   </style>
 </head>
-<body>
-  <!-- Your HTML content remains exactly the same as before -->
-  <!-- Only the CSS has been modified to fix the layout issues -->
-  
+<body> 
+
+
+  <!-- Notification -->
+<div class="notification" id="notification">
+  <i id="notification-icon" class="fas fa-info-circle"></i>
+  <span id="notification-text">Operation completed successfully</span>
+</div>
+
+<!-- Header and Navigation -->
   <header>
     <div class="logo">
       <div class="logo-image">
-        <img src="logo.jpg" alt="logo image">
+        <img src="../logo.jpg" alt="logo image">
       </div>
       <h2>Secured CMS</h2>
     </div>
@@ -476,11 +582,11 @@
         <i class="fas fa-chart-line"></i>
         Dashboard
       </a>
-      <a href="#" class="nav-item">
+      <a href="all-complaints.html" class="nav-item">
         <i class="fas fa-ticket-alt"></i>
         Complaints
       </a>
-      <a href="#" class="nav-item">
+      <a href="User-AllUser.html" class="nav-item">
         <i class="fas fa-users"></i>
         Users
       </a>
@@ -530,10 +636,21 @@
           <input type="date" id="datePicker" />
         </div>
 
+        <!-- Loading spinner -->
+        <div id="loadingSpinner" class="spinner"></div>
+
         <!-- Charts Row -->
-        <div class="charts-row">
+        <div class="charts-row" id="chartsContainer">
           <div class="chart-box">
             <h3>Category Complaints Status</h3>
+            <div class="chart-menu">
+              <select id="barChartMenu" onchange="exportChart(this.value, 'barChart', 'Category-Complaints-Status')">
+                <option value="">Export</option>
+                <option value="png">PNG</option>
+                <option value="jpg">JPG</option>
+                <option value="svg">SVG</option>
+              </select>
+            </div>
             <div class="chart-container">
               <canvas id="barChart"></canvas>
             </div>
@@ -541,6 +658,14 @@
 
           <div class="chart-box">
             <h3>Category Wise Complaints Ratio</h3>
+            <div class="chart-menu">
+              <select id="pieChartMenu" onchange="exportChart(this.value, 'pieChart', 'Category-Complaints-Ratio')">
+                <option value="">Export</option>
+                <option value="png">PNG</option>
+                <option value="jpg">JPG</option>
+                <option value="svg">SVG</option>
+              </select>
+            </div>
             <div class="chart-container">
               <canvas id="pieChart"></canvas>
             </div>
@@ -548,14 +673,22 @@
 
           <div class="chart-box">
             <h3>Productivity wise Complaints Ratio</h3>
+            <div class="chart-menu">
+              <select id="prodChartMenu" onchange="exportChart(this.value, 'prodChart', 'Productivity-Complaints-Ratio')">
+                <option value="">Export</option>
+                <option value="png">PNG</option>
+                <option value="jpg">JPG</option>
+                <option value="svg">SVG</option>
+              </select>
+            </div>
             <div class="chart-container">
               <canvas id="prodChart"></canvas>
             </div>
           </div>
         </div>
 
-        <!-- Tables Container - Side by side with full content -->
-        <div class="tables-container">
+        <!-- Tables Container -->
+        <div class="tables-container" id="tablesContainer">
           <div class="table-wrapper">
             <div class="table-box">
               <h3>Complaints Status by Category</h3>
@@ -570,14 +703,8 @@
                       <th>Total</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    <tr><td>E & M - I</td><td>0</td><td>28</td><td>48</td><td>76</td></tr>
-                    <tr><td>E & M - II</td><td>0</td><td>12</td><td>13</td><td>25</td></tr>
-                    <tr><td>B & R - I</td><td>0</td><td>8</td><td>8</td><td>16</td></tr>
-                    <tr><td>B & R - II</td><td>0</td><td>11</td><td>12</td><td>23</td></tr>
-                    <tr><td>B & R - III</td><td>0</td><td>12</td><td>9</td><td>21</td></tr>
-                    <tr><td>-</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
-                    <tr><th>Total</th><th>0</th><th>71</th><th>90</th><th>161</th></tr>
+                  <tbody id="statusTableBody">
+                    <!-- Data will be inserted here by JavaScript -->
                   </tbody>
                 </table>
               </div>
@@ -599,17 +726,36 @@
                       <th>Total</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    <tr><td>E & M - I</td><td>0</td><td>0</td><td>76</td><td>0</td><td>76</td></tr>
-                    <tr><td>E & M - II</td><td>0</td><td>0</td><td>25</td><td>0</td><td>25</td></tr>
-                    <tr><td>B & R - I</td><td>0</td><td>0</td><td>13</td><td>3</td><td>16</td></tr>
-                    <tr><td>B & R - II</td><td>0</td><td>0</td><td>23</td><td>0</td><td>23</td></tr>
-                    <tr><td>B & R - III</td><td>0</td><td>0</td><td>21</td><td>0</td><td>21</td></tr>
-                    <tr><td>-</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
-                    <tr><th>Total</th><th>0</th><th>0</th><th>158</th><th>3</th><th>161</th></tr>
+                  <tbody id="priorityTableBody">
+                    <!-- Data will be inserted here by JavaScript -->
                   </tbody>
                 </table>
               </div>
+            </div>
+          </div>
+          
+          <div class="table-wrapper" style="width: 100%; margin-top: 30px;">
+            <div class="table-box">
+              <h3>Deferred Complaints</h3>
+              <div class="table-container">
+                <table id="deferredTable" class="data-table" cellspacing="0" cellpadding="0">
+                  <thead>
+                    <tr>
+                      <th>Category</th>
+                      <th>Date</th>
+                      <th>Complaint No.</th>
+                      <th>Address</th>
+                      <th>Nature</th>
+                      <th>Type</th>
+                      <th>Hours</th>
+                    </tr>
+                  </thead>
+                  <tbody id="deferredTableBody">
+                    <!-- Rows injected dynamically -->
+                  </tbody>
+                </table>
+              </div>
+              <!-- Pagination removed from here -->
             </div>
           </div>
         </div>
@@ -617,197 +763,308 @@
     </div>
   </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // Date Picker Functionality
-      const datePicker = document.getElementById('datePicker');
-      const reportDate = document.getElementById('reportDate');
 
-      const formatDate = (isoDate) => {
-        const d = new Date(isoDate);
-        return d.toLocaleDateString('en-GB', {
-          day: '2-digit', month: 'short', year: 'numeric'
-        }).replace(/ /g, '-');
-      };
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // ========================
+  // DOM ELEMENTS
+  // ========================
+  const datePicker = document.getElementById('datePicker');
+  const reportDate = document.getElementById('reportDate');
+  const loadingSpinner = document.getElementById('loadingSpinner');
+  const statusTableBody = document.getElementById('statusTableBody');
+  const priorityTableBody = document.getElementById('priorityTableBody');
+  const deferredTableBody = document.getElementById('deferredTableBody');
 
-      datePicker.addEventListener('change', () => {
-        reportDate.textContent = `(${formatDate(datePicker.value)})`;
-      });
+  // Chart instances
+  let barChart, pieChart, prodChart;
+  initCharts();
 
-      // Chart Initialization
-      Chart.register(ChartDataLabels);
+  // ========================
+  // HELPER FUNCTIONS
+  // ========================
+  const formatDate = (isoDate) => {
+    const d = new Date(isoDate);
+    return d.toLocaleDateString('en-GB', {
+      day: '2-digit', month: 'short', year: 'numeric'
+    }).replace(/ /g, '-');
+  };
 
-      const chartOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            position: 'top',
-            labels: {
-              boxWidth: 12,
-              padding: 20,
-              font: {
-                size: 12
-              }
-            }
-          },
-          tooltip: {
-            enabled: true,
-            mode: 'index',
-            intersect: false
-          }
-        }
-      };
+  function showLoading() {
+    loadingSpinner.style.display = 'block';
+    document.getElementById('chartsContainer').style.opacity = '0.5';
+    document.getElementById('tablesContainer').style.opacity = '0.5';
+  }
 
-      // 1. Bar Chart - Category Complaints Status
-      new Chart(document.getElementById("barChart"), {
-        type: "bar",
-        data: {
-          labels: ["E&M-I", "E&M-II", "B&R-I", "B&R-II", "B&R-III", "-"],
-          datasets: [
-            { 
-              label: "Pending", 
-              data: [0, 0, 0, 0, 0, 0], 
-              backgroundColor: "#e74c3c",
-              barPercentage: 0.6
-            },
-            { 
-              label: "Inprogress", 
-              data: [28, 12, 8, 11, 12, 0], 
-              backgroundColor: "#2ecc71",
-              barPercentage: 0.6
-            },
-            { 
-              label: "Completed", 
-              data: [48, 13, 8, 12, 9, 0], 
-              backgroundColor: "#3498db",
-              barPercentage: 0.6
-            }
-          ]
-        },
-        options: {
-          ...chartOptions,
-          scales: {
-            y: { 
-              beginAtZero: true, 
-              title: { 
-                display: true, 
-                text: "No. of Items",
-                font: {
-                  weight: 'bold'
-                }
-              },
-              grid: {
-                drawBorder: false
-              }
-            },
-            x: { 
-              title: { 
-                display: true, 
-                text: "Category",
-                font: {
-                  weight: 'bold'
-                }
-              },
-              grid: {
-                display: false
-              }
-            }
-          }
-        }
-      });
+  function hideLoading() {
+    loadingSpinner.style.display = 'none';
+    document.getElementById('chartsContainer').style.opacity = '1';
+    document.getElementById('tablesContainer').style.opacity = '1';
+  }
 
-      // 2. Pie Chart - Category Wise Complaints Ratio
-      new Chart(document.getElementById("pieChart"), {
-        type: "pie",
-        data: {
-          labels: ["E&M-I", "E&M-II", "B&R-I", "B&R-II", "B&R-III", "-"],
-          datasets: [{
-            data: [47.2, 8.1, 5.0, 7.5, 5.6, 0],
-            backgroundColor: ["#3498db", "#2ecc71", "#f39c12", "#e74c3c", "#9b59b6", "#bdc3c7"],
-            borderWidth: 1,
-            borderColor: '#fff'
-          }]
-        },
-        options: {
-          ...chartOptions,
-          plugins: {
-            ...chartOptions.plugins,
-            legend: {
-              position: 'bottom',
-              align: 'center',
-              labels: {
-                usePointStyle: true,
-                pointStyle: 'rect',
-                padding: 20,
-                font: {
-                  size: 12
-                }
-              }
-            },
-            tooltip: {
-              callbacks: {
-                label: function(context) {
-                  return `${context.label}: ${context.raw}%`;
-                }
-              }
-            },
-            datalabels: {
-              formatter: (value) => {
-                return value > 0 ? `${value}%` : '';
-              },
-              color: '#fff',
-              font: {
-                weight: 'bold'
-              },
-              anchor: 'end',
-              align: 'start',
-              offset: 10,
-              clip: false
-            }
-          },
-          cutout: '0%'
-        }
-      });
+  function showNotification(message, type = 'success') {
+    const notification = document.getElementById('notification');
+    const text = document.getElementById('notification-text');
+    const icon = document.getElementById('notification-icon');
 
-      // 3. Bar Chart - Productivity wise Complaints Ratio
-      new Chart(document.getElementById("prodChart"), {
-        type: "bar",
-        data: {
-          labels: ["Immediate", "Urgent", "Routine", "Deferred"],
-          datasets: [
-            { 
-              label: "Inprogress", 
-              data: [0, 0, 158, 3], 
-              backgroundColor: "#2ecc71",
-              barPercentage: 0.5
-            },
-            { 
-              label: "Completed", 
-              data: [0, 0, 0, 0], 
-              backgroundColor: "#3498db",
-              barPercentage: 0.5
-            }
-          ]
-        },
-        options: {
-          ...chartOptions,
-          scales: {
-            y: { 
-              beginAtZero: true,
-              grid: {
-                drawBorder: false
-              }
-            },
-            x: {
-              grid: {
-                display: false
-              }
-            }
-          }
-        }
-      });
+    text.textContent = message;
+    icon.className =
+      type === 'success' ? 'fas fa-check-circle' :
+      type === 'error'   ? 'fas fa-times-circle' :
+      type === 'warning' ? 'fas fa-exclamation-circle' :
+      'fas fa-info-circle';
+
+    notification.className = `notification ${type}`;
+    notification.classList.add('show');
+
+    setTimeout(() => notification.classList.remove('show'), 3000);
+  }
+
+  function formatCellContent(value) {
+    return value !== null && value !== undefined ? value : 'N/A';
+  }
+
+  // ========================
+  // TABLE UPDATE FUNCTIONS
+  // ========================
+  function updateStatusTable(data) {
+    let html = '';
+    data.forEach(row => {
+      // Handle different possible property names for in-progress status
+      const inProgressValue = row.inProgress || row['In Progress'] || row['in-progress'] || 0;
+      
+      html += `
+        <tr>
+          <td>${formatCellContent(row.Category)}</td>
+          <td>${formatCellContent(row.unassigned)}</td>
+          <td>${formatCellContent(inProgressValue)}</td>
+          <td>${formatCellContent(row.completed)}</td>
+          <td>${formatCellContent(row.total)}</td>
+        </tr>
+      `;
     });
-  </script>
+    statusTableBody.innerHTML = html;
+  }
+
+  function updatePriorityTable(data) {
+    let html = '';
+    data.forEach(row => {
+      html += `
+        <tr>
+          <td>${formatCellContent(row.category || row.Category)}</td>
+          <td>${formatCellContent(row.immediate)}</td>
+          <td>${formatCellContent(row.urgent)}</td>
+          <td>${formatCellContent(row.routine)}</td>
+          <td>${formatCellContent(row.deffered || row.deferred)}</td>
+          <td>${formatCellContent(row.total)}</td>
+        </tr>
+      `;
+    });
+    priorityTableBody.innerHTML = html;
+  }
+
+  function updateDeferredTable(data) {
+    let html = '';
+    if (!data || data.length === 0) {
+      html = `<tr><td colspan="7" style="text-align:center;">No deferred complaints found</td></tr>`;
+    } else {
+      data.forEach(row => {
+        html += `
+          <tr>
+            <td>${formatCellContent(row.Category || row.category)}</td>
+            <td>${formatCellContent(row.Date)}</td>
+            <td>${formatCellContent(row.ComplaintNo)}</td>
+            <td>${formatCellContent(row.Address)}</td>
+            <td>${formatCellContent(row.Nature)}</td>
+            <td>${formatCellContent(row.Type)}</td>
+            <td>${formatCellContent(row.Hours)}</td>
+          </tr>
+        `;
+      });
+    }
+    deferredTableBody.innerHTML = html;
+  }
+
+  // ========================
+  // CHARTS
+  // ========================
+  function initCharts() {
+    Chart.register(ChartDataLabels);
+
+    const chartOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'top', labels: { boxWidth: 12, padding: 20, font: { size: 12 } } },
+        tooltip: { enabled: true, mode: 'index', intersect: false },
+        datalabels: { color: '#fff', font: { weight: 'bold' } }
+      }
+    };
+
+    barChart = new Chart(document.getElementById('barChart').getContext('2d'), {
+      type: 'bar',
+      data: { labels: [], datasets: [] },
+      options: {
+        ...chartOptions,
+        scales: {
+          y: { beginAtZero: true, title: { display: true, text: "No. of Items", font: { weight: 'bold' } } },
+          x: { title: { display: true, text: "Category", font: { weight: 'bold' } } }
+        }
+      }
+    });
+
+    pieChart = new Chart(document.getElementById('pieChart').getContext('2d'), {
+      type: 'pie',
+      data: { labels: [], datasets: [] },
+      options: {
+        ...chartOptions,
+        plugins: {
+          ...chartOptions.plugins,
+          legend: { position: 'bottom', align: 'center', labels: { usePointStyle: true, padding: 20 } },
+          datalabels: {
+            formatter: (value, context) => {
+              const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+              const percentage = Math.round((value / total) * 100);
+              return percentage > 0 ? `${percentage}%` : '';
+            }
+          }
+        }
+      }
+    });
+
+    prodChart = new Chart(document.getElementById('prodChart').getContext('2d'), {
+      type: 'bar',
+      data: { labels: [], datasets: [] },
+      options: { 
+        ...chartOptions,
+        scales: { 
+          x: { stacked: false },
+          y: { stacked: true, beginAtZero: true }
+        }
+      }
+    });
+  }
+
+  // ========================
+  // CHART EXPORT FUNCTIONALITY
+  // ========================
+  window.exportChart = function(type, chartId, fileName) {
+    const chart = Chart.getChart(chartId);
+    if (!chart) return;
+
+    if (type === "png" || type === "jpg") {
+      const link = document.createElement("a");
+      link.href = chart.toBase64Image(`image/${type}`, 1);
+      link.download = `${fileName}.${type}`;
+      link.click();
+    } else if (type === "svg") {
+      // Convert canvas to SVG using canvg
+      const canvas = document.getElementById(chartId);
+      const svgXML = canvasToSVG(canvas);
+      const blob = new Blob([svgXML], { type: "image/svg+xml" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `${fileName}.svg`;
+      link.click();
+    }
+    
+    // Reset the select menu
+    document.getElementById(`${chartId}Menu`).value = "";
+  };
+
+  function canvasToSVG(canvas) {
+    const xmlns = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(xmlns, "svg");
+    svg.setAttribute("width", canvas.width);
+    svg.setAttribute("height", canvas.height);
+    
+    const image = document.createElementNS(xmlns, "image");
+    image.setAttribute("width", canvas.width);
+    image.setAttribute("height", canvas.height);
+    image.setAttribute("href", canvas.toDataURL("image/png"));
+    
+    svg.appendChild(image);
+    return new XMLSerializer().serializeToString(svg);
+  }
+
+  // ========================
+  // FETCH DATA - USING REAL API
+  // ========================
+  async function loadAllData(date) {
+    try {
+      showLoading();
+      
+      // Call the actual API endpoint
+      const response = await fetch(`http://localhost:3000/api/complaints/daily-stats?date=${date}`);
+      const data = await response.json();
+
+      if (data.success) {
+        // Update charts with real data
+        updateBarChart(data.statusByCategory);
+        updatePieChart(data.categoryRatio);
+        updateProdChart(data.productivityData);
+        
+        // Update tables with real data
+        updateStatusTable(data.tables.statusTable);
+        updatePriorityTable(data.tables.priorityTable);
+        updateDeferredTable(data.tables.deferredTable);
+
+        showNotification('Data loaded successfully', 'success');
+      } else {
+        showNotification('Error loading data: ' + data.error, 'error');
+      }
+    } catch (error) {
+      console.error('Data load error:', error);
+      showNotification('Error loading data from server', 'error');
+    } finally {
+      hideLoading();
+    }
+  }
+
+  function updateBarChart(data) { 
+    if (barChart) {
+      barChart.data.labels = data.labels; 
+      barChart.data.datasets = data.datasets; 
+      barChart.update(); 
+    }
+  }
+  
+  function updatePieChart(data) { 
+    if (pieChart) {
+      pieChart.data.labels = data.labels; 
+      pieChart.data.datasets = [{ 
+        data: data.data, 
+        backgroundColor: ["#3498db","#2ecc71","#f39c12","#e74c3c","#9b59b6","#1abc9c","#34495e","#7f8c8d","#d35400","#c0392b"],
+        borderColor: '#fff',
+        borderWidth: 2
+      }]; 
+      pieChart.update(); 
+    }
+  }
+  
+  function updateProdChart(data) { 
+    if (prodChart) {
+      prodChart.data.labels = data.labels; 
+      prodChart.data.datasets = data.datasets; 
+      prodChart.update(); 
+    }
+  }
+
+  // ========================
+  // INITIALIZATION
+  // ========================
+  const today = new Date().toISOString().split('T')[0];
+  datePicker.value = today;
+  reportDate.textContent = `(${formatDate(today)})`;
+  loadAllData(today);
+
+  datePicker.addEventListener('change', () => {
+    reportDate.textContent = `(${formatDate(datePicker.value)})`;
+    loadAllData(datePicker.value);
+  });
+});
+</script>
+
+
 </body>
 </html>
