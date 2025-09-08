@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SCMS - Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     * {
@@ -256,13 +257,13 @@
       grid-template-columns: 2fr 1fr 1.5fr;
       gap: 25px;
       margin-bottom: 30px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
     }
 
     .panel-section {
       background: var(--card-bg);
       border-radius: 12px;
       padding: 20px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
       overflow: hidden;
     }
 
@@ -466,6 +467,7 @@
       display: grid;
       grid-template-columns: 1fr 2fr;
       gap: 25px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
     }
 
     .filters-container {
@@ -553,7 +555,6 @@
     .pie-chart {
       width: 100%;
       height: 100%;
-      border-radius: 50%;
       position: relative;
       overflow: hidden;
     }
@@ -1101,7 +1102,7 @@
               <div class="panel-title">Category Wise Complaints Ratio</div>
             </div>
             <div class="pie-chart-container" id="category-pie-container">
-              <div class="pie-chart" id="category-pie"></div>
+              <canvas class="pie-chart" id="category-pie"></canvas>
             </div>
             <div class="category-buttons" id="category-buttons"></div>
           </div>
@@ -1111,12 +1112,13 @@
               <div class="panel-title">Nature Wise Complaints Ratio</div>
             </div>
             <div class="pie-chart-container" id="nature-pie-container">
-              <div class="pie-chart" id="nature-pie"></div>
+              <canvas class="pie-chart" id="nature-pie"></canvas>
             </div>
             <div class="category-buttons" id="nature-buttons"></div>
           </div>
         </div>
       </div>
+
     </div>
 
     <!-- Trends Panel -->
@@ -1436,122 +1438,51 @@
     }
 
     // Render category pie chart
-    function renderCategoryPieChart() {
-      const pieContainer = document.getElementById('category-pie');
-      const buttonsContainer = document.getElementById('category-buttons');
-      
-      pieContainer.innerHTML = '';
-      buttonsContainer.innerHTML = '';
-      
-      const total = categoryData.reduce((sum, item) => sum + item.value, 0);
-      let cumulativePercentage = 0;
-      
-      categoryData.forEach((item, i) => {
-        const percentage = (item.value / total) * 100;
-        const rotation = (cumulativePercentage / 100) * 360;
-        
-        const segment = document.createElement('div');
-        segment.className = 'pie-segment';
-        segment.style.backgroundColor = item.color;
-        segment.style.transform = `rotate(${rotation}deg)`;
-        segment.style.clipPath = `polygon(50% 50%, 50% 0%, ${50 + 50 * Math.cos((percentage * Math.PI) / 180)}% ${50 + 50 * Math.sin((percentage * Math.PI) / 180)}%)`;
-        segment.dataset.name = item.name;
-        segment.dataset.value = item.value;
-        segment.dataset.percentage = percentage.toFixed(1);
-        
-        // Add tooltip
-        segment.addEventListener('mousemove', (e) => {
-          const tooltip = document.getElementById('chart-tooltip');
-          tooltip.innerHTML = `${item.name}: ${item.value} (${percentage.toFixed(1)}%)`;
-          tooltip.style.opacity = '1';
-          tooltip.style.left = `${e.pageX + 10}px`;
-          tooltip.style.top = `${e.pageY - 30}px`;
-        });
-        
-        segment.addEventListener('mouseout', () => {
-          document.getElementById('chart-tooltip').style.opacity = '0';
-        });
-        
-        segment.addEventListener('click', () => {
-          highlightSegment(segment, item.color);
-        });
-        
-        pieContainer.appendChild(segment);
-        
-        // Add button for this category
-        const button = document.createElement('button');
-        button.className = 'category-btn';
-        button.innerHTML = `<i class="fas fa-circle" style="color:${item.color}"></i> ${item.name}`;
-        button.style.color = item.color;
-        button.style.backgroundColor = `${item.color}20`;
-        button.addEventListener('click', () => {
-          highlightSegment(segment, item.color);
-        });
-        
-        buttonsContainer.appendChild(button);
-        
-        cumulativePercentage += percentage;
-      });
+function renderCategoryPieChart() {
+  const ctx = document.getElementById('category-pie').getContext('2d');
+  new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: categoryData.map(item => item.name),
+      datasets: [{
+        data: categoryData.map(item => item.value),
+        backgroundColor: categoryData.map(item => item.color),
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: 'bottom'
+        }
+      }
     }
+  });
+}
 
     // Render nature pie chart
-    function renderNaturePieChart() {
-      const pieContainer = document.getElementById('nature-pie');
-      const buttonsContainer = document.getElementById('nature-buttons');
-      
-      pieContainer.innerHTML = '';
-      buttonsContainer.innerHTML = '';
-      
-      const total = natureData.reduce((sum, item) => sum + item.value, 0);
-      let cumulativePercentage = 0;
-      
-      natureData.forEach((item, i) => {
-        const percentage = (item.value / total) * 100;
-        const rotation = (cumulativePercentage / 100) * 360;
-        
-        const segment = document.createElement('div');
-        segment.className = 'pie-segment';
-        segment.style.backgroundColor = item.color;
-        segment.style.transform = `rotate(${rotation}deg)`;
-        segment.style.clipPath = `polygon(50% 50%, 50% 0%, ${50 + 50 * Math.cos((percentage * Math.PI) / 180)}% ${50 + 50 * Math.sin((percentage * Math.PI) / 180)}%)`;
-        segment.dataset.name = item.name;
-        segment.dataset.value = item.value;
-        segment.dataset.percentage = percentage.toFixed(1);
-        
-        // Add tooltip
-        segment.addEventListener('mousemove', (e) => {
-          const tooltip = document.getElementById('chart-tooltip');
-          tooltip.innerHTML = `${item.name}: ${item.value} (${percentage.toFixed(1)}%)`;
-          tooltip.style.opacity = '1';
-          tooltip.style.left = `${e.pageX + 10}px`;
-          tooltip.style.top = `${e.pageY - 30}px`;
-        });
-        
-        segment.addEventListener('mouseout', () => {
-          document.getElementById('chart-tooltip').style.opacity = '0';
-        });
-        
-        segment.addEventListener('click', () => {
-          highlightSegment(segment, item.color);
-        });
-        
-        pieContainer.appendChild(segment);
-        
-        // Add button for this category
-        const button = document.createElement('button');
-        button.className = 'category-btn';
-        button.innerHTML = `<i class="fas fa-circle" style="color:${item.color}"></i> ${item.name}`;
-        button.style.color = item.color;
-        button.style.backgroundColor = `${item.color}20`;
-        button.addEventListener('click', () => {
-          highlightSegment(segment, item.color);
-        });
-        
-        buttonsContainer.appendChild(button);
-        
-        cumulativePercentage += percentage;
-      });
+
+function renderNaturePieChart() {
+  const ctx = document.getElementById('nature-pie').getContext('2d');
+  new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: natureData.map(item => item.name),
+      datasets: [{
+        data: natureData.map(item => item.value),
+        backgroundColor: natureData.map(item => item.color),
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: 'bottom'
+        }
+      }
     }
+  });
+}
 
     // Highlight a segment in the pie chart
     function highlightSegment(segment, color) {
