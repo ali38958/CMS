@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SCMS - Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     * {
@@ -263,8 +264,7 @@
     .panel-section {
       background: var(--card-bg);
       border-radius: 12px;
-      padding: 20px;
-      overflow: hidden;
+      padding: 10px;
     }
 
     .panel-header {
@@ -363,7 +363,7 @@
     .stats-list {
       display: flex;
       flex-direction: column;
-      gap: 15px;
+      gap: 50px;
     }
 
     .stat-item {
@@ -375,7 +375,7 @@
     .stat-item-icon {
       width: 30px;
       height: 30px;
-      background-color: rgba(136, 28, 28, 0.1);
+      background-color: ;
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -396,11 +396,16 @@
       color: var(--dark);
       margin-bottom: 2px;
     }
+    .stat-item-icon img {
+      width: 30px;   /* adjust as needed */
+      height: 30px;  /* adjust as needed */
+      object-fit: contain;
+    }
 
     .stat-item-value {
       font-size: 16px;
       font-weight: 600;
-      color: var(--primary);
+      color: black;
     }
 
     .info-tooltip {
@@ -530,10 +535,13 @@
       position: relative;
       transition: opacity 0.3s;
       cursor: pointer;
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+      
     }
 
     .bar:hover {
       opacity: 0.8;
+      transform: translateY(-2px); /* little lift on hover */
     }
 
     .bar-label {
@@ -547,11 +555,14 @@
 
     .pie-chart-container {
       position: relative;
-      width: 200px;
-      height: 200px;
+      width: 100%;
+      height: 100%;
       margin: 0 auto;
     }
-
+    #nature-pie-container {
+      width: 450px;   /* increase this */
+      height: 450px;  /* increase this */
+    }
     .pie-chart {
       width: 100%;
       height: 100%;
@@ -614,13 +625,28 @@
       gap: 5px;
       transition: all 0.3s;
     }
-
+    
     .filter-btn.active {
-      background: var(--primary);
       color: white;
-      border-color: var(--primary);
     }
-
+    .pending{
+      background:   #e74c3c;
+      border-color: #e74c3c;
+      color: white;
+     
+    }
+    .in-progress{
+      background:   #f39c12;
+      border-color: #f39c12;
+      color: white;
+      
+    }
+    .completed{
+      background:   #2ecc71;
+      border-color: #2ecc71;
+      color: white;
+    }
+    
     /* Axis labels */
     .chart-with-axes {
       display: flex;
@@ -977,13 +1003,13 @@
         </div>
         
         <div class="trend-filter-buttons">
-          <button class="filter-btn active" data-category="pending">
+          <button class="filter-btn active pending" data-category="pending">
             <i class="fas fa-exclamation-circle"></i> Pending
           </button>
-          <button class="filter-btn active" data-category="inprogress">
+          <button class="filter-btn active in-progress" data-category="inprogress">
             <i class="fas fa-spinner"></i> InProgress
           </button>
-          <button class="filter-btn active" data-category="completed">
+          <button class="filter-btn active completed" data-category="completed">
             <i class="fas fa-check-circle"></i> Completed
           </button>
         </div>
@@ -1024,68 +1050,69 @@
         
         <div class="stats-list">
           <div class="stat-item">
-            <div class="stat-item-icon">
-              <i class="fas fa-building"></i>
-            </div>
-            <div class="stat-item-content">
-              <div class="stat-item-title">Colonies</div>
-              <div class="stat-item-value">12</div>
-            </div>
-            <div class="info-tooltip" data-type="colonies">
-              <i class="fas fa-question-circle"></i>
-              <div class="tooltip-content">
-                Total Colonies: Click to see the list
-              </div>
-            </div>
-          </div>
-          
-          <div class="stat-item">
-            <div class="stat-item-icon">
-              <i class="fas fa-users"></i>
-            </div>
-            <div class="stat-item-content">
-              <div class="stat-item-title">Customers</div>
-              <div class="stat-item-value">1,842</div>
-            </div>
-            <div class="info-tooltip" data-type="customers">
-              <i class="fas fa-question-circle"></i>
-              <div class="tooltip-content">
-                Total Customers: Click to see the list
-              </div>
-            </div>
-          </div>
-          
-          <div class="stat-item">
-            <div class="stat-item-icon">
-              <i class="fas fa-home"></i>
-            </div>
-            <div class="stat-item-content">
-              <div class="stat-item-title">Apartments</div>
-              <div class="stat-item-value">2,576</div>
-            </div>
-            <div class="info-tooltip" data-type="apartments">
-              <i class="fas fa-question-circle"></i>
-              <div class="tooltip-content">
-                Total Apartments: Click to see the list
-              </div>
-            </div>
-          </div>
-          
-          <div class="stat-item">
-            <div class="stat-item-icon">
-              <i class="fas fa-tools"></i>
-            </div>
-            <div class="stat-item-content">
-              <div class="stat-item-title">Staff/Skillman</div>
-              <div class="stat-item-value">48</div>
-            </div>
-            <div class="info-tooltip" data-type="staff">
-              <i class="fas fa-question-circle"></i>
-              <div class="tooltip-content">
-                Total Staff/Skillman: Click to see the list
-              </div>
-            </div>
-          </div>
+  <div class="stat-item-icon">
+    <img src="../imgi_4_area.svg" alt="Colonies">
+  </div>
+  <div class="stat-item-content">
+    <div class="stat-item-title">Colonies</div>
+    <div class="stat-item-value">12</div>
+  </div>
+  <div class="info-tooltip" data-type="colonies">
+    <i class="fas fa-question-circle"></i>
+    <div class="tooltip-content">
+      Total Colonies: Click to see the list
+    </div>
+  </div>
+</div>
+
+<div class="stat-item">
+  <div class="stat-item-icon">
+    <img src="../imgi_5_customer.svg" alt="Customers">
+  </div>
+  <div class="stat-item-content">
+    <div class="stat-item-title">Customers</div>
+    <div class="stat-item-value">1,842</div>
+  </div>
+  <div class="info-tooltip" data-type="customers">
+    <i class="fas fa-question-circle"></i>
+    <div class="tooltip-content">
+      Total Customers: Click to see the list
+    </div>
+  </div>
+</div>
+
+<div class="stat-item">
+  <div class="stat-item-icon">
+    <img src="/imgi_6_building.svg" alt="Apartments">
+  </div>
+  <div class="stat-item-content">
+    <div class="stat-item-title">Apartments</div>
+    <div class="stat-item-value">2,576</div>
+  </div>
+  <div class="info-tooltip" data-type="apartments">
+    <i class="fas fa-question-circle"></i>
+    <div class="tooltip-content">
+      Total Apartments: Click to see the list
+    </div>
+  </div>
+</div>
+
+<div class="stat-item">
+  <div class="stat-item-icon">
+    <img src="../imgi_7_staff.svg" alt="Staff/Skillman">
+  </div>
+  <div class="stat-item-content">
+    <div class="stat-item-title">Staff/Skillman</div>
+    <div class="stat-item-value">48</div>
+  </div>
+  <div class="info-tooltip" data-type="staff">
+    <i class="fas fa-question-circle"></i>
+    <div class="tooltip-content">
+      Total Staff/Skillman: Click to see the list
+    </div>
+  </div>
+</div>
+
         </div>
       </div>
       
@@ -1209,13 +1236,13 @@
         </div>
         
         <div class="trend-filter-buttons">
-          <button class="filter-btn active" data-trend="completed">
+          <button class="filter-btn active completed" data-trend="completed" id="completed">
             <i class="fas fa-check-circle"></i> Complete
           </button>
-          <button class="filter-btn active" data-trend="inprogress">
+          <button class="filter-btn active in-progress" data-trend="inprogress" id="in-progress">
             <i class="fas fa-spinner"></i> InProgress
           </button>
-          <button class="filter-btn active" data-trend="pending">
+          <button class="filter-btn active pending" data-trend="pending" id="pending">
             <i class="fas fa-exclamation-circle"></i> Pending
           </button>
         </div>
@@ -1369,7 +1396,8 @@
             monthlyData.pending[i], 
             maxValue, 
             chartHeight, 
-            '#4e73df', 
+            '#e74c3c',  
+  
             `Pending: ${monthlyData.pending[i]}`
           );
           barGroup.appendChild(pendingBar);
@@ -1380,7 +1408,7 @@
             monthlyData.inprogress[i], 
             maxValue, 
             chartHeight, 
-            '#1cc88a', 
+            '#f39c12',
             `InProgress: ${monthlyData.inprogress[i]}`
           );
           barGroup.appendChild(inprogressBar);
@@ -1391,7 +1419,7 @@
             monthlyData.completed[i], 
             maxValue, 
             chartHeight, 
-            '#36b9cc', 
+            '#2ecc71', 
             `Completed: ${monthlyData.completed[i]}`
           );
           barGroup.appendChild(completedBar);
@@ -1454,11 +1482,29 @@ function renderCategoryPieChart() {
       plugins: {
         legend: {
           position: 'bottom'
+        },
+        datalabels: {
+          color: '#fff',
+          font: {
+            weight: 'bold',
+            size: 12
+          },
+          anchor: 'end',   // moves label to the edge of the slice
+          align: 'end',    // keeps it outside towards the arc
+          offset: -45,       // adds a little spacing from the arc
+          formatter: (value, context) => {
+            const dataset = context.chart.data.datasets[0].data;
+            const total = dataset.reduce((a, b) => a + b, 0);
+            const percentage = ((value / total) * 100).toFixed(1) + "%";
+            return percentage;
+          }
         }
       }
-    }
+    },
+    plugins: [ChartDataLabels]
   });
 }
+
 
     // Render nature pie chart
 
@@ -1478,9 +1524,26 @@ function renderNaturePieChart() {
       plugins: {
         legend: {
           position: 'bottom'
+        },
+        datalabels: {
+          color: '#fff',
+          font: {
+            weight: 'bold',
+            size: 12
+          },
+          anchor: 'end',   // moves label to the edge of the slice
+          align: 'end',    // keeps it outside towards the arc
+          offset: -35,       // adds a little spacing from the arc
+          formatter: (value, context) => {
+            const dataset = context.chart.data.datasets[0].data;
+            const total = dataset.reduce((a, b) => a + b, 0);
+            const percentage = ((value / total) * 100).toFixed(1) + "%";
+            return percentage;
+          }
         }
       }
-    }
+    },
+    plugins: [ChartDataLabels]
   });
 }
 
@@ -1538,7 +1601,7 @@ function renderNaturePieChart() {
             trendsData.pending[i], 
             maxValue, 
             chartHeight, 
-            '#e74a3b', 
+            '#e74c3c', 
             `Pending: ${trendsData.pending[i]}`
           );
           barGroup.appendChild(pendingBar);
@@ -1549,7 +1612,7 @@ function renderNaturePieChart() {
             trendsData.inprogress[i], 
             maxValue, 
             chartHeight, 
-            '#f6c23e', 
+            '#f39c12', 
             `InProgress: ${trendsData.inprogress[i]}`
           );
           barGroup.appendChild(inprogressBar);
@@ -1560,7 +1623,7 @@ function renderNaturePieChart() {
             trendsData.completed[i], 
             maxValue, 
             chartHeight, 
-            '#1cc88a', 
+            '#2ecc71', 
             `Completed: ${trendsData.completed[i]}`
           );
           barGroup.appendChild(completedBar);
