@@ -17,19 +17,6 @@ require("dotenv").config();
 
 
 
-
-/*/ Database configuration
-const dbConfig = {
-  user: 'cms_user2',
-  password: 'StrongPassword456',
-  server: 'localhost',
-  database: 'CMS',
-  options: {
-    encrypt: false,
-    trustServerCertificate: true
-  }
-};
-*/
 // Database configuration
 const dbConfig = {
   user: process.env.DB_USER,
@@ -69,6 +56,84 @@ async function testConnection() {
 
 
 
+async function checkAccess(token, page) {
+    let connection;
+    
+    try {
+        // Connect to the database
+        connection = await sql.connect(dbConfig);
+        
+        // Step 1: Compare raw token with tokens in Users table
+        const userQuery = `
+            SELECT id, is_active 
+            FROM Users 
+            WHERE token = @token
+        `;
+        
+        const userRequest = connection.request();
+        userRequest.input('token', sql.VarChar(255), token);
+        const userResult = await userRequest.query(userQuery);
+        
+        // If no user found with this token
+        if (userResult.recordset.length === 0) {
+            return {
+                status: 'error',
+                message: 'Unauthorized access: Invalid token'
+            };
+        }
+        
+        const user = userResult.recordset[0];
+        
+        // Step 2: Check if user is active
+        if (user.is_active !== 'Active') {
+            return {
+                status: 'error',
+                message: 'Unauthorized access: User account is inactive'
+            };
+        }
+        
+        // Step 3: Check if user has access to the requested page
+        const accessQuery = `
+            SELECT ua.id 
+            FROM UserAccess ua
+            WHERE ua.user_id = @userId AND ua.page = @page
+        `;
+        
+        const accessRequest = connection.request();
+        accessRequest.input('userId', sql.VarChar(20), user.id);
+        accessRequest.input('page', sql.VarChar(25), page);
+        const accessResult = await accessRequest.query(accessQuery);
+        
+        // If no access found for this user and page
+        if (accessResult.recordset.length === 0) {
+            return {
+                status: 'error',
+                message: 'Unauthorized access: No permission for this page'
+            };
+        }
+        
+        // All checks passed - user is authorized
+        return {
+            status: 'success',
+            message: 'Access granted',
+            userId: user.id
+        };
+        
+    } catch (error) {
+        console.error('Database error:', error);
+        return {
+            status: 'error',
+            message: 'Internal server error'
+        };
+    } finally {
+        // Close the connection
+        if (connection) {
+            //await connection.close();
+        }
+    }
+}
+
+
 
 
 
@@ -99,6 +164,32 @@ async function executeQuery(query, params = {}) {
 
 // Get all pages
 app.get('/api/pages', async (req, res) => {
+
+  
+  
+  // Verify Authorization header exists
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized - No token provided' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  try {
+    let pool = await sql.connect(dbConfig);
+
+    // Step 1: Verify token exists in Users table
+    const tokenCheck = await pool.request()
+      .input('token', sql.VarChar(255), token)
+      .query('SELECT id FROM Users WHERE token = @token');
+
+    if (tokenCheck.recordset.length === 0) {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+    }
+  } catch(error) {
+    console.err('Error: '+error);
+  }
+
+
   try {
     const result = await executeQuery('SELECT page as id, page as name FROM Pages');
     res.json(result.recordset);
@@ -151,6 +242,32 @@ app.get('/api/users', async (req, res) => {
 
 // Also update the /api/users/:id endpoint:
 app.get('/api/users/:id', async (req, res) => {
+
+  
+  
+  // Verify Authorization header exists
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized - No token provided' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  try {
+    let pool = await sql.connect(dbConfig);
+
+    // Step 1: Verify token exists in Users table
+    const tokenCheck = await pool.request()
+      .input('token', sql.VarChar(255), token)
+      .query('SELECT id FROM Users WHERE token = @token');
+
+    if (tokenCheck.recordset.length === 0) {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+    }
+  } catch(error) {
+    console.err('Error: '+error);
+  }
+
+
   try {
     const { id } = req.params;
     
@@ -191,6 +308,32 @@ app.get('/api/users/:id', async (req, res) => {
 
 // Create a new user
 app.post('/api/users', async (req, res) => {
+
+  
+  
+  // Verify Authorization header exists
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized - No token provided' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  try {
+    let pool = await sql.connect(dbConfig);
+
+    // Step 1: Verify token exists in Users table
+    const tokenCheck = await pool.request()
+      .input('token', sql.VarChar(255), token)
+      .query('SELECT id FROM Users WHERE token = @token');
+
+    if (tokenCheck.recordset.length === 0) {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+    }
+  } catch(error) {
+    console.err('Error: '+error);
+  }
+
+
   try {
     const { id, username, password, role, status, accessPermissions } = req.body;
     
@@ -252,6 +395,34 @@ app.post('/api/users', async (req, res) => {
 
 // Update a user
 app.put('/api/users/:id', async (req, res) => {
+
+
+  
+  
+  // Verify Authorization header exists
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized - No token provided' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  try {
+    let pool = await sql.connect(dbConfig);
+
+    // Step 1: Verify token exists in Users table
+    const tokenCheck = await pool.request()
+      .input('token', sql.VarChar(255), token)
+      .query('SELECT id FROM Users WHERE token = @token');
+
+    if (tokenCheck.recordset.length === 0) {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+    }
+  } catch(error) {
+    console.err('Error: '+error);
+  }
+
+
+  
   try {
     const { id } = req.params;
     const { username, password, role, status, accessPermissions } = req.body;
@@ -321,6 +492,31 @@ app.put('/api/users/:id', async (req, res) => {
 
 // Delete a user
 app.delete('/api/users/:id', async (req, res) => {
+  
+  
+  // Verify Authorization header exists
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized - No token provided' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  try {
+    let pool = await sql.connect(dbConfig);
+
+    // Step 1: Verify token exists in Users table
+    const tokenCheck = await pool.request()
+      .input('token', sql.VarChar(255), token)
+      .query('SELECT id FROM Users WHERE token = @token');
+
+    if (tokenCheck.recordset.length === 0) {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+    }
+  } catch(error) {
+    console.err('Error: '+error);
+  }
+
+
   try {
     const { id } = req.params;
     
@@ -368,8 +564,32 @@ app.delete('/api/users/:id', async (req, res) => {
 
 
 // APIs for authentication
-// API endpoint to get allowed pages for a user
+/*/ API endpoint to get allowed pages for a user
 app.get('/api/allowed-pages', async (req, res) => {
+
+const pagesWithType = {
+  "dashboard": ["dashboard"],
+  "complaints": [
+    "all-complaints",
+    "launch-complaints",
+    "delay-complaints",
+    "nature"
+  ],
+  "users": [
+    "all-users",
+    "colonies",
+    "skillman"
+  ],
+  "reporting": [
+    "daily-report",
+    "complaints-report",
+    "skillman-report",
+    "rating-report"
+  ]
+};
+
+
+
   let pool;
   try {
     // Get token from Authorization header
@@ -434,9 +654,118 @@ app.get('/api/allowed-pages', async (req, res) => {
       //await pool.close();
     }
   }
+});*/
+app.get('/api/allowed-pages', async (req, res) => {
+  let pool;
+  try {
+    // Get token from Authorization header
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    
+    if (!token) {
+      return res.status(401).json({ success: false, message: 'Access token required' });
+    }
+    
+    // Create database connection
+    pool = await sql.connect(dbConfig);
+    
+    // Query to get user ID from token
+    const userQuery = `
+      SELECT id 
+      FROM Users 
+      WHERE token = @token AND is_active = 'Active'
+    `;
+    
+    const userResult = await pool.request()
+      .input('token', sql.VarChar(255), token)
+      .query(userQuery);
+    
+    if (userResult.recordset.length === 0) {
+      return res.status(403).json({ success: false, message: 'Invalid or expired token' });
+    }
+    
+    // Get user ID from result
+    const userId = userResult.recordset[0].id;
+    
+    // Query to get all allowed pages for the user
+    const pagesQuery = `
+      SELECT p.page 
+      FROM Pages p
+      INNER JOIN UserAccess ua ON p.page = ua.page
+      WHERE ua.user_id = @userId
+      ORDER BY p.page
+    `;
+    
+    const pagesResult = await pool.request()
+      .input('userId', sql.VarChar(20), userId)
+      .query(pagesQuery);
+    
+    // Extract page names from result
+    const userAllowedPages = pagesResult.recordset.map(row => row.page);
+    
+    // Define the page structure
+    const pagesWithType = {
+      "dashboard": ["dashboard"],
+      "complaints": [
+        "launch-complaints",
+        "all-complaints",
+        "delay-complaints",
+        "nature"
+      ],
+      "users": [
+        "all-users",
+        "colonies",
+        "skillman"
+      ],
+      "reporting": [
+        "daily-report",
+        "complaints-report",
+        "skillman-report",
+        "rating-report"
+      ],
+      "admin": [
+        "admin-panel"
+      ]
+    };
+    
+    // Prepare response object
+    const responseData = {
+      // All individual pages the user has access to
+      allowedPages: userAllowedPages,
+      
+      // Navigation items for header and hamburger menu
+      navigationItems: {}
+    };
+    
+    // For each category, find the first page the user has access to
+    for (const [category, pages] of Object.entries(pagesWithType)) {
+      // Find the first page in this category that the user has access to
+      const accessiblePage = pages.find(page => userAllowedPages.includes(page));
+      
+      if (accessiblePage) {
+        // Add the first accessible page for this category
+        responseData.navigationItems[category] = accessiblePage;
+      }
+    }
+    
+    res.json({
+      success: true,
+      ...responseData
+    });
+    
+  } catch (error) {
+    console.error('Database error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Internal server error' 
+    });
+  } finally {
+    // Close the connection
+    if (pool) {
+      //await pool.close();
+    }
+  }
 });
-
-
 
 
 
@@ -777,6 +1106,32 @@ const SECRET_KEY = process.env.ENCRYPTION_SECRET; // Example key, replace with a
 
 // Encrypt ID endpoint
 app.post('/api/encrypt-id', async (req, res) => {
+
+  
+  
+  // Verify Authorization header exists
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized - No token provided' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  try {
+    let pool = await sql.connect(dbConfig);
+
+    // Step 1: Verify token exists in Users table
+    const tokenCheck = await pool.request()
+      .input('token', sql.VarChar(255), token)
+      .query('SELECT id FROM Users WHERE token = @token');
+
+    if (tokenCheck.recordset.length === 0) {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+    }
+  } catch(error) {
+    console.err('Error: '+error);
+  }
+
+  
   try {
     const { complaint_id } = req.body;
     
@@ -814,6 +1169,32 @@ app.post('/api/encrypt-id', async (req, res) => {
 
 // Optional: Decryption endpoint (if needed elsewhere in your application)
 app.post('/api/decrypt-id', async (req, res) => {
+
+  
+  
+  // Verify Authorization header exists
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized - No token provided' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  try {
+    let pool = await sql.connect(dbConfig);
+
+    // Step 1: Verify token exists in Users table
+    const tokenCheck = await pool.request()
+      .input('token', sql.VarChar(255), token)
+      .query('SELECT id FROM Users WHERE token = @token');
+
+    if (tokenCheck.recordset.length === 0) {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+    }
+  } catch(error) {
+    console.err('Error: '+error);
+  }
+
+
   let pool;
   try {
     const { encrypted_id } = req.body;
@@ -899,6 +1280,31 @@ app.post('/api/decrypt-id', async (req, res) => {
 
 // Endpoint for complaint details
 app.get(`/data`, async (req, res) => {
+  
+  
+  // Verify Authorization header exists
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized - No token provided' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  try {
+    let pool = await sql.connect(dbConfig);
+
+    // Step 1: Verify token exists in Users table
+    const tokenCheck = await pool.request()
+      .input('token', sql.VarChar(255), token)
+      .query('SELECT id FROM Users WHERE token = @token');
+
+    if (tokenCheck.recordset.length === 0) {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+    }
+  } catch(error) {
+    console.err('Error: '+error);
+  }
+
+
   const { complaintId } = req.query;
 
   if (!complaintId) {
@@ -992,6 +1398,29 @@ app.get(`/data`, async (req, res) => {
 // Complaints data endpoint
 // Complaints data endpoint for a customer's history
 app.get('/api/users-history', async (req, res) => {
+  
+  
+  // Verify Authorization header exists
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized - No token provided' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  try {
+    let pool = await sql.connect(dbConfig);
+
+    // Step 1: Verify token exists in Users table
+    const tokenCheck = await pool.request()
+      .input('token', sql.VarChar(255), token)
+      .query('SELECT id FROM Users WHERE token = @token');
+
+    if (tokenCheck.recordset.length === 0) {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+    }
+  } catch(error) {
+    console.err('Error: '+error);
+  }
   let pool;
   //console.log('Received request for /api/users-history');
   try {
@@ -1070,6 +1499,33 @@ app.get('/api/users-history', async (req, res) => {
 
 // Retrieve Helper skillmen for complaint details
 app.get('/api/helpers', async (req, res) => {
+
+  
+  // Verify Authorization header exists
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized - No token provided' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  try {
+    let pool = await sql.connect(dbConfig);
+
+    // Step 1: Verify token exists in Users table
+    const tokenCheck = await pool.request()
+      .input('token', sql.VarChar(255), token)
+      .query('SELECT id FROM Users WHERE token = @token');
+
+    if (tokenCheck.recordset.length === 0) {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+    }
+  } catch(error) {
+    console.err('Error: '+error);
+  }
+
+
+
+
   const { complaintId } = req.query;
   //console.log('Helper call with id: '+complaintId);
   
@@ -1146,6 +1602,32 @@ app.get('/api/helpers', async (req, res) => {
 
 // Whatsapp API to send reviewing request
 app.post('/api/send-reviewing-request', async (req, res) => {
+
+  
+  // Verify Authorization header exists
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized - No token provided' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  try {
+    let pool = await sql.connect(dbConfig);
+
+    // Step 1: Verify token exists in Users table
+    const tokenCheck = await pool.request()
+      .input('token', sql.VarChar(255), token)
+      .query('SELECT id FROM Users WHERE token = @token');
+
+    if (tokenCheck.recordset.length === 0) {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+    }
+  } catch(error) {
+    console.err('Error: '+error);
+  }
+
+
+    
     const { phoneNumber, complaintId } = req.body;
 
     if (!phoneNumber || !complaintId) {
@@ -1462,49 +1944,78 @@ app.post('/verify-token', async (req, res) => {
 
 
 
-// Token verification endpoint with sending receiver name
+
+// Token verification endpoint with sending receiver name and access control
 app.post('/verify-token-get-receiver', async (req, res) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
+  const { page_name: requestedPage } = req.body;
 
   if (!token) {
     console.log('No token provided');
     return res.status(401).json({ success: false, message: 'No token provided' });
   }
 
+  if (!requestedPage) {
+    console.log('No page name provided');
+    return res.status(400).json({ success: false, message: 'Page name is required' });
+  }
+
   try {
     await sql.connect(dbConfig);
-    //console.log('Connected to database');
+    console.log('Connected to database');
 
-    // Single query to get both user info and receiver name from the same table
-    const result = await sql.query`
-      SELECT id, name, receiver FROM Users WHERE token = ${token}
+    // Check if user exists with this token and is active
+    const userResult = await sql.query`
+      SELECT id, name, receiver, is_active 
+      FROM Users 
+      WHERE token = ${token}
     `;
 
-    if (result.recordset.length > 0) {
-      const user = result.recordset[0];
-      console.log('Token verified for user:', user.name);
-      
-      return res.json({ 
-        success: true, 
-        user: {
-          id: user.id,
-          name: user.name
-        },
-        receiver: {
-          name: user.receiver || 'Administrator' // Fallback to 'Administrator' if receiver is null
-        }
-      });
-    } else {
+    if (userResult.recordset.length === 0) {
       console.log('Invalid or expired token');
       return res.status(401).json({ success: false, message: 'Invalid or expired token' });
     }
+
+    const user = userResult.recordset[0];
+    
+    // Check if user is active
+    if (user.is_active !== 'Active') {
+      console.log('User account is inactive:', user.id);
+      return res.status(401).json({ success: false, message: 'Account is inactive' });
+    }
+
+    // Check if user has access to the requested page
+    const accessResult = await sql.query`
+      SELECT ua.id 
+      FROM UserAccess ua
+      INNER JOIN Users u ON ua.user_id = u.id
+      WHERE ua.user_id = ${user.id} AND ua.page = ${requestedPage} AND u.is_active = 'Active'
+    `;
+
+    if (accessResult.recordset.length === 0) {
+      console.log('User does not have access to this page:', user.id, requestedPage);
+      return res.status(403).json({ success: false, message: 'Access denied to this page' });
+    }
+
+    console.log('Token verified for user:', user.name);
+    
+    return res.json({ 
+      success: true, 
+      user: {
+        id: user.id,
+        name: user.name
+      },
+      receiver: {
+        name: user.receiver || 'Administrator' // Fallback to 'Administrator' if receiver is null
+      }
+    });
   } catch (err) {
     console.error('Database error:', err);
     return res.status(500).json({ success: false, message: 'Database error' });
   } finally {
-    //no need to close the connection here
-    //sql.close();
+    // No need to close the connection here
+    // sql.close();
   }
 });
 
@@ -3263,6 +3774,7 @@ app.get('/health', (req, res) => {
 // GET: Load all users
 app.get('/getUsers', async (req, res) => {
   // Verify Authorization header exists
+  const page = 'all-users'; 
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized - No token provided' });
@@ -3272,6 +3784,12 @@ app.get('/getUsers', async (req, res) => {
  
   try {
     let pool = await sql.connect(dbConfig);
+
+    const accessiblity = await checkAccess(token, page);
+    
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -3323,6 +3841,8 @@ app.get('/getUsers', async (req, res) => {
 
 // GET: Load all colonies
 app.get('/getColonies', async (req, res) => {
+
+  const page = 'colonies';
   // Verify Authorization header exists
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -3333,6 +3853,13 @@ app.get('/getColonies', async (req, res) => {
  
   try {
     let pool = await sql.connect(dbConfig);
+    
+
+    const accessiblity = await checkAccess(token, page);
+    
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -3366,6 +3893,8 @@ app.get('/getColonies', async (req, res) => {
 
 // POST: Add new colony
 app.post('/addColony', async (req, res) => {
+
+  const page = 'colonies';
   // Verify Authorization header exists
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -3373,6 +3902,12 @@ app.post('/addColony', async (req, res) => {
   }
 
   const token = authHeader.split(' ')[1];
+
+    const accessiblity = await checkAccess(token, page);
+    
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
   
   const { name, colonyNumber } = req.body;
 
@@ -3411,6 +3946,8 @@ app.post('/addColony', async (req, res) => {
 
 // PUT: Edit a colony
 app.put('/editColony', async (req, res) => {
+
+  const page = 'colonies';
   // Verify Authorization header exists
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -3418,6 +3955,12 @@ app.put('/editColony', async (req, res) => {
   }
 
   const token = authHeader.split(' ')[1];
+
+    const accessiblity = await checkAccess(token, page);
+    
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
   
   const { previous, new: updated } = req.body;
 
@@ -3652,10 +4195,10 @@ app.post('/complaints', async (req, res) => {
           skillman_id, status
         ) VALUES (
           @complaint_id, @customer_id, @location_id, @nature, @category,
-          @type, @description, @priority, @launched_at, @receiver_id, 
+          @type, @description, @priority, GETDATE(), @receiver_id, 
           @skillman_id, @status
         )
-      `);
+      `);// replace @launched_at with GETDATE()
 
     if (helperSkillmenIds.length > 0) {
       for (const helperId of helperSkillmenIds) {
@@ -3866,8 +4409,8 @@ app.get('/api/complaints', async (req, res) => {
           c.type,
           c.description,
           c.priority,
-          FORMAT(SWITCHOFFSET(CONVERT(datetimeoffset, c.launched_at), '+05:00'), 'yyyy-MM-dd HH:mm:ss') AS launched_at,
-          FORMAT(SWITCHOFFSET(CONVERT(datetimeoffset, c.completed_at), '+05:00'), 'yyyy-MM-dd HH:mm:ss') AS completed_at,
+          FORMAT(c.launched_at, 'yyyy-MM-dd HH:mm:ss') AS launched_at,
+          FORMAT(c.completed_at, 'yyyy-MM-dd HH:mm:ss') AS completed_at,
           c.status,
           cust.full_name AS customer_name,
           cust.phone_number AS customer_phone,
@@ -4730,7 +5273,7 @@ app.get('/api/receivers', async (req, res) => {
 
 
 //API for delay complaints
-
+/*
 app.post('/api/delay-complaints', async (req, res) => {
   // Verify Authorization header exists
   const authHeader = req.headers.authorization;
@@ -4883,20 +5426,159 @@ app.post('/api/delay-complaints', async (req, res) => {
       //await connection.close();
     }
   }
+});*/
+app.post('/api/delay-complaints', async (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized - No token provided' });
+  }
+
+  const token = authHeader.split(' ')[1];
+   
+  let connection;
+  try {
+    let pool = await sql.connect(dbConfig);
+
+    const tokenCheck = await pool.request()
+      .input('token', sql.VarChar(255), token)
+      .query('SELECT id FROM Users WHERE token = @token');
+
+    if (tokenCheck.recordset.length === 0) {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+    }
+    connection = new sql.ConnectionPool(dbConfig);
+    await connection.connect();
+
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+    const limit = Math.max(Math.min(parseInt(req.query.limit) || 10, 100), 1);
+    const search = req.query.search || '';
+    const offset = (page - 1) * limit;
+
+    let baseQuery = `
+      SELECT 
+        c.complaint_id,
+        CONVERT(VARCHAR(10), c.launched_at, 120) AS date,
+        c.nature + ' / ' + c.type AS category,
+        l.building_number AS building,
+        col.Name AS colony,
+        u.name AS launched_by,
+        s.name AS skillman,
+        c.priority AS type,
+        c.status,
+        CASE 
+          WHEN c.priority = 'Immediate' THEN 
+            ROUND(
+              CASE 
+                WHEN c.status = 'Completed' THEN 
+                  DATEDIFF(MINUTE, DATEADD(HOUR, 2, c.launched_at), c.completed_at) / 60.0
+                ELSE 
+                  DATEDIFF(MINUTE, DATEADD(HOUR, 2, c.launched_at), GETDATE()) / 60.0
+              END, 1)
+          WHEN c.priority = 'Urgent' THEN 
+            ROUND(
+              CASE 
+                WHEN c.status = 'Completed' THEN 
+                  DATEDIFF(MINUTE, DATEADD(HOUR, 6, c.launched_at), c.completed_at) / 60.0
+                ELSE 
+                  DATEDIFF(MINUTE, DATEADD(HOUR, 6, c.launched_at), GETDATE()) / 60.0
+              END, 1)
+          WHEN c.priority = 'Routine' THEN 
+            ROUND(
+              CASE 
+                WHEN c.status = 'Completed' THEN 
+                  DATEDIFF(MINUTE, DATEADD(HOUR, 24, c.launched_at), c.completed_at) / 60.0
+                ELSE 
+                  DATEDIFF(MINUTE, DATEADD(HOUR, 24, c.launched_at), GETDATE()) / 60.0
+              END, 1)
+        END AS delay_time_hours,
+        c.launched_at
+      FROM Complaints c
+      LEFT JOIN Location l ON c.location_id = l.location_id
+      LEFT JOIN Colonies col ON l.colony_number = col.ColonyNumber
+      LEFT JOIN Users u ON c.receiver_id = u.id
+      LEFT JOIN Skillmen s ON c.skillman_id = s.id
+      WHERE c.status IN ('Completed', 'In-Progress')
+      AND c.status != 'Deferred'
+      AND (
+        (c.priority = 'Immediate' AND 
+          DATEDIFF(MINUTE, DATEADD(HOUR, 2, c.launched_at), 
+            CASE WHEN c.status = 'Completed' THEN c.completed_at ELSE GETDATE() END) > 0
+        )
+        OR
+        (c.priority = 'Urgent' AND 
+          DATEDIFF(MINUTE, DATEADD(HOUR, 6, c.launched_at), 
+            CASE WHEN c.status = 'Completed' THEN c.completed_at ELSE GETDATE() END) > 0
+        )
+        OR
+        (c.priority = 'Routine' AND 
+          DATEDIFF(MINUTE, DATEADD(HOUR, 24, c.launched_at), 
+            CASE WHEN c.status = 'Completed' THEN c.completed_at ELSE GETDATE() END) > 0
+        )
+      )
+    `;
+
+    if (search) {
+      const safeSearch = search.replace(/'/g, "''");
+      baseQuery += `
+        AND (
+          c.complaint_id LIKE '%${safeSearch}%' OR
+          c.nature + ' / ' + c.type LIKE '%${safeSearch}%' OR
+          l.building_number LIKE '%${safeSearch}%' OR
+          col.Name LIKE '%${safeSearch}%' OR
+          u.name LIKE '%${safeSearch}%' OR
+          s.name LIKE '%${safeSearch}%' OR
+          c.priority LIKE '%${safeSearch}%' OR
+          c.status LIKE '%${safeSearch}%'
+        )
+      `;
+    }
+
+    const countResult = await connection.request().query(`
+      SELECT COUNT(*) as total FROM (${baseQuery.replace(/SELECT.*FROM/, 'SELECT c.complaint_id FROM')}) AS temp
+    `);
+    const total = countResult.recordset[0].total;
+
+    const result = await connection.request().query(`
+      ${baseQuery}
+      ORDER BY c.launched_at DESC
+      OFFSET ${offset} ROWS
+      FETCH NEXT ${limit} ROWS ONLY
+    `);
+
+    const complaints = result.recordset.map(complaint => ({
+      complaintId: complaint.complaint_id,
+      date: complaint.date,
+      category: complaint.category,
+      building: complaint.building,
+      colony: complaint.colony,
+      launchedBy: complaint.launched_by,
+      skillman: complaint.skillman || 'Unassigned',
+      type: complaint.type,
+      delayTime: `${parseFloat(complaint.delay_time_hours).toFixed(1)} hours`,
+      status: complaint.status
+    }));
+
+    res.json({
+      success: true,
+      data: complaints,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
+    });
+
+  } catch (err) {
+    console.error('Error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching delayed complaints'
+    });
+  } finally {
+    if (connection && connection.connected) {
+      // await connection.close();
+    }
+  }
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -4913,6 +5595,30 @@ app.post('/api/delay-complaints', async (req, res) => {
 
 // API endpoint to get colonies with their buildings
 app.get('/api/colonies-with-buildings', async (req, res) => {
+  
+  
+  // Verify Authorization header exists
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized - No token provided' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  try {
+    let pool = await sql.connect(dbConfig);
+
+    // Step 1: Verify token exists in Users table
+    const tokenCheck = await pool.request()
+      .input('token', sql.VarChar(255), token)
+      .query('SELECT id FROM Users WHERE token = @token');
+
+    if (tokenCheck.recordset.length === 0) {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+    }
+  } catch(error) {
+    console.err('Error: '+error);
+  }
+
   let pool;
   try {
     // Connect to the database
@@ -4986,6 +5692,35 @@ app.get('/api/colonies-with-buildings', async (req, res) => {
 // Endpoint to get categories(subdivision) and natures
 // API endpoint to get categories with their natures
 app.get('/api/categories-with-natures', async (req, res) => {
+
+
+  
+  
+  // Verify Authorization header exists
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized - No token provided' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  try {
+    let pool = await sql.connect(dbConfig);
+
+    // Step 1: Verify token exists in Users table
+    const tokenCheck = await pool.request()
+      .input('token', sql.VarChar(255), token)
+      .query('SELECT id FROM Users WHERE token = @token');
+
+    if (tokenCheck.recordset.length === 0) {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+    }
+  } catch(error) {
+    console.err('Error: '+error);
+  }
+
+
+
+
   let pool;
   try {
     // Connect to the database
@@ -5054,6 +5789,34 @@ app.get('/api/categories-with-natures', async (req, res) => {
 
 // API endpoint for sub division report
 app.post('/api/subdiv-report', async (req, res) => {
+
+
+  
+  
+  // Verify Authorization header exists
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized - No token provided' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  try {
+    let pool = await sql.connect(dbConfig);
+
+    // Step 1: Verify token exists in Users table
+    const tokenCheck = await pool.request()
+      .input('token', sql.VarChar(255), token)
+      .query('SELECT id FROM Users WHERE token = @token');
+
+    if (tokenCheck.recordset.length === 0) {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+    }
+  } catch(error) {
+    console.err('Error: '+error);
+  }
+
+
+
   const { fromDate, toDate, category } = req.body;
   
   try {
@@ -5143,6 +5906,34 @@ app.post('/api/subdiv-report', async (req, res) => {
 // API for summary reporting
 
 app.get('/api/summary-report', async (req, res) => {
+
+
+  
+  
+  // Verify Authorization header exists
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized - No token provided' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  try {
+    let pool = await sql.connect(dbConfig);
+
+    // Step 1: Verify token exists in Users table
+    const tokenCheck = await pool.request()
+      .input('token', sql.VarChar(255), token)
+      .query('SELECT id FROM Users WHERE token = @token');
+
+    if (tokenCheck.recordset.length === 0) {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+    }
+  } catch(error) {
+    console.err('Error: '+error);
+  }
+
+
+
   const { year } = req.query;
   
   if (!year || isNaN(year)) {
@@ -5269,6 +6060,36 @@ app.get('/api/summary-report', async (req, res) => {
 // Endpoints for Default Reporting
 // Complaints endpoint
 app.get('/complaints-report', async (req, res) => {
+
+
+
+  
+  
+  // Verify Authorization header exists
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized - No token provided' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  try {
+    let pool = await sql.connect(dbConfig);
+
+    // Step 1: Verify token exists in Users table
+    const tokenCheck = await pool.request()
+      .input('token', sql.VarChar(255), token)
+      .query('SELECT id FROM Users WHERE token = @token');
+
+    if (tokenCheck.recordset.length === 0) {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+    }
+  } catch(error) {
+    console.err('Error: '+error);
+  }
+
+
+
+
   try {
     // Extract query parameters
     const {
@@ -5348,6 +6169,35 @@ app.get('/complaints-report', async (req, res) => {
 // Rating Report
 // API endpoint to get rating reports
 app.get('/ratings', async (req, res) => {
+
+
+  
+  
+  // Verify Authorization header exists
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized - No token provided' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  try {
+    let pool = await sql.connect(dbConfig);
+
+    // Step 1: Verify token exists in Users table
+    const tokenCheck = await pool.request()
+      .input('token', sql.VarChar(255), token)
+      .query('SELECT id FROM Users WHERE token = @token');
+
+    if (tokenCheck.recordset.length === 0) {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+    }
+  } catch(error) {
+    console.err('Error: '+error);
+  }
+
+
+
+
   try {
     // Connect to the database
     await sql.connect(dbConfig);
@@ -5413,6 +6263,35 @@ app.get('/ratings', async (req, res) => {
 
 // API endpoint to get all skillman summary data
 app.get('/api/all-skillman-summary', async (req, res) => {
+
+
+
+  
+  
+  // Verify Authorization header exists
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized - No token provided' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  try {
+    let pool = await sql.connect(dbConfig);
+
+    // Step 1: Verify token exists in Users table
+    const tokenCheck = await pool.request()
+      .input('token', sql.VarChar(255), token)
+      .query('SELECT id FROM Users WHERE token = @token');
+
+    if (tokenCheck.recordset.length === 0) {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+    }
+  } catch(error) {
+    console.err('Error: '+error);
+  }
+
+
+
   try {
     // Connect to the database
     await sql.connect(dbConfig);
@@ -5500,6 +6379,34 @@ app.get('/api/all-skillman-summary', async (req, res) => {
 
 // POST endpoint to retrieve complaints for a specific skillman with filters
 app.post('/api/retrieve-complaints-for-one-skillman', async (req, res) => {
+
+
+  
+  
+  // Verify Authorization header exists
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized - No token provided' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  try {
+    let pool = await sql.connect(dbConfig);
+
+    // Step 1: Verify token exists in Users table
+    const tokenCheck = await pool.request()
+      .input('token', sql.VarChar(255), token)
+      .query('SELECT id FROM Users WHERE token = @token');
+
+    if (tokenCheck.recordset.length === 0) {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+    }
+  } catch(error) {
+    console.err('Error: '+error);
+  }
+
+
+
   const { skillmanName, status, type, fromDate, toDate } = req.body;
 
   try {
@@ -5609,11 +6516,882 @@ app.post('/api/retrieve-complaints-for-one-skillman', async (req, res) => {
 
 
 
+async function runQuery(query, params = []) {
+  try {
+    const pool = await sql.connect(dbConfig);
+    const request = pool.request();
+    
+    // Add parameters if provided
+    params.forEach(param => {
+      request.input(param.name, param.type, param.value);
+    });
+    
+    const result = await request.query(query);
+    return result;
+  } catch (error) {
+    console.error('Query execution error:', error);
+    throw error;
+  }
+}
+
+
+// daily-complaints
+
+app.get('/api/complaints/daily-stats', async (req, res) => {
+
+
+  
+  
+  // Verify Authorization header exists
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized - No token provided' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  try {
+    let pool = await sql.connect(dbConfig);
+
+    // Step 1: Verify token exists in Users table
+    const tokenCheck = await pool.request()
+      .input('token', sql.VarChar(255), token)
+      .query('SELECT id FROM Users WHERE token = @token');
+
+    if (tokenCheck.recordset.length === 0) {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+    }
+  } catch(error) {
+    console.err('Error: '+error);
+  }
+
+
+
+  const date = req.query.date || new Date().toISOString().split('T')[0];
+  //console.log(`📡 API Called: /api/complaints/daily-stats?date=${date}`);
+
+  const page = parseInt(req.query.page) || 1;
+  const pageSize = parseInt(req.query.pageSize) || 10;
+  const offset = (page - 1) * pageSize;
+
+  try {
+    //console.log(`📊 Fetching data for ${date}...`);
+
+    // 1️⃣ Status by Category - FIXED STATUS SPELLINGS
+    const statusResult = await runQuery(
+      `
+      SELECT 
+        category AS Category,
+        SUM(CASE WHEN status = 'Un-Assigned' THEN 1 ELSE 0 END) AS unassigned,
+        SUM(CASE WHEN status = 'In-Progress' THEN 1 ELSE 0 END) AS inProgress,
+        SUM(CASE WHEN status = 'Completed' THEN 1 ELSE 0 END) AS completed,
+        SUM(CASE WHEN status = 'Deferred' THEN 1 ELSE 0 END) AS deferred,
+        COUNT(*) AS total
+      FROM Complaints
+      WHERE CONVERT(DATE, launched_at) = CONVERT(DATE, @date)
+      GROUP BY category
+      `,
+      [{ name: 'date', type: sql.Date, value: date }]
+    );
+
+    const statusLabels = statusResult.recordset.map(r => r.Category);
+    const statusByCategory = {
+      labels: statusLabels,
+      datasets: [
+        { label: 'Unassigned', data: statusResult.recordset.map(r => r.unassigned), backgroundColor: '#e74c3c' },
+        { label: 'In-Progress', data: statusResult.recordset.map(r => r.inProgress), backgroundColor: '#f39c12' },
+        { label: 'Completed', data: statusResult.recordset.map(r => r.completed), backgroundColor: '#2ecc71' },
+        { label: 'Deferred', data: statusResult.recordset.map(r => r.deferred), backgroundColor: '#9b59b6' }
+      ]
+    };
+
+    // 2️⃣ Category Ratio
+    const categoryRatio = {
+      labels: statusLabels,
+      data: statusResult.recordset.map(r => r.total)
+    };
+
+    // 3️⃣ Priority Table (category → priority counts) - FIXED PRIORITY SPELLINGS
+    const priorityResult = await runQuery(
+      `
+      SELECT 
+        category,
+        SUM(CASE WHEN priority = 'immediate' THEN 1 ELSE 0 END) AS immediate,
+        SUM(CASE WHEN priority = 'urgent' THEN 1 ELSE 0 END) AS urgent,
+        SUM(CASE WHEN priority = 'routine' THEN 1 ELSE 0 END) AS routine,
+        SUM(CASE WHEN priority = 'deferred' THEN 1 ELSE 0 END) AS deferred,
+        COUNT(*) AS total
+      FROM Complaints
+      WHERE CONVERT(DATE, launched_at) = CONVERT(DATE, @date)
+      GROUP BY category
+      ORDER BY category
+      `,
+      [{ name: 'date', type: sql.Date, value: date }]
+    );
+
+    // 4️⃣ Productivity Chart (priority → status breakdown) - FIXED PRIORITY SPELLINGS
+    const productivityResult = await runQuery(
+      `
+      SELECT 
+        priority,
+        SUM(CASE WHEN status = 'Un-Assigned' THEN 1 ELSE 0 END) AS unassigned,
+        SUM(CASE WHEN status = 'In-Progress' THEN 1 ELSE 0 END) AS inProgress,
+        SUM(CASE WHEN status = 'Completed' THEN 1 ELSE 0 END) AS completed,
+        SUM(CASE WHEN status = 'Deferred' THEN 1 ELSE 0 END) AS deferred,
+        COUNT(*) AS total
+      FROM Complaints
+      WHERE CONVERT(DATE, launched_at) = CONVERT(DATE, @date)
+      GROUP BY priority
+      ORDER BY 
+        CASE 
+          WHEN priority = 'immediate' THEN 1
+          WHEN priority = 'urgent' THEN 2
+          WHEN priority = 'routine' THEN 3
+          WHEN priority = 'deferred' THEN 4
+          ELSE 5
+        END
+      `,
+      [{ name: 'date', type: sql.Date, value: date }]
+    );
+
+    // Prepare productivity chart data
+    const productivityData = {
+      labels: productivityResult.recordset.map(r => r.priority),
+      datasets: [
+        { label: 'Unassigned', data: productivityResult.recordset.map(r => r.unassigned), backgroundColor: '#e74c3c' },
+        { label: 'In-Progress', data: productivityResult.recordset.map(r => r.inProgress), backgroundColor: '#f39c12' },
+        { label: 'Completed', data: productivityResult.recordset.map(r => r.completed), backgroundColor: '#2ecc71' },
+        { label: 'Deferred', data: productivityResult.recordset.map(r => r.deferred), backgroundColor: '#9b59b6' }
+      ]
+    };
+
+    // 5️⃣ Deferred Complaints List - FIXED STATUS MATCHING
+    const deferredResult = await runQuery(
+      `
+      SELECT 
+        c.category AS Category,
+        CONVERT(VARCHAR(10), c.launched_at, 23) AS Date,
+        c.complaint_id AS ComplaintNo,
+        ISNULL(col.Name, 'Unknown') + ', ' + ISNULL(loc.building_number, 'N/A') AS Address,
+        c.nature AS Nature,
+        c.type AS Type,
+        DATEDIFF(HOUR, c.launched_at, GETDATE()) AS Hours
+      FROM Complaints c
+      LEFT JOIN Location loc ON c.location_id = loc.location_id
+      LEFT JOIN Colonies col ON loc.colony_number = col.ColonyNumber
+      WHERE c.status = 'Deferred'
+        AND CONVERT(DATE, c.launched_at) = CONVERT(DATE, @date)
+      ORDER BY c.launched_at DESC
+      OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY
+      `,
+      [
+        { name: 'date', type: sql.Date, value: date },
+        { name: 'offset', type: sql.Int, value: offset },
+        { name: 'pageSize', type: sql.Int, value: pageSize }
+      ]
+    );
+
+    // Get total count for deferred complaints for pagination
+    const deferredCountResult = await runQuery(
+      `
+      SELECT COUNT(*) AS totalCount
+      FROM Complaints
+      WHERE status = 'Deferred'
+        AND CONVERT(DATE, launched_at) = CONVERT(DATE, @date)
+      `,
+      [{ name: 'date', type: sql.Date, value: date }]
+    );
+
+    const totalDeferred = deferredCountResult.recordset[0].totalCount;
+
+    //console.log("Deferred complaints rows:", deferredResult.recordset);
+
+    // ✅ Send response
+    res.json({
+      success: true,
+      statusByCategory,
+      categoryRatio,
+      productivityData,
+      tables: {
+        statusTable: statusResult.recordset,
+        priorityTable: priorityResult.recordset,
+        deferredTable: deferredResult.recordset
+      },
+      pagination: {
+        page,
+        pageSize,
+        total: totalDeferred,
+        totalPages: Math.ceil(totalDeferred / pageSize)
+      }
+    });
+
+    //console.log(`✅ Data retrieved successfully for ${date}`);
+  } catch (err) {
+    console.error('❌ Database error:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Dashboard APIs
+
+// Endpoint to get monthly complaints data for the current year
+app.get('/api/monthly-complaints', async (req, res) => {
+
+
+  
+  
+  // Verify Authorization header exists
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized - No token provided' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  try {
+    let pool = await sql.connect(dbConfig);
+
+    // Step 1: Verify token exists in Users table
+    const tokenCheck = await pool.request()
+      .input('token', sql.VarChar(255), token)
+      .query('SELECT id FROM Users WHERE token = @token');
+
+    if (tokenCheck.recordset.length === 0) {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+    }
+  } catch(error) {
+    console.err('Error: '+error);
+  }
+
+
+
+
+  try {
+    // Connect to the database
+    await sql.connect(dbConfig);
+    
+    // Get current year
+    const currentYear = new Date().getFullYear();
+    
+    // SQL query to get monthly complaints count by status for the current year
+    const query = `
+      SELECT 
+        MONTH(launched_at) as month,
+        status,
+        COUNT(*) as count
+      FROM Complaints
+      WHERE YEAR(launched_at) = @currentYear
+      GROUP BY MONTH(launched_at), status
+      ORDER BY month, status
+    `;
+    
+    // Execute the query
+    const result = await sql.query`
+      SELECT 
+        MONTH(launched_at) as month,
+        status,
+        COUNT(*) as count
+      FROM Complaints
+      WHERE YEAR(launched_at) = ${currentYear}
+      GROUP BY MONTH(launched_at), status
+      ORDER BY month, status
+    `;
+    
+    // Initialize arrays for each status with zeros for all months
+    const monthlyData = {
+      pending: new Array(12).fill(0),
+      inprogress: new Array(12).fill(0),
+      completed: new Array(12).fill(0)
+    };
+    
+    // Process the result and populate the monthlyData object
+    result.recordset.forEach(row => {
+      const monthIndex = row.month - 1; // Convert month (1-12) to array index (0-11)
+      
+      switch(row.status) {
+        case 'Un-Assigned':
+        case 'Deferred':
+        case 'SNA':
+          monthlyData.pending[monthIndex] = row.count;
+          break;
+        case 'In-Progress':
+          monthlyData.inprogress[monthIndex] = row.count;
+          break;
+        case 'Completed':
+          monthlyData.completed[monthIndex] = row.count;
+          break;
+      }
+    });
+    
+    // Send the response
+    res.json(monthlyData);
+    
+  } catch (error) {
+    console.error('Error fetching monthly complaints data:', error);
+    res.status(500).json({ error: 'Failed to fetch monthly complaints data' });
+  } finally {
+    // Close the connection
+    //await sql.close();
+  }
+});
+
+
+
+
+
+
+
+// Category complaints endpoint
+app.get('/api/category-complaints', async (req, res) => {
+
+
+  
+  
+  // Verify Authorization header exists
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized - No token provided' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  try {
+    let pool = await sql.connect(dbConfig);
+
+    // Step 1: Verify token exists in Users table
+    const tokenCheck = await pool.request()
+      .input('token', sql.VarChar(255), token)
+      .query('SELECT id FROM Users WHERE token = @token');
+
+    if (tokenCheck.recordset.length === 0) {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+    }
+  } catch(error) {
+    console.err('Error: '+error);
+  }
+
+
+
+  try {
+    await sql.connect(dbConfig);
+    
+    // Get all subdivisions first
+    const subdivisionsResult = await sql.query`SELECT name FROM Subdivision`;
+    const subdivisions = subdivisionsResult.recordset.map(row => row.name);
+    
+    // Get complaint counts by category
+    const result = await sql.query`
+      SELECT 
+        category, 
+        COUNT(*) as count,
+        status
+      FROM Complaints 
+      WHERE category IS NOT NULL
+      GROUP BY category, status
+    `;
+    
+    // Initialize counts for all categories
+    const categoryCounts = {};
+    subdivisions.forEach(category => {
+      categoryCounts[category] = {
+        InProgress: 0,
+        Completed: 0,
+        Deffered: 0,
+        UnAssigned: 0,
+        SNA: 0
+      };
+    });
+    
+    // Process the results
+    result.recordset.forEach(row => {
+      const statusKey = row.status.replace('-', ''); // Convert "In-Progress" to "InProgress"
+      if (categoryCounts[row.category]) {
+        categoryCounts[row.category][statusKey] = row.count;
+      }
+    });
+    
+    // Calculate total for each category
+    const categoryData = subdivisions.map(category => {
+      const counts = categoryCounts[category];
+      const total = Object.values(counts).reduce((sum, count) => sum + count, 0);
+      
+      return {
+        name: category,
+        value: total,
+        // Generate a color based on category name for consistency
+        details: counts
+      };
+    });
+    
+    res.json(categoryData);
+  } catch (error) {
+    console.error('Error fetching category complaints:', error);
+    res.status(500).json({ error: 'Failed to fetch category complaints data' });
+  }
+});
+
+
+
+
+
+
+
+// Nature complaints endpoint
+app.get('/api/nature-complaints', async (req, res) => {
+
+
+  
+  
+  // Verify Authorization header exists
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized - No token provided' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  try {
+    let pool = await sql.connect(dbConfig);
+
+    // Step 1: Verify token exists in Users table
+    const tokenCheck = await pool.request()
+      .input('token', sql.VarChar(255), token)
+      .query('SELECT id FROM Users WHERE token = @token');
+
+    if (tokenCheck.recordset.length === 0) {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+    }
+  } catch(error) {
+    console.err('Error: '+error);
+  }
+
+
+
+
+  try {
+    await sql.connect(dbConfig);
+    
+    // Get all natures first
+    const naturesResult = await sql.query`SELECT name FROM Natures`;
+    const natures = naturesResult.recordset.map(row => row.name);
+    
+    // Get complaint counts by nature
+    const result = await sql.query`
+      SELECT 
+        nature, 
+        COUNT(*) as count,
+        status
+      FROM Complaints 
+      WHERE nature IS NOT NULL
+      GROUP BY nature, status
+    `;
+    
+    // Initialize counts for all natures
+    const natureCounts = {};
+    natures.forEach(nature => {
+      natureCounts[nature] = {
+        InProgress: 0,
+        Completed: 0,
+        Deffered: 0,
+        UnAssigned: 0,
+        SNA: 0
+      };
+    });
+    
+    // Process the results
+    result.recordset.forEach(row => {
+      const statusKey = row.status.replace('-', ''); // Convert "In-Progress" to "InProgress"
+      if (natureCounts[row.nature]) {
+        natureCounts[row.nature][statusKey] = row.count;
+      }
+    });
+    
+    // Calculate total for each nature
+    const natureData = natures.map(nature => {
+      const counts = natureCounts[nature];
+      const total = Object.values(counts).reduce((sum, count) => sum + count, 0);
+      
+      return {
+        name: nature,
+        value: total,
+        // Generate a color based on nature name for consistency
+        details: counts
+      };
+    });
+    
+    res.json(natureData);
+  } catch (error) {
+    console.error('Error fetching nature complaints:', error);
+    res.status(500).json({ error: 'Failed to fetch nature complaints data' });
+  } finally {
+    if(pool) {
+      //await pool.close();
+    }
+  }
+});
+
+
+
+
+
+
+app.get('/api/stats', async (req, res) => {
+
+
+
+  
+  
+  // Verify Authorization header exists
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized - No token provided' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  try {
+    let pool = await sql.connect(dbConfig);
+
+    // Step 1: Verify token exists in Users table
+    const tokenCheck = await pool.request()
+      .input('token', sql.VarChar(255), token)
+      .query('SELECT id FROM Users WHERE token = @token');
+
+    if (tokenCheck.recordset.length === 0) {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+    }
+  } catch(error) {
+    console.err('Error: '+error);
+  }
+
+
+
+  try {
+    // Connect to the database
+    const pool = await sql.connect(dbConfig);
+    
+    // Execute all count queries in parallel
+    const [coloniesResult, customersResult, apartmentsResult, skillmenResult] = await Promise.all([
+      pool.request().query('SELECT COUNT(*) as count FROM Colonies'),
+      pool.request().query('SELECT COUNT(*) as count FROM Customers'),
+      pool.request().query(`SELECT COUNT(*) as count FROM Location WHERE resdl = 'Resdl'`),
+      pool.request().query(`SELECT COUNT(*) as count FROM Skillmen`)
+    ]);
+    
+    // Extract counts from results
+    const coloniesCount = coloniesResult.recordset[0].count;
+    const customersCount = customersResult.recordset[0].count;
+    const apartmentsCount = apartmentsResult.recordset[0].count;
+    const skillmenCount = skillmenResult.recordset[0].count;
+    
+    // Send the response
+    res.json({
+      colonies: coloniesCount,
+      customers: customersCount,
+      apartments: apartmentsCount,
+      skillman: skillmenCount
+    });
+    
+  } catch (error) {
+    console.error('Database query error:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch statistics',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  } finally {
+    // Close the connection
+    if (pool) {
+      //await pool.close();
+    }
+  }
+});
+
+
+
+
+
+
+
+
+
+
+app.get("/api/get-categories-for-dashboard", async (req, res) => {
+
+
+  
+  
+  // Verify Authorization header exists
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized - No token provided' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  try {
+    let pool = await sql.connect(dbConfig);
+
+    // Step 1: Verify token exists in Users table
+    const tokenCheck = await pool.request()
+      .input('token', sql.VarChar(255), token)
+      .query('SELECT id FROM Users WHERE token = @token');
+
+    if (tokenCheck.recordset.length === 0) {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+    }
+  } catch(error) {
+    console.err('Error: '+error);
+  }
+
+
+
+  try {
+    const pool = await sql.connect(dbConfig);
+    const result = await pool
+      .request()
+      .query("SELECT ColonyNumber, Name FROM Colonies");
+
+    res.json(result.recordset);
+  } catch (err) {
+    console.error("Error fetching colonies:", err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Categories endpoint
+app.get('/get-categories-for-dashboard', async (req, res) => {
+  try {
+    // Connect to the database
+    await sql.connect(dbConfig);
+    
+    // Query the Natures table
+    const result = await sql.query('SELECT name FROM Natures ORDER BY name');
+    
+    // Format the results and encode the values
+    const categories = result.recordset.map(row => {
+      const encodedName = encodeURIComponent(row.name);
+      return {
+        id: encodedName,
+        name: encodedName
+      };
+    });
+    
+    // Send response
+    res.json(categories);
+  } catch (error) {
+    console.error('Database error:', error);
+    res.status(500).json({ error: 'Failed to fetch categories' });
+  } finally {
+    // Close the database connection
+    //await sql.close();
+  }
+});
+
+
+
+
+
+app.get('/api/trends-data', async (req, res) => {
+  
+  
+  // Verify Authorization header exists
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized - No token provided' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  try {
+    let pool = await sql.connect(dbConfig);
+
+    // Step 1: Verify token exists in Users table
+    const tokenCheck = await pool.request()
+      .input('token', sql.VarChar(255), token)
+      .query('SELECT id FROM Users WHERE token = @token');
+
+    if (tokenCheck.recordset.length === 0) {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+    }
+  } catch(error) {
+    console.err('Error: '+error);
+  }
+
+
+  try {
+    const { colony, category } = req.query;
+    
+    // Decode the parameters if they were encoded
+    const decodedColony = colony ? decodeURIComponent(atob(colony)) : '';
+    const decodedCategory = category ? decodeURIComponent(atob(category)) : '';
+    
+    // Connect to the database
+    const pool = await sql.connect(dbConfig);
+    
+    // Build the query with parameters
+    let query = `
+      SELECT 
+        MONTH(c.launched_at) as month,
+        c.status,
+        COUNT(*) as count
+      FROM Complaints c
+      INNER JOIN Location l ON c.location_id = l.location_id
+      WHERE c.launched_at >= DATEADD(MONTH, -11, GETDATE())
+    `;
+    
+    // Add parameters
+    const params = [];
+    
+    if (decodedColony) {
+      query += ` AND l.colony_number = @colony`;
+      params.push({ name: 'colony', value: decodedColony });
+    }
+    
+    if (decodedCategory) {
+      query += ` AND c.category = @category`;
+      params.push({ name: 'category', value: decodedCategory });
+    }
+    
+    query += `
+      GROUP BY MONTH(c.launched_at), c.status
+      ORDER BY MONTH(c.launched_at), c.status
+    `;
+    
+    // Create request
+    const request = pool.request();
+    
+    // Add parameters to request
+    params.forEach(param => {
+      request.input(param.name, sql.VarChar, param.value);
+    });
+    
+    // Execute the query
+    const result = await request.query(query);
+    
+    // Initialize data structure
+    const trendsData = {
+      categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+      pending: new Array(12).fill(0),
+      inprogress: new Array(12).fill(0),
+      completed: new Array(12).fill(0)
+    };
+    
+    // Process the results
+    result.recordset.forEach(row => {
+      const monthIndex = row.month - 1; // Convert to 0-based index
+      const status = row.status.toLowerCase().replace('-', '');
+      const count = row.count;
+      
+      if (status === 'unassigned' || status === 'sna') {
+        trendsData.pending[monthIndex] += count;
+      } else if (status === 'inprogress' || status === 'deferred') {
+        trendsData.inprogress[monthIndex] += count;
+      } else if (status === 'completed') {
+        trendsData.completed[monthIndex] += count;
+      }
+    });
+    
+    res.json(trendsData);
+    
+  } catch (error) {
+    console.error('Error fetching trends data:', error);
+    res.status(500).json({ error: 'Failed to fetch trends data' });
+  } finally {
+    // Close the connection
+    if (pool) {
+      //await pool.close();
+    }
+  }
+});
+
+
+
+
+app.get('/api/complaints-summary-count', async (req, res) => {
+
+
+  
+  
+  // Verify Authorization header exists
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized - No token provided' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  try {
+    let pool = await sql.connect(dbConfig);
+
+    // Step 1: Verify token exists in Users table
+    const tokenCheck = await pool.request()
+      .input('token', sql.VarChar(255), token)
+      .query('SELECT id FROM Users WHERE token = @token');
+
+    if (tokenCheck.recordset.length === 0) {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+    }
+  } catch(error) {
+    console.err('Error: '+error);
+  }
+
+
+
+  try {
+    // Create pool for this request
+    const pool = await sql.connect(dbConfig);
+
+    const result = await pool.request().query(`
+      SELECT
+        COUNT(*) AS total,
+        SUM(CASE WHEN status IN ('Un-Assigned') THEN 1 ELSE 0 END) AS unassigned,
+        SUM(CASE WHEN status IN ('In-Progress', 'Deffered', 'SNA') THEN 1 ELSE 0 END) AS inprogress,
+        SUM(CASE WHEN status = 'Completed' THEN 1 ELSE 0 END) AS completed
+      FROM Complaints
+    `);
+
+    const stats = result.recordset[0];
+
+    res.json({
+      total: stats.total,
+      unassigned: stats.unassigned,
+      inprogress: stats.inprogress,
+      completed: stats.completed
+    });
+
+  } catch (error) {
+    console.error('Error fetching complaints summary:', error);
+    res.status(500).json({ error: 'Failed to fetch complaints summary' });
+  } finally {
+    // Close pool after each request
+    if (pool) {
+      //await pool.close();
+    }
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Start the server
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });
+
 
 // Handle database connection errors
 sql.on('error', err => {
