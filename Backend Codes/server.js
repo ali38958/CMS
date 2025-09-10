@@ -43,25 +43,28 @@ app.use(cors());
 app.use(express.json());
 
 // Test database connection
-async function testConnection() {
+let pool;
+
+async function initDb() {
   try {
-    const pool = await sql.connect(dbConfig);
-    console.log('Connected to SQL Server');
+    if (!pool) {
+      pool = await sql.connect(dbConfig);
+      console.log("✅ Connected to SQL Server (global pool)");
+    }
     return pool;
   } catch (err) {
-    console.error('Database connection error:', err);
+    console.error("Database connection error:", err);
     throw err;
   }
 }
 
 
 
-async function checkAccess(token, page) {
-    let connection;
+
+async function checkAccess(token, page, pool) {
     
     try {
         // Connect to the database
-        connection = await sql.connect(dbConfig);
         
         // Step 1: Compare raw token with tokens in Users table
         const userQuery = `
@@ -70,7 +73,7 @@ async function checkAccess(token, page) {
             WHERE token = @token
         `;
         
-        const userRequest = connection.request();
+        const userRequest = pool.request();
         userRequest.input('token', sql.VarChar(255), token);
         const userResult = await userRequest.query(userQuery);
         
@@ -99,7 +102,7 @@ async function checkAccess(token, page) {
             WHERE ua.user_id = @userId AND ua.page = @page
         `;
         
-        const accessRequest = connection.request();
+        const accessRequest = pool.request();
         accessRequest.input('userId', sql.VarChar(20), user.id);
         accessRequest.input('page', sql.VarChar(25), page);
         const accessResult = await accessRequest.query(accessQuery);
@@ -125,12 +128,7 @@ async function checkAccess(token, page) {
             status: 'error',
             message: 'Internal server error'
         };
-    } finally {
-        // Close the connection
-        if (connection) {
-            //await connection.close();
-        }
-    }
+    } 
 }
 
 
@@ -143,30 +141,27 @@ async function checkAccess(token, page) {
 
 
 
-// Admin APIs
 
-// Helper function to execute queries
 async function executeQuery(query, params = {}) {
   try {
+    const pool = await initDb();
     const request = pool.request();
     for (const key in params) {
       request.input(key, params[key]);
     }
-    const result = await request.query(query);
-    return result;
+    return await request.query(query);
   } catch (error) {
-    console.error('Query execution error:', error);
+    console.error("Query execution error:", error);
     throw error;
   }
 }
+
 
 // API Routes
 
 // Get all pages
 app.get('/api/pages', async (req, res) => {
-
-  
-  
+ const pageAccess = 'admin-panel';
   // Verify Authorization header exists
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -175,7 +170,11 @@ app.get('/api/pages', async (req, res) => {
 
   const token = authHeader.split(' ')[1];
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    } 
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -203,6 +202,27 @@ app.get('/api/pages', async (req, res) => {
 
 // Get all users
 app.get('/api/users', async (req, res) => {
+  
+  const pageAccess = 'admin-panel';
+  // Verify Authorization header exists
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized - No token provided' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  let pool; // Declare pool here so it's accessible throughout the function
+
+  try {
+    pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    } 
+  } catch(error){
+    console.err("Error: "+error);
+  }
+
   try {
     const usersResult = await executeQuery(`
       SELECT 
@@ -242,7 +262,7 @@ app.get('/api/users', async (req, res) => {
 
 // Also update the /api/users/:id endpoint:
 app.get('/api/users/:id', async (req, res) => {
-
+const pageAccess = 'admin-panel';
   
   
   // Verify Authorization header exists
@@ -253,7 +273,11 @@ app.get('/api/users/:id', async (req, res) => {
 
   const token = authHeader.split(' ')[1];
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -308,9 +332,7 @@ app.get('/api/users/:id', async (req, res) => {
 
 // Create a new user
 app.post('/api/users', async (req, res) => {
-
-  
-  
+  const pageAccess = 'admin-panel';
   // Verify Authorization header exists
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -318,8 +340,14 @@ app.post('/api/users', async (req, res) => {
   }
 
   const token = authHeader.split(' ')[1];
+  let pool; // Declare pool here so it's accessible throughout the function
+
   try {
-    let pool = await sql.connect(dbConfig);
+    pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -330,9 +358,9 @@ app.post('/api/users', async (req, res) => {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
   } catch(error) {
-    console.err('Error: '+error);
+    console.error('Error: ' + error); // Fixed: console.err -> console.error
+    return res.status(500).json({ error: 'Internal server error during token validation' });
   }
-
 
   try {
     const { id, username, password, role, status, accessPermissions } = req.body;
@@ -345,7 +373,7 @@ app.post('/api/users', async (req, res) => {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
     
-    // Start transaction
+    // Start transaction - pool is now accessible here
     const transaction = new sql.Transaction(pool);
     await transaction.begin();
     
@@ -395,10 +423,7 @@ app.post('/api/users', async (req, res) => {
 
 // Update a user
 app.put('/api/users/:id', async (req, res) => {
-
-
-  
-  
+  const page = 'admin-panel';
   // Verify Authorization header exists
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -406,8 +431,14 @@ app.put('/api/users/:id', async (req, res) => {
   }
 
   const token = authHeader.split(' ')[1];
+  let pool; // Declare pool at the function level
+
   try {
-    let pool = await sql.connect(dbConfig);
+    pool = await initDb(); // Use initDb() instead of sql.connect(dbConfig)
+    const accessiblity = await checkAccess(token, page, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -418,16 +449,20 @@ app.put('/api/users/:id', async (req, res) => {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
   } catch(error) {
-    console.err('Error: '+error);
+    console.error('Error: ' + error); // Fixed: console.err -> console.error
+    return res.status(500).json({ error: 'Internal server error during token validation' });
   }
 
-
-  
   try {
     const { id } = req.params;
     const { username, password, role, status, accessPermissions } = req.body;
     
-    // Start transaction
+    // Validate required fields
+    if (!username) {
+      return res.status(400).json({ error: 'Username is required' });
+    }
+    
+    // Start transaction - pool is now accessible
     const transaction = new sql.Transaction(pool);
     await transaction.begin();
     
@@ -492,8 +527,6 @@ app.put('/api/users/:id', async (req, res) => {
 
 // Delete a user
 app.delete('/api/users/:id', async (req, res) => {
-  
-  
   // Verify Authorization header exists
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -501,8 +534,10 @@ app.delete('/api/users/:id', async (req, res) => {
   }
 
   const token = authHeader.split(' ')[1];
+  let pool; // Declare pool at the function level
+
   try {
-    let pool = await sql.connect(dbConfig);
+    pool = await initDb(); // Use initDb() instead of sql.connect(dbConfig)
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -513,12 +548,21 @@ app.delete('/api/users/:id', async (req, res) => {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
   } catch(error) {
-    console.err('Error: '+error);
+    console.error('Error: ' + error); // Fixed: console.err -> console.error
+    return res.status(500).json({ error: 'Internal server error during token validation' });
   }
-
 
   try {
     const { id } = req.params;
+    
+    // Optional: Prevent users from deleting themselves
+    const tokenCheck = await pool.request()
+      .input('token', sql.VarChar(255), token)
+      .query('SELECT id FROM Users WHERE token = @token');
+    
+    if (tokenCheck.recordset.length > 0 && tokenCheck.recordset[0].id === id) {
+      return res.status(400).json({ error: 'Cannot delete your own account' });
+    }
     
     // Start transaction
     const transaction = new sql.Transaction(pool);
@@ -533,7 +577,13 @@ app.delete('/api/users/:id', async (req, res) => {
       // Then delete the user
       const userRequest = new sql.Request(transaction);
       userRequest.input('id', sql.VarChar, id);
-      await userRequest.query('DELETE FROM Users WHERE id = @id');
+      const result = await userRequest.query('DELETE FROM Users WHERE id = @id');
+      
+      // Check if any user was actually deleted
+      if (result.rowsAffected[0] === 0) {
+        await transaction.rollback();
+        return res.status(404).json({ error: 'User not found' });
+      }
       
       await transaction.commit();
       res.json({ message: 'User deleted successfully' });
@@ -564,33 +614,7 @@ app.delete('/api/users/:id', async (req, res) => {
 
 
 // APIs for authentication
-/*/ API endpoint to get allowed pages for a user
 app.get('/api/allowed-pages', async (req, res) => {
-
-const pagesWithType = {
-  "dashboard": ["dashboard"],
-  "complaints": [
-    "all-complaints",
-    "launch-complaints",
-    "delay-complaints",
-    "nature"
-  ],
-  "users": [
-    "all-users",
-    "colonies",
-    "skillman"
-  ],
-  "reporting": [
-    "daily-report",
-    "complaints-report",
-    "skillman-report",
-    "rating-report"
-  ]
-};
-
-
-
-  let pool;
   try {
     // Get token from Authorization header
     const authHeader = req.headers['authorization'];
@@ -600,74 +624,8 @@ const pagesWithType = {
       return res.status(401).json({ success: false, message: 'Access token required' });
     }
     
-    // Create database connection
-    pool = await sql.connect(dbConfig);
-    
-    // Query to get user ID from token
-    const userQuery = `
-      SELECT id 
-      FROM Users 
-      WHERE token = @token AND is_active = 'Active'
-    `;
-    
-    const userResult = await pool.request()
-      .input('token', sql.VarChar(255), token)
-      .query(userQuery);
-    
-    if (userResult.recordset.length === 0) {
-      return res.status(403).json({ success: false, message: 'Invalid or expired token' });
-    }
-    
-    // Get user ID from result
-    const userId = userResult.recordset[0].id;
-    
-    // Query to get allowed pages for the user
-    const pagesQuery = `
-      SELECT p.page 
-      FROM Pages p
-      INNER JOIN UserAccess ua ON p.page = ua.page
-      WHERE ua.user_id = @userId
-      ORDER BY p.page
-    `;
-    
-    const pagesResult = await pool.request()
-      .input('userId', sql.VarChar(20), userId)
-      .query(pagesQuery);
-    
-    // Extract page names from result
-    const allowedPages = pagesResult.recordset.map(row => row.page);
-    
-    res.json({
-      success: true,
-      allowedPages: allowedPages
-    });
-    
-  } catch (error) {
-    console.error('Database error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Internal server error' 
-    });
-  } finally {
-    // Close the connection
-    if (pool) {
-      //await pool.close();
-    }
-  }
-});*/
-app.get('/api/allowed-pages', async (req, res) => {
-  let pool;
-  try {
-    // Get token from Authorization header
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-    
-    if (!token) {
-      return res.status(401).json({ success: false, message: 'Access token required' });
-    }
-    
-    // Create database connection
-    pool = await sql.connect(dbConfig);
+    // Use global database connection pool
+    const pool = await initDb();
     
     // Query to get user ID from token
     const userQuery = `
@@ -710,7 +668,7 @@ app.get('/api/allowed-pages', async (req, res) => {
         "launch-complaints",
         "all-complaints",
         "delay-complaints",
-        "nature"
+        "natures"
       ],
       "users": [
         "all-users",
@@ -759,12 +717,8 @@ app.get('/api/allowed-pages', async (req, res) => {
       success: false, 
       message: 'Internal server error' 
     });
-  } finally {
-    // Close the connection
-    if (pool) {
-      //await pool.close();
-    }
   }
+  // REMOVED the finally block - don't close the connection!
 });
 
 
@@ -847,9 +801,6 @@ process.on("SIGTERM", shutdown);  // kill command
 
 
 
-
-
-
 // Whatsapp message listener
 // WhatsApp message event handler
 client.on('message', async (message) => {
@@ -865,9 +816,8 @@ client.on('message', async (message) => {
         console.log(`Normalized sender number: ${normalizedSenderNumber}`);
 
         // Check if sender is a customer
-        let pool;
+        let pool = await initDb();
         try {
-            pool = await sql.connect(dbConfig);
 
             // Check if this phone number belongs to a customer (compare with normalized number)
             const customerQuery = `
@@ -1067,7 +1017,7 @@ async function sendMessage(phoneNumber, text) {
 }
 
 // Phone number formatting function for WhatsApp (local to international)
-function formatPhoneNumber(phoneNumber) {
+function formatPhoneNumberForWhatsApp(phoneNumber) {
     let digitsOnly = phoneNumber.replace(/\D/g, '');
     
     // Convert local format to international
@@ -1106,9 +1056,6 @@ const SECRET_KEY = process.env.ENCRYPTION_SECRET; // Example key, replace with a
 
 // Encrypt ID endpoint
 app.post('/api/encrypt-id', async (req, res) => {
-
-  
-  
   // Verify Authorization header exists
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -1116,8 +1063,10 @@ app.post('/api/encrypt-id', async (req, res) => {
   }
 
   const token = authHeader.split(' ')[1];
+  let pool; // Declare pool at function level
+
   try {
-    let pool = await sql.connect(dbConfig);
+    pool = await initDb(); // Use initDb() instead of sql.connect(dbConfig)
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -1128,10 +1077,10 @@ app.post('/api/encrypt-id', async (req, res) => {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
   } catch(error) {
-    console.err('Error: '+error);
+    console.error('Error: ' + error); // Fixed: console.err -> console.error
+    return res.status(500).json({ error: 'Internal server error during token validation' });
   }
 
-  
   try {
     const { complaint_id } = req.body;
     
@@ -1169,9 +1118,7 @@ app.post('/api/encrypt-id', async (req, res) => {
 
 // Optional: Decryption endpoint (if needed elsewhere in your application)
 app.post('/api/decrypt-id', async (req, res) => {
-
-  
-  
+  const pageAccess = 'all-complaints';
   // Verify Authorization header exists
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -1179,8 +1126,14 @@ app.post('/api/decrypt-id', async (req, res) => {
   }
 
   const token = authHeader.split(' ')[1];
+  let pool; // Declare pool at function level
+
   try {
-    let pool = await sql.connect(dbConfig);
+    pool = await initDb(); // Use initDb() instead of sql.connect(dbConfig)
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -1191,11 +1144,10 @@ app.post('/api/decrypt-id', async (req, res) => {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
   } catch(error) {
-    console.err('Error: '+error);
+    console.error('Error: ' + error); // Fixed: console.err -> console.error
+    return res.status(500).json({ error: 'Internal server error during token validation' });
   }
 
-
-  let pool;
   try {
     const { encrypted_id } = req.body;
     
@@ -1223,9 +1175,7 @@ app.post('/api/decrypt-id', async (req, res) => {
       });
     }
     
-    // Connect to database and check if complaint exists
-    pool = await sql.connect(dbConfig);
-    
+    // Check if complaint exists (pool is already connected from token validation)
     const result = await pool.request()
       .input('complaintId', sql.VarChar, decryptedId)
       .query('SELECT COUNT(*) as count FROM Complaints WHERE complaint_id = @complaintId');
@@ -1260,16 +1210,8 @@ app.post('/api/decrypt-id', async (req, res) => {
       success: false,
       message: errorMessage
     });
-  } finally {
-    // Close database connection if it was opened
-    if (pool) {
-      try {
-        //await pool.close();
-      } catch (closeError) {
-        console.error('Error closing database connection:', closeError);
-      }
-    }
   }
+  // REMOVED the finally block - don't close the connection!
 });
 
 
@@ -1279,9 +1221,8 @@ app.post('/api/decrypt-id', async (req, res) => {
 
 
 // Endpoint for complaint details
-app.get(`/data`, async (req, res) => {
-  
-  
+app.get('/data', async (req, res) => {
+  const pageAccess = 'all-complaints';
   // Verify Authorization header exists
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -1289,8 +1230,13 @@ app.get(`/data`, async (req, res) => {
   }
 
   const token = authHeader.split(' ')[1];
+
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb(); // Use initDb() instead of sql.connect(dbConfig)
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -1301,9 +1247,9 @@ app.get(`/data`, async (req, res) => {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
   } catch(error) {
-    console.err('Error: '+error);
+    console.error('Error: ' + error); // Fixed: console.err -> console.error
+    return res.status(500).json({ error: 'Internal server error during token validation' });
   }
-
 
   const { complaintId } = req.query;
 
@@ -1312,9 +1258,6 @@ app.get(`/data`, async (req, res) => {
   }
 
   try {
-    // Connect to the database
-    await sql.connect(dbConfig);
-    
     // SQL query to fetch all required data with joins
     // Fixed the column names based on your table structure
     const query = `
@@ -1347,10 +1290,11 @@ app.get(`/data`, async (req, res) => {
       WHERE comp.complaint_id = @complaintId
     `;
 
-    const request = new sql.Request();
-    request.input('complaintId', sql.VarChar(25), complaintId);
-
-    const result = await request.query(query);
+    // Use the existing pool connection instead of creating a new one
+    const pool = await initDb();
+    const result = await pool.request()
+      .input('complaintId', sql.VarChar(25), complaintId)
+      .query(query);
 
     if (result.recordset.length === 0) {
       return res.status(404).json({ error: 'Complaint not found' });
@@ -1382,10 +1326,8 @@ app.get(`/data`, async (req, res) => {
   } catch (error) {
     console.error('Database error:', error);
     res.status(500).json({ error: 'Internal server error' });
-  } finally {
-    // Close the connection if needed
-    // await sql.close();
   }
+  // REMOVED the finally block - don't close the connection!
 });
 
 
@@ -1398,8 +1340,7 @@ app.get(`/data`, async (req, res) => {
 // Complaints data endpoint
 // Complaints data endpoint for a customer's history
 app.get('/api/users-history', async (req, res) => {
-  
-  
+  const pageAccess = 'all-complaints';
   // Verify Authorization header exists
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -1407,8 +1348,14 @@ app.get('/api/users-history', async (req, res) => {
   }
 
   const token = authHeader.split(' ')[1];
+  let pool; // Declare pool at function level
+
   try {
-    let pool = await sql.connect(dbConfig);
+    pool = await initDb(); // Use initDb() instead of sql.connect(dbConfig)
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -1419,10 +1366,10 @@ app.get('/api/users-history', async (req, res) => {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
   } catch(error) {
-    console.err('Error: '+error);
+    console.error('Error: ' + error); // Fixed: console.err -> console.error
+    return res.status(500).json({ error: 'Internal server error during token validation' });
   }
-  let pool;
-  //console.log('Received request for /api/users-history');
+
   try {
     // Get complaintId from query parameter (required)
     const complaintId = req.query.complaintId;
@@ -1431,9 +1378,6 @@ app.get('/api/users-history', async (req, res) => {
       return res.status(400).json({ error: 'complaintId parameter is required' });
     }
     
-    // Connect to the database
-    pool = await sql.connect(dbConfig);
-    
     // First, get the customer ID from the provided complaint ID
     const customerQuery = `
       SELECT customer_id 
@@ -1441,9 +1385,9 @@ app.get('/api/users-history', async (req, res) => {
       WHERE complaint_id = @complaintId
     `;
     
-    const customerRequest = pool.request();
-    customerRequest.input('complaintId', sql.VarChar(25), complaintId);
-    const customerResult = await customerRequest.query(customerQuery);
+    const customerResult = await pool.request()
+      .input('complaintId', sql.VarChar(25), complaintId)
+      .query(customerQuery);
     
     if (customerResult.recordset.length === 0) {
       return res.status(404).json({ error: 'Complaint not found' });
@@ -1470,13 +1414,11 @@ app.get('/api/users-history', async (req, res) => {
       ORDER BY c.launched_at DESC
     `;
     
-    // Create request
-    const request = pool.request();
-    request.input('customerId', sql.Int, customerId);
-    request.input('complaintId', sql.VarChar(25), complaintId);
-    
-    // Execute query
-    const result = await request.query(queryString);
+    // Execute query using the existing pool
+    const result = await pool.request()
+      .input('customerId', sql.Int, customerId)
+      .input('complaintId', sql.VarChar(25), complaintId)
+      .query(queryString);
     
     // Send the results as JSON
     res.json(result.recordset);
@@ -1484,12 +1426,8 @@ app.get('/api/users-history', async (req, res) => {
   } catch (error) {
     console.error('Database query error:', error);
     res.status(500).json({ error: 'Internal server error' });
-  } finally {
-    // Close the connection
-    if (pool) {
-      //await pool.close();
-    }
   }
+  // REMOVED the finally block - don't close the connection!
 });
 
 
@@ -1499,8 +1437,7 @@ app.get('/api/users-history', async (req, res) => {
 
 // Retrieve Helper skillmen for complaint details
 app.get('/api/helpers', async (req, res) => {
-
-  
+  const pageAccess = 'all-complaints';
   // Verify Authorization header exists
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -1508,8 +1445,14 @@ app.get('/api/helpers', async (req, res) => {
   }
 
   const token = authHeader.split(' ')[1];
+  let pool; // Declare pool at function level
+
   try {
-    let pool = await sql.connect(dbConfig);
+    pool = await initDb(); // Use initDb() instead of sql.connect(dbConfig)
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -1520,15 +1463,11 @@ app.get('/api/helpers', async (req, res) => {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
   } catch(error) {
-    console.err('Error: '+error);
+    console.error('Error: ' + error); // Fixed: console.err -> console.error
+    return res.status(500).json({ error: 'Internal server error during token validation' });
   }
 
-
-
-
   const { complaintId } = req.query;
-  //console.log('Helper call with id: '+complaintId);
-  
 
   // Validate complaintId parameter
   if (!complaintId) {
@@ -1540,10 +1479,6 @@ app.get('/api/helpers', async (req, res) => {
   }
 
   try {
-    // Create connection pool
-    const pool = await sql.connect(dbConfig);
-    
-    //console.log('Creating query');
     // Query to get all skillmen assigned to the specific complaint
     const query = `
       SELECT 
@@ -1559,13 +1494,10 @@ app.get('/api/helpers', async (req, res) => {
       ORDER BY s.name
     `;
     
-    // Execute the query
+    // Execute the query using the existing pool connection
     const result = await pool.request()
       .input('complaintId', sql.VarChar(25), complaintId)
       .query(query);
-    
-    // Close the connection
-    //await pool.close();
     
     // Format the response
     const helpers = result.recordset.map(helper => ({
@@ -1577,7 +1509,6 @@ app.get('/api/helpers', async (req, res) => {
       status: helper.status
     }));
     
-    //console.log('Data sent');
     // Return the helpers data
     res.json(helpers);
     
@@ -1589,6 +1520,7 @@ app.get('/api/helpers', async (req, res) => {
       error: error.message
     });
   }
+  // REMOVED the connection closing - don't close the pool!
 });
 
 
@@ -1602,8 +1534,7 @@ app.get('/api/helpers', async (req, res) => {
 
 // Whatsapp API to send reviewing request
 app.post('/api/send-reviewing-request', async (req, res) => {
-
-  
+  const page = 'all-complaints';
   // Verify Authorization header exists
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -1611,8 +1542,14 @@ app.post('/api/send-reviewing-request', async (req, res) => {
   }
 
   const token = authHeader.split(' ')[1];
+
+    const pool = await initDb(); // Use initDb() instead of sql.connect(dbConfig)
   try {
-    let pool = await sql.connect(dbConfig);
+    const accessiblity = await checkAccess(token, page, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
+    
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -1623,211 +1560,203 @@ app.post('/api/send-reviewing-request', async (req, res) => {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
   } catch(error) {
-    console.err('Error: '+error);
+    console.error('Error: ' + error); // Fixed: console.err -> console.error
+    return res.status(500).json({ error: 'Internal server error during token validation' });
   }
 
+  const { phoneNumber, complaintId } = req.body;
 
+  if (!phoneNumber || !complaintId) {
+    return res.status(400).json({ message: 'Phone number and complaint ID are required' });
+  }
+
+  // Check if WhatsApp client is ready
+  if (!client || !client.info) {
+    console.error('WhatsApp client is not ready');
+    return res.status(503).json({ 
+      message: 'WhatsApp service is currently unavailable. Please try again later.' 
+    });
+  }
+
+  try {
+    // Check if complaint exists and get details
+    const complaintQuery = `
+      SELECT c.complaint_id, c.status, c.skillman_id, s.name as skillman_name,
+            cust.phone_number, cust.full_name
+      FROM Complaints c
+      LEFT JOIN Skillmen s ON c.skillman_id = s.id
+      INNER JOIN Customers cust ON c.customer_id = cust.customer_id
+      WHERE c.complaint_id = @complaintId
+    `;
+
+    const complaintResult = await pool.request()
+      .input('complaintId', sql.VarChar(25), complaintId)
+      .query(complaintQuery);
+
+    if (complaintResult.recordset.length === 0) {
+      return res.status(404).json({ message: 'Complaint not found' });
+    }
+
+    const complaint = complaintResult.recordset[0];
+    const customerName = complaint.full_name;
+    const skillmanName = complaint.skillman_name || 'our technician';
+
+    // Check if complaint is completed - if not, return error to frontend
+    if (complaint.status !== 'Completed') {
+      return res.status(400).json({ 
+        message: 'Complaint has not been completed yet',
+        complaintStatus: complaint.status
+      });
+    }
+
+    // Check if feedback already exists and is reviewed
+    const existingFeedbackQuery = `
+      SELECT feedback_id, status, rating 
+      FROM ComplaintFeedback 
+      WHERE complaint_id = @complaintId AND status = 'reviewed'
+    `;
+
+    const existingFeedbackResult = await pool.request()
+      .input('complaintId', sql.VarChar(25), complaintId)
+      .query(existingFeedbackQuery);
+
+    // If complaint has already been reviewed, return error
+    if (existingFeedbackResult.recordset.length > 0) {
+      const feedback = existingFeedbackResult.recordset[0];
+      return res.status(400).json({ 
+        message: 'This complaint has already been reviewed',
+        complaintStatus: complaint.status,
+        existingRating: feedback.rating,
+        feedbackStatus: feedback.status
+      });
+    }
+
+    // Check for existing ComplaintFeedback records for this customer
+    const customerFeedbackQuery = `
+      SELECT cf.feedback_id, cf.status 
+      FROM ComplaintFeedback cf
+      INNER JOIN Complaints c ON cf.complaint_id = c.complaint_id
+      INNER JOIN Customers cust ON c.customer_id = cust.customer_id
+      WHERE cust.phone_number = @phoneNumber AND cf.status = 'awaiting'
+    `;
+
+    const customerFeedbackResult = await pool.request()
+      .input('phoneNumber', sql.NVarChar(20), phoneNumber)
+      .query(customerFeedbackQuery);
+
+    // Update any existing 'awaiting' records for this customer to 'not_reviewed'
+    if (customerFeedbackResult.recordset.length > 0) {
+      await pool.request()
+        .input('phoneNumber', sql.NVarChar(20), phoneNumber)
+        .query(`
+          UPDATE cf 
+          SET cf.status = 'not_reviewed'
+          FROM ComplaintFeedback cf
+          INNER JOIN Complaints c ON cf.complaint_id = c.complaint_id
+          INNER JOIN Customers cust ON c.customer_id = cust.customer_id
+          WHERE cust.phone_number = @phoneNumber AND cf.status = 'awaiting'
+        `);
+    }
+
+    // Check if feedback record already exists for this complaint (but not reviewed)
+    const feedbackQuery = `
+      SELECT feedback_id, status 
+      FROM ComplaintFeedback 
+      WHERE complaint_id = @complaintId AND status != 'reviewed'
+    `;
+
+    const feedbackResult = await pool.request()
+      .input('complaintId', sql.VarChar(25), complaintId)
+      .query(feedbackQuery);
+
+    let feedbackExists = feedbackResult.recordset.length > 0;
+
+    // Create or update feedback record
+    if (feedbackExists) {
+      // Update existing record to 'awaiting'
+      await pool.request()
+        .input('complaintId', sql.VarChar(25), complaintId)
+        .query(`
+          UPDATE ComplaintFeedback 
+          SET status = 'awaiting', created_at = GETDATE()
+          WHERE complaint_id = @complaintId
+        `);
+    } else {
+      // Create new feedback record
+      await pool.request()
+        .input('complaintId', sql.VarChar(25), complaintId)
+        .query(`
+          INSERT INTO ComplaintFeedback (complaint_id, status)
+          VALUES (@complaintId, 'awaiting')
+        `);
+    }
+
+    // Prepare WhatsApp message
+    let message = `Respected ${customerName},\n\n`;
+    message += `Your complaint #${complaintId} has been successfully resolved!\n\n`;
+    message += `Please rate ${skillmanName}'s service:\n`;
+    message += `0️⃣ - Not resolved\n`;
+    message += `1️⃣ - Poor\n`;
+    message += `2️⃣ - Fair\n`;
+    message += `3️⃣ - Good\n`;
+    message += `4️⃣ - Very Good\n`;
+    message += `5️⃣ - Excellent\n\n`;
+    message += `To provide your rating, reply with a number (0–5) and, optionally, a short review.\n\n`;
+    message += `For example: [5. Excellent support, very helpful!]`;
+
+    // Format phone number
+    let digitsOnly = phoneNumber.replace(/\D/g, '');
     
-    const { phoneNumber, complaintId } = req.body;
-
-    if (!phoneNumber || !complaintId) {
-        return res.status(400).json({ message: 'Phone number and complaint ID are required' });
+    // Convert to international format for Pakistan numbers
+    let internationalNumber;
+    
+    if (digitsOnly.startsWith('92') && digitsOnly.length === 12) {
+      internationalNumber = digitsOnly;
+    } else if (digitsOnly.startsWith('92') && digitsOnly.length > 12) {
+      internationalNumber = digitsOnly.substring(0, 12);
+    } else if (digitsOnly.startsWith('3') && digitsOnly.length === 10) {
+      internationalNumber = '92' + digitsOnly;
+    } else if (digitsOnly.startsWith('03') && digitsOnly.length === 11) {
+      internationalNumber = '92' + digitsOnly.substring(1);
+    } else if (digitsOnly.startsWith('0') && digitsOnly.length === 11) {
+      internationalNumber = '92' + digitsOnly.substring(1);
+    } else if (digitsOnly.length === 9 || digitsOnly.length === 10) {
+      internationalNumber = '92' + digitsOnly;
+    } else {
+      internationalNumber = digitsOnly.length > 12 ? digitsOnly.substring(0, 12) : digitsOnly;
+      console.warn(`Unknown phone number format: ${phoneNumber}, using: ${internationalNumber}`);
     }
+    
+    const whatsappId = `${internationalNumber}@c.us`;
 
-    // Check if WhatsApp client is ready
-    if (!client || !client.info) {
-        console.error('WhatsApp client is not ready');
-        return res.status(503).json({ 
-            message: 'WhatsApp service is currently unavailable. Please try again later.' 
-        });
+    // Send WhatsApp message
+    await client.sendMessage(whatsappId, message);
+    
+    console.log(`WhatsApp review request sent to ${internationalNumber} for complaint ${complaintId}`);
+
+    res.json({ 
+      message: 'Review request sent successfully',
+      complaintStatus: complaint.status,
+      feedbackUpdated: !feedbackExists
+    });
+
+  } catch (error) {
+    console.error('Error in send-reviewing-request:', error);
+    
+    // Handle specific WhatsApp errors
+    if (error.message.includes('Evaluation failed') || error.message.includes('not found')) {
+      return res.status(503).json({ 
+        message: 'WhatsApp service temporarily unavailable. Please try again later.',
+        error: 'WhatsApp client error'
+      });
     }
-
-    let pool;
-    try {
-        // Connect to database
-        pool = await sql.connect(dbConfig);
-        
-        // Check if complaint exists and get details
-        const complaintQuery = `
-            SELECT c.complaint_id, c.status, c.skillman_id, s.name as skillman_name,
-                   cust.phone_number, cust.full_name
-            FROM Complaints c
-            LEFT JOIN Skillmen s ON c.skillman_id = s.id
-            INNER JOIN Customers cust ON c.customer_id = cust.customer_id
-            WHERE c.complaint_id = @complaintId
-        `;
-
-        const complaintResult = await pool.request()
-            .input('complaintId', sql.VarChar(25), complaintId)
-            .query(complaintQuery);
-
-        if (complaintResult.recordset.length === 0) {
-            return res.status(404).json({ message: 'Complaint not found' });
-        }
-
-        const complaint = complaintResult.recordset[0];
-        const customerName = complaint.full_name;
-        const skillmanName = complaint.skillman_name || 'our technician';
-
-        // Check if complaint is completed - if not, return error to frontend
-        if (complaint.status !== 'Completed') {
-            return res.status(400).json({ 
-                message: 'Complaint has not been completed yet',
-                complaintStatus: complaint.status
-            });
-        }
-
-        // Check if feedback already exists and is reviewed
-        const existingFeedbackQuery = `
-            SELECT feedback_id, status, rating 
-            FROM ComplaintFeedback 
-            WHERE complaint_id = @complaintId AND status = 'reviewed'
-        `;
-
-        const existingFeedbackResult = await pool.request()
-            .input('complaintId', sql.VarChar(25), complaintId)
-            .query(existingFeedbackQuery);
-
-        // If complaint has already been reviewed, return error
-        if (existingFeedbackResult.recordset.length > 0) {
-            const feedback = existingFeedbackResult.recordset[0];
-            return res.status(400).json({ 
-                message: 'This complaint has already been reviewed',
-                complaintStatus: complaint.status,
-                existingRating: feedback.rating,
-                feedbackStatus: feedback.status
-            });
-        }
-
-        // Check for existing ComplaintFeedback records for this customer
-        const customerFeedbackQuery = `
-            SELECT cf.feedback_id, cf.status 
-            FROM ComplaintFeedback cf
-            INNER JOIN Complaints c ON cf.complaint_id = c.complaint_id
-            INNER JOIN Customers cust ON c.customer_id = cust.customer_id
-            WHERE cust.phone_number = @phoneNumber AND cf.status = 'awaiting'
-        `;
-
-        const customerFeedbackResult = await pool.request()
-            .input('phoneNumber', sql.NVarChar(20), phoneNumber)
-            .query(customerFeedbackQuery);
-
-        // Update any existing 'awaiting' records for this customer to 'not_reviewed'
-        if (customerFeedbackResult.recordset.length > 0) {
-            await pool.request()
-                .input('phoneNumber', sql.NVarChar(20), phoneNumber)
-                .query(`
-                    UPDATE cf 
-                    SET cf.status = 'not_reviewed'
-                    FROM ComplaintFeedback cf
-                    INNER JOIN Complaints c ON cf.complaint_id = c.complaint_id
-                    INNER JOIN Customers cust ON c.customer_id = cust.customer_id
-                    WHERE cust.phone_number = @phoneNumber AND cf.status = 'awaiting'
-                `);
-        }
-
-        // Check if feedback record already exists for this complaint (but not reviewed)
-        const feedbackQuery = `
-            SELECT feedback_id, status 
-            FROM ComplaintFeedback 
-            WHERE complaint_id = @complaintId AND status != 'reviewed'
-        `;
-
-        const feedbackResult = await pool.request()
-            .input('complaintId', sql.VarChar(25), complaintId)
-            .query(feedbackQuery);
-
-        let feedbackExists = feedbackResult.recordset.length > 0;
-
-        // Create or update feedback record
-        if (feedbackExists) {
-            // Update existing record to 'awaiting'
-            await pool.request()
-                .input('complaintId', sql.VarChar(25), complaintId)
-                .query(`
-                    UPDATE ComplaintFeedback 
-                    SET status = 'awaiting', created_at = GETDATE()
-                    WHERE complaint_id = @complaintId
-                `);
-        } else {
-            // Create new feedback record
-            await pool.request()
-                .input('complaintId', sql.VarChar(25), complaintId)
-                .query(`
-                    INSERT INTO ComplaintFeedback (complaint_id, status)
-                    VALUES (@complaintId, 'awaiting')
-                `);
-        }
-
-        // Prepare WhatsApp message
-        let message = `Respected ${customerName},\n\n`;
-        message += `Your complaint #${complaintId} has been successfully resolved!\n\n`;
-        message += `Please rate ${skillmanName}'s service:\n`;
-        message += `0️⃣ - Not resolved\n`;
-        message += `1️⃣ - Poor\n`;
-        message += `2️⃣ - Fair\n`;
-        message += `3️⃣ - Good\n`;
-        message += `4️⃣ - Very Good\n`;
-        message += `5️⃣ - Excellent\n\n`;
-        message += `Reply with your rating (0-5) with a review.\n\n`;
-        message += `4 (your review here)`;
-
-        // Format phone number
-        let digitsOnly = phoneNumber.replace(/\D/g, '');
-        
-        // Convert to international format for Pakistan numbers
-        let internationalNumber;
-        
-        if (digitsOnly.startsWith('92') && digitsOnly.length === 12) {
-            internationalNumber = digitsOnly;
-        } else if (digitsOnly.startsWith('92') && digitsOnly.length > 12) {
-            internationalNumber = digitsOnly.substring(0, 12);
-        } else if (digitsOnly.startsWith('3') && digitsOnly.length === 10) {
-            internationalNumber = '92' + digitsOnly;
-        } else if (digitsOnly.startsWith('03') && digitsOnly.length === 11) {
-            internationalNumber = '92' + digitsOnly.substring(1);
-        } else if (digitsOnly.startsWith('0') && digitsOnly.length === 11) {
-            internationalNumber = '92' + digitsOnly.substring(1);
-        } else if (digitsOnly.length === 9 || digitsOnly.length === 10) {
-            internationalNumber = '92' + digitsOnly;
-        } else {
-            internationalNumber = digitsOnly.length > 12 ? digitsOnly.substring(0, 12) : digitsOnly;
-            console.warn(`Unknown phone number format: ${phoneNumber}, using: ${internationalNumber}`);
-        }
-        
-        const whatsappId = `${internationalNumber}@c.us`;
-
-        // Send WhatsApp message
-        await client.sendMessage(whatsappId, message);
-        
-        console.log(`WhatsApp review request sent to ${internationalNumber} for complaint ${complaintId}`);
-
-        res.json({ 
-            message: 'Review request sent successfully',
-            complaintStatus: complaint.status,
-            feedbackUpdated: !feedbackExists
-        });
-
-    } catch (error) {
-        console.error('Error in send-reviewing-request:', error);
-        
-        // Handle specific WhatsApp errors
-        if (error.message.includes('Evaluation failed') || error.message.includes('not found')) {
-            return res.status(503).json({ 
-                message: 'WhatsApp service temporarily unavailable. Please try again later.',
-                error: 'WhatsApp client error'
-            });
-        }
-        
-        res.status(500).json({ 
-            message: 'Internal server error', 
-            error: error.message 
-        });
-    } finally {
-        if (pool) {
-            //await pool.close();
-        }
-    }
+    
+    res.status(500).json({ 
+      message: 'Internal server error', 
+      error: error.message 
+    });
+  }
+  // REMOVED the finally block - don't close the connection!
 });
 
 
@@ -1861,7 +1790,7 @@ app.post('/login', async (req, res) => {
 
   let pool;
   try {
-    pool = await sql.connect(dbConfig);
+    pool = await initDb(); // Use initDb() instead of sql.connect(dbConfig)
 
     // Fetch user
     const result = await pool.request()
@@ -1874,12 +1803,19 @@ app.post('/login', async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
+    // Check if user is active
+    if (user.is_active !== 'Active') {
+      return res.status(401).json({ error: 'Account is deactivated. Please contact administrator.' });
+    }
+
     // Check password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ error: 'Invalid password' });
     }
+
     console.log(`User ${user.name} logged in successfully`);
+
     // Generate and store token
     const token = generateToken();
     await pool.request()
@@ -1887,15 +1823,22 @@ app.post('/login', async (req, res) => {
       .input('token', sql.VarChar(255), token)
       .query('UPDATE dbo.Users SET token = @token WHERE id = @id');
 
-    return res.status(200).json({ token });
+    // Return user info along with token (excluding password)
+    return res.status(200).json({
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        role: user.receiver,
+        status: user.is_active
+      }
+    });
 
   } catch (err) {
     console.error('❌ Login error:', err.message);
     return res.status(500).json({ error: 'Internal server error' });
-  } finally {
-    //but don't close the connection here
-    //if (pool) await pool.close();
   }
+  // REMOVED the finally block - don't close the connection!
 });
 
 
@@ -1913,20 +1856,35 @@ app.post('/verify-token', async (req, res) => {
   }
 
   try {
-    await sql.connect(dbConfig);
-    console.log('Connected to database');
+    // Use global connection pool instead of creating new connection
+    const pool = await initDb();
+    console.log('Connected to database using global pool');
 
-    const result = await sql.query`
-      SELECT id, name FROM Users WHERE token = ${token}
-    `;
+    // Use parameterized query with input() for security
+    const result = await pool.request()
+      .input('token', sql.VarChar(255), token)
+      .query('SELECT id, name, receiver as role, is_active as status FROM Users WHERE token = @token');
 
     if (result.recordset.length > 0) {
-      console.log('Token verified for user:', result.recordset[0].name);
+      const user = result.recordset[0];
+      
+      // Check if user account is active
+      if (user.status !== 'Active') {
+        console.log('User account is deactivated:', user.name);
+        return res.status(401).json({ 
+          success: false, 
+          message: 'Account deactivated. Please contact administrator.' 
+        });
+      }
+      
+      console.log('Token verified for user:', user.name);
       return res.json({ 
         success: true, 
         user: {
-          id: result.recordset[0].id,
-          name: result.recordset[0].name
+          id: user.id,
+          name: user.name,
+          role: user.role,
+          status: user.status
         }
       });
     } else {
@@ -1935,11 +1893,9 @@ app.post('/verify-token', async (req, res) => {
     }
   } catch (err) {
     console.error('Database error:', err);
-    return res.status(500).json({ success: false, message: 'Database error' });
-  } finally {
-    //no need to close the connection here
-    //sql.close();
+    return res.status(500).json({ success: false, message: 'Internal server error' });
   }
+  // REMOVED the finally block - don't close the connection!
 });
 
 
@@ -1962,15 +1918,14 @@ app.post('/verify-token-get-receiver', async (req, res) => {
   }
 
   try {
-    await sql.connect(dbConfig);
-    console.log('Connected to database');
+    // Use global connection pool instead of creating new connection
+    const pool = await initDb();
+    console.log('Connected to database using global pool');
 
-    // Check if user exists with this token and is active
-    const userResult = await sql.query`
-      SELECT id, name, receiver, is_active 
-      FROM Users 
-      WHERE token = ${token}
-    `;
+    // Check if user exists with this token and is active - using parameterized query
+    const userResult = await pool.request()
+      .input('token', sql.VarChar(255), token)
+      .query('SELECT id, name, receiver, is_active FROM Users WHERE token = @token');
 
     if (userResult.recordset.length === 0) {
       console.log('Invalid or expired token');
@@ -1985,13 +1940,11 @@ app.post('/verify-token-get-receiver', async (req, res) => {
       return res.status(401).json({ success: false, message: 'Account is inactive' });
     }
 
-    // Check if user has access to the requested page
-    const accessResult = await sql.query`
-      SELECT ua.id 
-      FROM UserAccess ua
-      INNER JOIN Users u ON ua.user_id = u.id
-      WHERE ua.user_id = ${user.id} AND ua.page = ${requestedPage} AND u.is_active = 'Active'
-    `;
+    // Check if user has access to the requested page - using parameterized query
+    const accessResult = await pool.request()
+      .input('userId', sql.VarChar(20), user.id)
+      .input('pageName', sql.VarChar(100), requestedPage)
+      .query('SELECT ua.id FROM UserAccess ua INNER JOIN Users u ON ua.user_id = u.id WHERE ua.user_id = @userId AND ua.page = @pageName AND u.is_active = \'Active\'');
 
     if (accessResult.recordset.length === 0) {
       console.log('User does not have access to this page:', user.id, requestedPage);
@@ -2004,7 +1957,9 @@ app.post('/verify-token-get-receiver', async (req, res) => {
       success: true, 
       user: {
         id: user.id,
-        name: user.name
+        name: user.name,
+        role: user.receiver,
+        status: user.is_active
       },
       receiver: {
         name: user.receiver || 'Administrator' // Fallback to 'Administrator' if receiver is null
@@ -2012,11 +1967,9 @@ app.post('/verify-token-get-receiver', async (req, res) => {
     });
   } catch (err) {
     console.error('Database error:', err);
-    return res.status(500).json({ success: false, message: 'Database error' });
-  } finally {
-    // No need to close the connection here
-    // sql.close();
+    return res.status(500).json({ success: false, message: 'Internal server error' });
   }
+  // REMOVED the finally block - don't close the connection!
 });
 
 
@@ -2024,7 +1977,6 @@ app.post('/verify-token-get-receiver', async (req, res) => {
 
 // Logout functionality
 app.post('/logout', async (req, res) => {
-  
   // Verify Authorization header exists
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -2033,11 +1985,13 @@ app.post('/logout', async (req, res) => {
   const token = authHeader.split(' ')[1];
 
   try {
-    await sql.connect(dbConfig);
+    // Use global connection pool instead of creating new connection
+    const pool = await initDb();
 
-    const result = await sql.query`
-      UPDATE Users SET token = NULL WHERE token = ${token}
-    `;
+    // Use parameterized query to prevent SQL injection
+    const result = await pool.request()
+      .input('token', sql.VarChar(255), token)
+      .query('UPDATE Users SET token = NULL WHERE token = @token');
 
     if (result.rowsAffected[0] > 0) {
       console.log('User logged out successfully');
@@ -2050,12 +2004,8 @@ app.post('/logout', async (req, res) => {
   } catch (err) {
     console.error('Error during logout:', err);
     return res.status(500).json({ success: false, message: 'Server error' });
-  } finally {
-    // Close the DB connection if needed
-    if (sql.connected) {
-      //await sql.close();
-    }
   }
+  // REMOVED the finally block - don't close the connection!
 });
 
 
@@ -2066,6 +2016,7 @@ app.post('/logout', async (req, res) => {
 
 
 app.get('/api/count-based-on-priority', async (req, res) => {
+  const pageAccess = 'all-complaints';
   // Verify Authorization header exists
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -2073,9 +2024,14 @@ app.get('/api/count-based-on-priority', async (req, res) => {
   }
 
   const token = authHeader.split(' ')[1];
+  let pool; // Declare pool at function level
   
   try {
-    let pool = await sql.connect(dbConfig);
+    pool = await initDb(); // Use initDb() instead of sql.connect(dbConfig)
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
     
     // Verify token validity
     const tokenCheck = await pool.request()
@@ -2105,7 +2061,7 @@ app.get('/api/count-based-on-priority', async (req, res) => {
     };
 
     result.recordset.forEach(row => {
-      const priority = row.priority.toLowerCase();
+      const priority = row.priority ? row.priority.toLowerCase() : '';
       if (counts.hasOwnProperty(priority)) {
         counts[priority] = row.count;
       }
@@ -2123,10 +2079,8 @@ app.get('/api/count-based-on-priority', async (req, res) => {
       message: 'Internal server error',
       error: error.message
     });
-  } finally {
-    // Close the connection
-    //await sql.close();
   }
+  // REMOVED the finally block - don't close the connection!
 });
 
 
@@ -2144,6 +2098,7 @@ app.get('/api/count-based-on-priority', async (req, res) => {
 
 // API endpoint to get address data
 app.get('/api/addresses', async (req, res) => {
+  const pageAccess = 'launch-complaints';
   // Verify Authorization header exists
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -2151,8 +2106,14 @@ app.get('/api/addresses', async (req, res) => {
   }
 
   const token = authHeader.split(' ')[1];
+  let pool; // Declare pool at function level
+  
   try {
-    let pool = await sql.connect(dbConfig);
+    pool = await initDb(); // Use initDb() instead of sql.connect(dbConfig)
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -2162,9 +2123,7 @@ app.get('/api/addresses', async (req, res) => {
     if (tokenCheck.recordset.length === 0) {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
-    // Connect to the database
-    await sql.connect(dbConfig);
-    
+
     // Query to get location data with user information
     const query = `
       SELECT 
@@ -2179,22 +2138,21 @@ app.get('/api/addresses', async (req, res) => {
       ORDER BY l.location_id
     `;
     
-    // Execute the query
-    const result = await sql.query(query);
+    // Execute the query using the existing pool connection
+    const result = await pool.request().query(query);
     
     // Send the results
     res.json(result.recordset);
   } catch (err) {
     console.error('Database error:', err);
     res.status(500).json({ error: 'Failed to fetch address data' });
-  } finally {
-    // Don't Close the connection
-    //sql.close();
   }
+  // REMOVED the finally block - don't close the connection!
 });
 
 // API endpoint to get colonies
-app.get('/api/colonies', async (req, res) => {
+app.get('/api/get-colonies-for-launch-complaints', async (req, res) => {
+  const pageAccess = 'launch-complaints';
   // Verify Authorization header exists
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -2202,9 +2160,14 @@ app.get('/api/colonies', async (req, res) => {
   }
 
   const token = authHeader.split(' ')[1];
+  let pool; // Declare pool at function level
   
   try {
-    let pool = await sql.connect(dbConfig);
+    pool = await initDb(); // Use initDb() instead of sql.connect(dbConfig)
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -2215,8 +2178,6 @@ app.get('/api/colonies', async (req, res) => {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
 
-    await sql.connect(dbConfig);
-    
     const query = `
       SELECT 
         ColonyNumber AS id,
@@ -2225,19 +2186,19 @@ app.get('/api/colonies', async (req, res) => {
       ORDER BY Name
     `;
     
-    const result = await sql.query(query);
+    // Execute the query using the existing pool connection
+    const result = await pool.request().query(query);
     res.json(result.recordset);
   } catch (err) {
     console.error('Database error:', err);
     res.status(500).json({ error: 'Failed to fetch colonies' });
-  } finally {
-    //dont close
-    //sql.close();
   }
+  // REMOVED the finally block - don't close the connection!
 });
 
 // API endpoint to get apartment/building types
 app.get('/api/apartment-types', async (req, res) => {
+  const pageAccess = 'launch-complaints';
   // Verify Authorization header exists
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -2245,8 +2206,14 @@ app.get('/api/apartment-types', async (req, res) => {
   }
 
   const token = authHeader.split(' ')[1];
+  let pool; // Declare pool at function level
+  
   try {
-    let pool = await sql.connect(dbConfig);
+    pool = await initDb(); // Use initDb() instead of sql.connect(dbConfig)
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -2257,8 +2224,6 @@ app.get('/api/apartment-types', async (req, res) => {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
 
-    await sql.connect(dbConfig);
-    
     const query = `
       SELECT 
         building_type AS id,
@@ -2267,15 +2232,14 @@ app.get('/api/apartment-types', async (req, res) => {
       ORDER BY building_type
     `;
     
-    const result = await sql.query(query);
+    // Execute the query using the existing pool connection
+    const result = await pool.request().query(query);
     res.json(result.recordset);
   } catch (err) {
     console.error('Database error:', err);
     res.status(500).json({ error: 'Failed to fetch apartment types' });
-  } finally {
-    //Dont Close
-    // sql.close();
   }
+  // REMOVED the finally block - don't close the connection!
 });
 
 
@@ -2293,15 +2257,10 @@ app.get('/api/apartment-types', async (req, res) => {
 //Code to add new customer
 
 // Initialize database connection
-let pool;
-testConnection().then(p => {
-  pool = p;
-}).catch(err => {
-  console.error('Failed to initialize database connection:', err);
-});
 
 // Routes
 app.post('/api/customers', async (req, res) => {
+  const pageAccess = 'launch-complaints';
   // Verify Authorization header exists
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -2309,8 +2268,14 @@ app.post('/api/customers', async (req, res) => {
   }
 
   const token = authHeader.split(' ')[1];
+  let pool; // Declare pool at function level
+  
   try {
-    let pool = await sql.connect(dbConfig);
+    pool = await initDb(); // Use initDb() instead of sql.connect(dbConfig)
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -2330,6 +2295,15 @@ app.post('/api/customers', async (req, res) => {
         message: 'Name and phone are required fields' 
       });
     }
+
+    // Validate phone number format
+    const phoneRegex = /^[0-9+]{10,15}$/;
+    if (!phoneRegex.test(phone)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid phone number format' 
+      });
+    }
     
     // Check if customer already exists
     const checkResult = await pool.request()
@@ -2337,7 +2311,7 @@ app.post('/api/customers', async (req, res) => {
       .query('SELECT COUNT(*) AS count FROM Customers WHERE phone_number = @phone');
     
     if (checkResult.recordset[0].count > 0) {
-      return res.status(400).json({ 
+      return res.status(409).json({ // Use 409 Conflict for duplicate resources
         success: false, 
         message: 'Customer with this phone number already exists' 
       });
@@ -2345,8 +2319,8 @@ app.post('/api/customers', async (req, res) => {
     
     // Insert new customer with OUTPUT clause
     const insertResult = await pool.request()
-      .input('name', sql.VarChar(100), name)
-      .input('email', sql.VarChar(100), email || null)
+      .input('name', sql.NVarChar(100), name)
+      .input('email', sql.NVarChar(100), email || null)
       .input('phone', sql.VarChar(20), phone)
       .query(`
         INSERT INTO Customers (full_name, phone_number, email)
@@ -2354,18 +2328,28 @@ app.post('/api/customers', async (req, res) => {
         VALUES (@name, @phone, @email)
       `);
     
-    res.json({ 
+    res.status(201).json({ // Use 201 Created for successful resource creation
       success: true, 
       message: 'Customer saved successfully',
       customer: insertResult.recordset[0]
     });
   } catch (error) {
     console.error('Error saving customer:', error);
+    
+    // Handle specific database errors
+    if (error.number === 2627) { // SQL Server unique constraint violation
+      return res.status(409).json({ 
+        success: false, 
+        message: 'Customer with this phone number already exists' 
+      });
+    }
+    
     res.status(500).json({ 
       success: false, 
       message: 'Internal server error' 
     });
   }
+  // No need to close the connection - pool manages itself
 });
 
 // Get all customers (for testing)
@@ -2377,8 +2361,10 @@ app.get('/api/customers', async (req, res) => {
   }
 
   const token = authHeader.split(' ')[1];
+  let pool; // Declare pool at function level
+  
   try {
-    let pool = await sql.connect(dbConfig);
+    pool = await initDb(); // Use initDb() instead of sql.connect(dbConfig)
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -2389,8 +2375,18 @@ app.get('/api/customers', async (req, res) => {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
 
+    // Use specific column selection instead of SELECT * for security
     const result = await pool.request()
-      .query('SELECT * FROM Customers ORDER BY customer_id DESC');
+      .query(`
+        SELECT 
+          customer_id,
+          full_name,
+          phone_number,
+          email,
+          created_at
+        FROM Customers 
+        ORDER BY customer_id DESC
+      `);
     
     res.json(result.recordset);
   } catch (error) {
@@ -2400,6 +2396,7 @@ app.get('/api/customers', async (req, res) => {
       message: 'Internal server error' 
     });
   }
+  // No need to close the connection - pool manages itself
 });
 
 
@@ -2419,7 +2416,7 @@ app.get('/api/customers', async (req, res) => {
 
 // GET /api/categories - Returns concatenated categories
 app.get('/api/categories', async (req, res) => {
-
+  const pageAccess = 'launch-complaints';
   // Verify Authorization header exists
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -2427,9 +2424,14 @@ app.get('/api/categories', async (req, res) => {
   }
 
   const token = authHeader.split(' ')[1];
-
+  let pool; // Declare pool at function level
+  
   try {
-    let pool = await sql.connect(dbConfig);
+    pool = await initDb(); // Use initDb() instead of sql.connect(dbConfig)
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -2440,6 +2442,7 @@ app.get('/api/categories', async (req, res) => {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
 
+    // Fixed SQL syntax - removed backticks and used proper string
     const result = await pool.request().query(`
       SELECT 
         ROW_NUMBER() OVER (ORDER BY CONCAT(c.subdivision_name, '->', c.nature_name)) AS id,
@@ -2455,12 +2458,12 @@ app.get('/api/categories', async (req, res) => {
     console.error('Error fetching categories:', error);
     res.status(500).json({ error: 'Failed to fetch categories' });
   }
+  // No need to close the connection - pool manages itself
 });
 
 // GET /api/categories/:categoryId/types - Returns types for a category
 app.get('/api/categories/:categoryId/types', async (req, res) => {
-  
-  // Verify Authorization header exists
+  const pageAccess = 'launch-complaints';
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized - No token provided' });
@@ -2469,7 +2472,11 @@ app.get('/api/categories/:categoryId/types', async (req, res) => {
   const token = authHeader.split(' ')[1];
 
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -2480,7 +2487,6 @@ app.get('/api/categories/:categoryId/types', async (req, res) => {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
 
-    
     // First get the category details
     const categoryResult = await pool.request()
       .input('categoryId', sql.Int, req.params.categoryId)
@@ -2544,7 +2550,7 @@ app.use((err, req, res, next) => {
 
 
 app.get('/api/customers/search', async (req, res) => {
-  // Verify Authorization header exists
+  const pageAccess = 'launch-complaints';
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized - No token provided' });
@@ -2553,7 +2559,11 @@ app.get('/api/customers/search', async (req, res) => {
   const token = authHeader.split(' ')[1];
   
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -2616,9 +2626,9 @@ app.get('/api/customers/search', async (req, res) => {
       exists: true,
       customer: {
         id: user.customer_id,
-        name: user.FullName,
-        phone: user.PhoneNumber,
-        email: user.Email
+        name: user.full_name,
+        phone: user.phone_number,
+        email: user.email
       },
       locations
     });
@@ -2645,7 +2655,7 @@ app.get('/api/customers/search', async (req, res) => {
 
 
 app.post('/api/assign-location', async (req, res) => {
-  // Verify Authorization header exists
+  const pageAccess = 'launch-complaints';
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized - No token provided' });
@@ -2653,11 +2663,14 @@ app.post('/api/assign-location', async (req, res) => {
 
   const token = authHeader.split(' ')[1];
   
-  let pool;
   let transaction;
 
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -2671,38 +2684,29 @@ app.post('/api/assign-location', async (req, res) => {
     console.log('\n=== STARTING LOCATION ASSIGNMENT ===');
     console.log('Request body:', JSON.stringify(req.body, null, 2));
 
-    // Validate request body
     if (!req.body) {
       throw new Error('Request body is empty');
     }
 
-    // Handle both apartment and apartmentType parameters
     const apartment = req.body.apartment || req.body.apartmentType;
     const { customer, type, buildingNo, colony } = req.body;
     const area = req.body.area;
     const residentialStatus = req.body.residentialStatus;
 
-    // Basic validation for all assignment types
     if (!customer || !buildingNo || !colony || !apartment) {
       throw new Error('Customer, buildingNo, colony, and apartment are required');
     }
 
-    // Additional validation for new buildings
     if (type === 'new' && (!area || !residentialStatus)) {
       throw new Error('Area and residentialStatus are required for new buildings');
     }
 
-    // Get database connection
-    pool = await sql.connect(dbConfig);
-    console.log('Connected to database');
-
-    // Begin transaction
+    // Begin transaction on the global pool
     transaction = new sql.Transaction(pool);
     await transaction.begin();
     console.log('Database transaction started');
 
-    // 1. Find user by name or phone
-    console.log('\n[Step 1] Searching for customer:', customer);
+    // 1. Find user
     const userResult = await transaction.request()
       .input('customer', sql.VarChar(100), `%${customer}%`)
       .query(`
@@ -2715,39 +2719,25 @@ app.post('/api/assign-location', async (req, res) => {
       throw new Error(`Customer not found: ${customer}`);
     }
     const user = userResult.recordset[0];
-    console.log('Found user:', user);
 
-    // 2. Find colony - handle both colony name and colony number
-    console.log('\n[Step 2] Processing colony:', colony);
+    // 2. Find colony
     let colonyNumber;
     if (/^\d+$/.test(colony)) {
-      // If colony is a number, verify it exists
       const colonyCheck = await transaction.request()
         .input('colonyNumber', sql.VarChar(30), colony)
         .query('SELECT Name FROM Colonies WHERE ColonyNumber = @colonyNumber');
-      
-      if (colonyCheck.recordset.length === 0) {
-        throw new Error(`Colony number not found: ${colony}`);
-      }
+      if (colonyCheck.recordset.length === 0) throw new Error(`Colony number not found: ${colony}`);
       colonyNumber = colony;
     } else {
-      // Search colony by name
       const colonyResult = await transaction.request()
         .input('colonyName', sql.VarChar(100), colony)
         .query('SELECT ColonyNumber FROM Colonies WHERE Name = @colonyName');
-
-      if (colonyResult.recordset.length === 0) {
-        throw new Error(`Colony not found: ${colony}`);
-      }
+      if (colonyResult.recordset.length === 0) throw new Error(`Colony not found: ${colony}`);
       colonyNumber = colonyResult.recordset[0].ColonyNumber;
     }
-    console.log('Using colony number:', colonyNumber);
 
     // 3. Find or create location
-    console.log('\n[Step 3] Processing location:', { buildingNo, colonyNumber, apartment });
     let locationId;
-    
-    // Check if location exists
     const locationResult = await transaction.request()
       .input('buildingNo', sql.VarChar(100), buildingNo)
       .input('colonyNumber', sql.VarChar(30), colonyNumber)
@@ -2761,12 +2751,8 @@ app.post('/api/assign-location', async (req, res) => {
       `);
 
     if (locationResult.recordset.length > 0) {
-      // Existing location found
       locationId = locationResult.recordset[0].location_id;
-      console.log('Found existing location ID:', locationId);
     } else if (type === 'new') {
-      // Create new location
-      console.log('Creating new location with:', { buildingNo, apartment, colonyNumber, area, residentialStatus });
       const locationInsert = await transaction.request()
         .input('buildingNo', sql.VarChar(100), buildingNo)
         .input('buildingType', sql.VarChar(25), apartment)
@@ -2775,53 +2761,36 @@ app.post('/api/assign-location', async (req, res) => {
         .input('area', sql.VarChar(10), area)
         .query(`
           INSERT INTO Location (
-            building_number, 
-            building_type, 
-            resdl, 
-            colony_number, 
-            area
+            building_number, building_type, resdl, colony_number, area
           )
           OUTPUT INSERTED.location_id
-          VALUES (
-            @buildingNo, 
-            @buildingType, 
-            @residentialStatus, 
-            @colonyNumber, 
-            @area
-          )
+          VALUES (@buildingNo, @buildingType, @residentialStatus, @colonyNumber, @area)
         `);
       locationId = locationInsert.recordset[0].location_id;
-      console.log('Created new location ID:', locationId);
     } else {
       throw new Error(`Location not found: ${buildingNo}, ${colony}, ${apartment}`);
     }
 
-    // 4. Update accommodation - FIXED: Using user.customer_id instead of user.UserID
-    console.log('\n[Step 4] Updating accommodation');
+    // 4. Update or insert accommodation
     const accommodationCheck = await transaction.request()
       .input('locationId', sql.Int, locationId)
       .query('SELECT customer_id FROM Accomodation WHERE location_id = @locationId');
 
     if (accommodationCheck.recordset.length > 0) {
-      // Update existing accommodation
       await transaction.request()
-        .input('userId', sql.Int, user.customer_id)  // Fixed here
+        .input('userId', sql.Int, user.customer_id)
         .input('locationId', sql.Int, locationId)
         .query('UPDATE Accomodation SET customer_id = @userId WHERE location_id = @locationId');
-      console.log('Updated existing accommodation record');
     } else {
-      // Create new accommodation
       await transaction.request()
-        .input('userId', sql.Int, user.customer_id)  // Fixed here
+        .input('userId', sql.Int, user.customer_id)
         .input('locationId', sql.Int, locationId)
         .query('INSERT INTO Accomodation (customer_id, location_id) VALUES (@userId, @locationId)');
-      console.log('Created new accommodation record');
     }
 
-    // 5. Get ALL locations for this user after assignment
-    console.log('\n[Step 5] Fetching all user locations');
+    // 5. Fetch all user locations
     const allLocations = await transaction.request()
-      .input('userId', sql.Int, user.customer_id)  // Fixed here
+      .input('userId', sql.Int, user.customer_id)
       .query(`
         SELECT 
           l.location_id AS id,
@@ -2850,48 +2819,25 @@ app.post('/api/assign-location', async (req, res) => {
       residentialStatus: loc.residential_status
     }));
 
-    console.log(`Found ${locations.length} locations for user`);
-
-    // Commit transaction
     await transaction.commit();
-    console.log('\n[SUCCESS] Transaction committed');
 
-    // Format response
-    const response = {
-      success: true,
-      locations: locations
-    };
-
-    console.log('\n=== LOCATION ASSIGNMENT COMPLETE ===');
-    res.json(response);
-
+    res.json({ success: true, locations });
   } catch (error) {
     console.error('\n=== LOCATION ASSIGNMENT FAILED ===');
-    console.error('Error details:', {
-      message: error.message,
-      stack: error.stack
-    });
+    console.error(error);
 
-    // Rollback transaction if it was started
-    if (transaction && transaction._started) {
+    if (transaction && transaction._aborted === false) {
       try {
         await transaction.rollback();
-        console.log('Transaction rolled back');
       } catch (rollbackError) {
         console.error('Rollback failed:', rollbackError);
       }
     }
 
-    // Send error response
     res.status(error.status || 500).json({
       success: false,
-      error: error.message,
-      details: process.env.NODE_ENV === 'development' ? {
-        stack: error.stack
-      } : undefined
+      error: error.message
     });
-  } finally {
-    // Connection pooling handles the connection lifecycle
   }
 });
 
@@ -2905,9 +2851,10 @@ app.post('/api/assign-location', async (req, res) => {
 
 
 
+
 // API Routes for Skillmen
 app.get('/api/skillmen', async (req, res) => {
-  // Verify Authorization header exists
+  const pageAccess = 'launch-complaints';
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized - No token provided' });
@@ -2916,7 +2863,12 @@ app.get('/api/skillmen', async (req, res) => {
   const token = authHeader.split(' ')[1];
 
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
+
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
       .input('token', sql.VarChar(255), token)
@@ -2953,9 +2905,9 @@ app.get('/api/skillmen', async (req, res) => {
 
 
 
+
 // Additional API for getting skillmen by area (optional)
 app.get('/api/skillmen/area/:area', async (req, res) => {
-  // Verify Authorization header exists
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized - No token provided' });
@@ -2964,7 +2916,7 @@ app.get('/api/skillmen/area/:area', async (req, res) => {
   const token = authHeader.split(' ')[1];
 
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -2974,6 +2926,7 @@ app.get('/api/skillmen/area/:area', async (req, res) => {
     if (tokenCheck.recordset.length === 0) {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
+
     const { area } = req.params;
     
     const result = await pool.request()
@@ -2998,9 +2951,9 @@ app.get('/api/skillmen/area/:area', async (req, res) => {
 });
 
 
+
 // Additional API for getting skillmen by designation (optional)
 app.get('/api/skillmen/designation/:designation', async (req, res) => {
-  // Verify Authorization header exists
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized - No token provided' });
@@ -3009,7 +2962,7 @@ app.get('/api/skillmen/designation/:designation', async (req, res) => {
   const token = authHeader.split(' ')[1];
  
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -3019,6 +2972,7 @@ app.get('/api/skillmen/designation/:designation', async (req, res) => {
     if (tokenCheck.recordset.length === 0) {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
+
     const { designation } = req.params;
     
     const result = await pool.request()
@@ -3050,9 +3004,10 @@ app.get('/api/skillmen/designation/:designation', async (req, res) => {
 
 
 
+
 // Get all natures with their categories and types
 app.get('/natures', async (req, res) => {
-  // Verify Authorization header exists
+  const pageAccess = 'natures';
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized - No token provided' });
@@ -3061,7 +3016,11 @@ app.get('/natures', async (req, res) => {
   const token = authHeader.split(' ')[1];
   
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -3071,9 +3030,8 @@ app.get('/natures', async (req, res) => {
     if (tokenCheck.recordset.length === 0) {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
-    const request = pool.request();
-    
-    const result = await request.query(`
+
+    const result = await pool.request().query(`
       SELECT 
         n.name AS id,
         n.name,
@@ -3094,10 +3052,12 @@ app.get('/natures', async (req, res) => {
     const natures = result.recordset.map(row => ({
       id: row.id,
       name: row.name,
-      categories: row.categories ? 
-        [...new Set(row.categories.split(', '))].filter(Boolean) : [],
-      types: row.types ? 
-        [...new Set(row.types.split(', '))].filter(Boolean) : []
+      categories: row.categories 
+        ? [...new Set(row.categories.split(', '))].filter(Boolean) 
+        : [],
+      types: row.types 
+        ? [...new Set(row.types.split(', '))].filter(Boolean) 
+        : []
     }));
 
     res.json(natures);
@@ -3106,16 +3066,16 @@ app.get('/natures', async (req, res) => {
   }
 });
 
+
 // Create a new nature
 app.post('/createNewNatures', async (req, res) => {
-  // Verify Authorization header exists
+  const pageAccess = 'natures';
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized - No token provided' });
   }
 
   const token = authHeader.split(' ')[1];
-  
   const { name } = req.body;
   
   if (!name) {
@@ -3123,7 +3083,11 @@ app.post('/createNewNatures', async (req, res) => {
   }
 
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -3133,8 +3097,9 @@ app.post('/createNewNatures', async (req, res) => {
     if (tokenCheck.recordset.length === 0) {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
-    const request = pool.request();
-    await request.input('name', sql.VarChar(150), name)
+
+    await pool.request()
+      .input('name', sql.VarChar(150), name)
       .query('INSERT INTO Natures (name) VALUES (@name)');
     
     res.json({ 
@@ -3146,9 +3111,10 @@ app.post('/createNewNatures', async (req, res) => {
   }
 });
 
+
 // Update a nature (name and categories)
 app.put('/natures/:name', async (req, res) => {
-  // Verify Authorization header exists
+  const pageAccess = 'natures';
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized - No token provided' });
@@ -3163,10 +3129,14 @@ app.put('/natures/:name', async (req, res) => {
     return res.status(400).json({ message: 'Nature name is required' });
   }
 
-  const transaction = new sql.Transaction(pool);
-  
+  let transaction;
+
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -3176,12 +3146,15 @@ app.put('/natures/:name', async (req, res) => {
     if (tokenCheck.recordset.length === 0) {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
+
+    transaction = new sql.Transaction(pool);
     await transaction.begin();
     
     // 1. Update nature name if changed
     if (newName !== oldName) {
       const updateRequest = new sql.Request(transaction);
-      await updateRequest.input('oldName', sql.VarChar(150), oldName)
+      await updateRequest
+        .input('oldName', sql.VarChar(150), oldName)
         .input('newName', sql.VarChar(150), newName)
         .query('UPDATE Natures SET name = @newName WHERE name = @oldName');
     }
@@ -3190,12 +3163,13 @@ app.put('/natures/:name', async (req, res) => {
     if (Array.isArray(categories) && categories.length >= 0) {
       const uniqueCategories = [...new Set(categories)];
       
-      // First delete all existing categories
+      // Delete all existing categories
       const deleteRequest = new sql.Request(transaction);
-      await deleteRequest.input('natureName', sql.VarChar(150), newName)
+      await deleteRequest
+        .input('natureName', sql.VarChar(150), newName)
         .query('DELETE FROM Category WHERE nature_name = @natureName');
       
-      // Then insert new categories using a new request for each insertion
+      // Insert new categories
       for (const category of uniqueCategories) {
         const insertRequest = new sql.Request(transaction);
         await insertRequest
@@ -3217,25 +3191,34 @@ app.put('/natures/:name', async (req, res) => {
       id: newName
     });
   } catch (err) {
-    await transaction.rollback();
+    if (transaction) {
+      try {
+        await transaction.rollback();
+      } catch (rollbackError) {
+        console.error('Rollback failed:', rollbackError);
+      }
+    }
     handleDatabaseError(err, res);
   }
 });
 
 // Delete a nature
 app.delete('/natures/:name', async (req, res) => {
-  // Verify Authorization header exists
+  const pageAccess = 'natures';
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized - No token provided' });
   }
 
   const token = authHeader.split(' ')[1];
-   
   const name = decodeURIComponent(req.params.name);
 
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -3245,8 +3228,9 @@ app.delete('/natures/:name', async (req, res) => {
     if (tokenCheck.recordset.length === 0) {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
-    const request = pool.request();
-    await request.input('name', sql.VarChar(150), name)
+
+    await pool.request()
+      .input('name', sql.VarChar(150), name)
       .query('DELETE FROM Natures WHERE name = @name');
     
     res.json({ message: 'Nature deleted successfully' });
@@ -3255,16 +3239,16 @@ app.delete('/natures/:name', async (req, res) => {
   }
 });
 
+
 // Add a type to a nature
 app.post('/natures/:name/types', async (req, res) => {
-  // Verify Authorization header exists
+  const pageAccess = 'natures';
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized - No token provided' });
   }
 
   const token = authHeader.split(' ')[1];
-  
   const natureName = decodeURIComponent(req.params.name);
   const { type } = req.body;
 
@@ -3273,7 +3257,11 @@ app.post('/natures/:name/types', async (req, res) => {
   }
 
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -3283,18 +3271,19 @@ app.post('/natures/:name/types', async (req, res) => {
     if (tokenCheck.recordset.length === 0) {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
-    const request = pool.request();
-    
+
     // Check if nature exists
-    const natureCheck = await request.input('name', sql.VarChar(150), natureName)
+    const natureCheck = await pool.request()
+      .input('name', sql.VarChar(150), natureName)
       .query('SELECT 1 FROM Natures WHERE name = @name');
     
     if (natureCheck.recordset.length === 0) {
       return res.status(404).json({ message: 'Nature not found' });
     }
     
-    // Insert new type
-    await request.input('natureName', sql.VarChar(150), natureName)
+    // Insert new type if not exists
+    const insertResult = await pool.request()
+      .input('natureName', sql.VarChar(150), natureName)
       .input('type', sql.VarChar(150), type)
       .query(`
         IF NOT EXISTS (
@@ -3306,12 +3295,10 @@ app.post('/natures/:name/types', async (req, res) => {
           INSERT INTO NatureTypes (nature_name, type) 
           VALUES (@natureName, @type)
         END
+        SELECT @@ROWCOUNT AS rowsAffected
       `);
     
-    // Check if any rows were inserted
-    const inserted = await request.query('SELECT @@ROWCOUNT AS rowsAffected');
-    
-    if (inserted.recordset[0].rowsAffected === 0) {
+    if (insertResult.recordset[0].rowsAffected === 0) {
       return res.status(409).json({ message: 'Type already exists for this nature' });
     }
     
@@ -3321,21 +3308,25 @@ app.post('/natures/:name/types', async (req, res) => {
   }
 });
 
+
 // Remove a type from a nature
 app.delete('/natures/:name/types/:type', async (req, res) => {
-  // Verify Authorization header exists
+  const pageAccess = 'natures';
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized - No token provided' });
   }
 
   const token = authHeader.split(' ')[1];
- 
   const natureName = decodeURIComponent(req.params.name);
   const type = req.params.type;
 
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -3345,10 +3336,9 @@ app.delete('/natures/:name/types/:type', async (req, res) => {
     if (tokenCheck.recordset.length === 0) {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
-    const request = pool.request();
     
     // Check if type exists
-    const typeCheck = await request
+    const typeCheck = await pool.request()
       .input('natureName', sql.VarChar(150), natureName)
       .input('type', sql.VarChar(150), type)
       .query('SELECT 1 FROM NatureTypes WHERE nature_name = @natureName AND type = @type');
@@ -3358,10 +3348,13 @@ app.delete('/natures/:name/types/:type', async (req, res) => {
     }
     
     // Delete the type
-    await request.query(`
-      DELETE FROM NatureTypes 
-      WHERE nature_name = @natureName AND type = @type
-    `);
+    await pool.request()
+      .input('natureName', sql.VarChar(150), natureName)
+      .input('type', sql.VarChar(150), type)
+      .query(`
+        DELETE FROM NatureTypes 
+        WHERE nature_name = @natureName AND type = @type
+      `);
     
     res.json({ message: 'Type removed successfully' });
   } catch (err) {
@@ -3369,9 +3362,10 @@ app.delete('/natures/:name/types/:type', async (req, res) => {
   }
 });
 
+
 // Get all available subdivisions (categories)
 app.get('/subdivisions', async (req, res) => {
-  // Verify Authorization header exists
+  const pageAccess = 'natures';
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized - No token provided' });
@@ -3380,7 +3374,11 @@ app.get('/subdivisions', async (req, res) => {
   const token = authHeader.split(' ')[1];
    
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -3390,8 +3388,8 @@ app.get('/subdivisions', async (req, res) => {
     if (tokenCheck.recordset.length === 0) {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
-    const request = pool.request();
-    const result = await request.query('SELECT name FROM Subdivision');
+
+    const result = await pool.request().query('SELECT name FROM Subdivision');
     res.json(result.recordset.map(row => row.name));
   } catch (err) {
     handleDatabaseError(err, res);
@@ -3405,12 +3403,13 @@ app.get('/subdivisions', async (req, res) => {
 
 
 
+
 //Below APIs are for Skillmen and Designations
 //Skillmen Management
 
 // Skillmen Endpoints
 app.get('/skillmen', async (req, res) => {
-  // Verify Authorization header exists
+  const pageAccess = 'skillman';
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized - No token provided' });
@@ -3419,7 +3418,11 @@ app.get('/skillmen', async (req, res) => {
   const token = authHeader.split(' ')[1];
   
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -3429,6 +3432,7 @@ app.get('/skillmen', async (req, res) => {
     if (tokenCheck.recordset.length === 0) {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
+
     const { page = 1, limit = 10, search = '' } = req.query;
     const offset = (page - 1) * limit;
 
@@ -3438,7 +3442,6 @@ app.get('/skillmen', async (req, res) => {
       JOIN Designation d ON s.designation = d.name
     `;
 
-    // Add search condition if search term is provided
     if (search) {
       query += `
         WHERE s.name LIKE '%' + @search + '%'
@@ -3465,7 +3468,6 @@ app.get('/skillmen', async (req, res) => {
 
     const result = await request.query(query);
 
-    // Count query with same search conditions
     let countQuery = 'SELECT COUNT(*) AS total FROM Skillmen s';
     if (search) {
       countQuery += `
@@ -3492,8 +3494,9 @@ app.get('/skillmen', async (req, res) => {
   }
 });
 
+
 app.post('/skillmen', async (req, res) => {
-  // Verify Authorization header exists
+  const pageAccess = 'skillman';
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized - No token provided' });
@@ -3502,7 +3505,11 @@ app.post('/skillmen', async (req, res) => {
   const token = authHeader.split(' ')[1];
   
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -3512,6 +3519,7 @@ app.post('/skillmen', async (req, res) => {
     if (tokenCheck.recordset.length === 0) {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
+
     const { name, phone, email, designation, subdivision, status } = req.body;
     
     const result = await pool.request()
@@ -3533,8 +3541,9 @@ app.post('/skillmen', async (req, res) => {
   }
 });
 
+
 app.put('/skillmen/:id', async (req, res) => {
-  // Verify Authorization header exists
+  const pageAccess = 'skillman';
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized - No token provided' });
@@ -3543,7 +3552,11 @@ app.put('/skillmen/:id', async (req, res) => {
   const token = authHeader.split(' ')[1];
  
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -3553,6 +3566,7 @@ app.put('/skillmen/:id', async (req, res) => {
     if (tokenCheck.recordset.length === 0) {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
+
     const { id } = req.params;
     const { name, phone, email, designation, subdivision, status } = req.body;
     
@@ -3585,9 +3599,10 @@ app.put('/skillmen/:id', async (req, res) => {
 
 
 
+
 // Designation Endpoints
 app.get('/designations', async (req, res) => {
-  // Verify Authorization header exists
+  const pageAccess = 'skillman';
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized - No token provided' });
@@ -3596,7 +3611,11 @@ app.get('/designations', async (req, res) => {
   const token = authHeader.split(' ')[1];
   
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -3606,8 +3625,8 @@ app.get('/designations', async (req, res) => {
     if (tokenCheck.recordset.length === 0) {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
-    const result = await pool.request()
-      .query('SELECT * FROM Designation');
+
+    const result = await pool.request().query('SELECT * FROM Designation');
     res.json(result.recordset);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -3617,8 +3636,9 @@ app.get('/designations', async (req, res) => {
 
 
 
+
 app.post('/designations', async (req, res) => {
-  // Verify Authorization header exists
+  const pageAccess = 'skillman';
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized - No token provided' });
@@ -3627,7 +3647,11 @@ app.post('/designations', async (req, res) => {
   const token = authHeader.split(' ')[1];
   
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -3637,6 +3661,7 @@ app.post('/designations', async (req, res) => {
     if (tokenCheck.recordset.length === 0) {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
+
     const { name } = req.body;
     const result = await pool.request()
       .input('name', sql.VarChar, name)
@@ -3645,14 +3670,16 @@ app.post('/designations', async (req, res) => {
         OUTPUT INSERTED.*
         VALUES (@name)
       `);
+
     res.status(201).json(result.recordset[0]);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
+
 app.put('/designations/:oldName', async (req, res) => { 
-  // Verify Authorization header exists
+  const pageAccess = 'skillman';
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized - No token provided' });
@@ -3661,7 +3688,11 @@ app.put('/designations/:oldName', async (req, res) => {
   const token = authHeader.split(' ')[1];
   
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -3671,6 +3702,7 @@ app.put('/designations/:oldName', async (req, res) => {
     if (tokenCheck.recordset.length === 0) {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
+
     const { oldName } = req.params;
     const { name: newName } = req.body;
 
@@ -3703,9 +3735,10 @@ app.put('/designations/:oldName', async (req, res) => {
   }
 });
 
+
 // Update all designation endpoints to use name instead of id
 app.delete('/designations/:name', async (req, res) => {
-  // Verify Authorization header exists
+  const pageAccess = 'skillman';
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized - No token provided' });
@@ -3714,7 +3747,11 @@ app.delete('/designations/:name', async (req, res) => {
   const token = authHeader.split(' ')[1];
   
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -3724,6 +3761,7 @@ app.delete('/designations/:name', async (req, res) => {
     if (tokenCheck.recordset.length === 0) {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
+
     const { name } = req.params;
 
     // Check if any skillmen are using this designation
@@ -3750,14 +3788,26 @@ app.delete('/designations/:name', async (req, res) => {
 
 
 
+
 // Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
-    timestamp: new Date().toISOString(),
-    database: pool.connected ? 'Connected' : 'Disconnected'
-  });
+app.get('/health', async (req, res) => {
+  try {
+    const pool = await initDb();
+    res.json({ 
+      status: 'OK', 
+      timestamp: new Date().toISOString(),
+      database: pool.connected ? 'Connected' : 'Disconnected'
+    });
+  } catch (err) {
+    res.status(500).json({ 
+      status: 'ERROR',
+      timestamp: new Date().toISOString(),
+      database: 'Disconnected',
+      error: err.message
+    });
+  }
 });
+
 
 
 
@@ -3773,8 +3823,7 @@ app.get('/health', (req, res) => {
 
 // GET: Load all users
 app.get('/getUsers', async (req, res) => {
-  // Verify Authorization header exists
-  const page = 'all-users'; 
+  const pageAccess = 'all-users'; 
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized - No token provided' });
@@ -3783,10 +3832,9 @@ app.get('/getUsers', async (req, res) => {
   const token = authHeader.split(' ')[1];
  
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
 
-    const accessiblity = await checkAccess(token, page);
-    
+    const accessiblity = await checkAccess(token, pageAccess, pool);
     if (accessiblity.status !== 'success') {
       return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
     }
@@ -3799,10 +3847,10 @@ app.get('/getUsers', async (req, res) => {
     if (tokenCheck.recordset.length === 0) {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
-    await sql.connect(dbConfig);
+
     console.log('[GET] Connected to SQL Server for users');
 
-    const result = await sql.query(`
+    const result = await pool.request().query(`
       SELECT 
         customer_id AS id,
         full_name AS name,
@@ -3837,14 +3885,14 @@ app.get('/getUsers', async (req, res) => {
 
 
 
+
 //Colonies Page
 
 // GET: Load all colonies
 app.get('/getColonies', async (req, res) => {
-
-  const page = 'colonies';
-  // Verify Authorization header exists
+  const pageAccess = 'colonies';
   const authHeader = req.headers.authorization;
+
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized - No token provided' });
   }
@@ -3852,11 +3900,9 @@ app.get('/getColonies', async (req, res) => {
   const token = authHeader.split(' ')[1];
  
   try {
-    let pool = await sql.connect(dbConfig);
-    
+    const pool = await initDb();
 
-    const accessiblity = await checkAccess(token, page);
-    
+    const accessiblity = await checkAccess(token, pageAccess, pool);
     if (accessiblity.status !== 'success') {
       return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
     }
@@ -3869,10 +3915,10 @@ app.get('/getColonies', async (req, res) => {
     if (tokenCheck.recordset.length === 0) {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
-    await sql.connect(dbConfig);
+
     console.log('[GET] Connected to SQL Server');
 
-    const result = await sql.query(`
+    const result = await pool.request().query(`
       SELECT 
           c.Name AS name,
           c.ColonyNumber AS colonyNumber,
@@ -3891,32 +3937,30 @@ app.get('/getColonies', async (req, res) => {
   }
 });
 
+
 // POST: Add new colony
 app.post('/addColony', async (req, res) => {
-
-  const page = 'colonies';
-  // Verify Authorization header exists
+  const pageAccess = 'colonies';
+  const { name, colonyNumber } = req.body;
   const authHeader = req.headers.authorization;
+
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized - No token provided' });
   }
 
+  try {
+    const pool = await initDb();
+
   const token = authHeader.split(' ')[1];
 
-    const accessiblity = await checkAccess(token, page);
-    
-    if (accessiblity.status !== 'success') {
-      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
-    }
-  
-  const { name, colonyNumber } = req.body;
+  const accessiblity = await checkAccess(token, pageAccess, pool);
+  if (accessiblity.status !== 'success') {
+    return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+  }
 
   if (!name || !colonyNumber) {
     return res.status(400).json({ message: 'Name and ColonyNumber are required' });
   }
-
-  try {
-    let pool = await sql.connect(dbConfig);
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -3926,15 +3970,14 @@ app.post('/addColony', async (req, res) => {
     if (tokenCheck.recordset.length === 0) {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
-    await sql.connect(dbConfig);
-    const request = new sql.Request();
-    request.input('Name', sql.VarChar(100), name);
-    request.input('ColonyNumber', sql.VarChar(30), colonyNumber);
 
-    await request.query(`
-      INSERT INTO Colonies (Name, ColonyNumber)
-      VALUES (@Name, @ColonyNumber)
-    `);
+    await pool.request()
+      .input('Name', sql.VarChar(100), name)
+      .input('ColonyNumber', sql.VarChar(30), colonyNumber)
+      .query(`
+        INSERT INTO Colonies (Name, ColonyNumber)
+        VALUES (@Name, @ColonyNumber)
+      `);
 
     console.log(`[POST] Colony added: ${name} (${colonyNumber})`);
     res.json({ message: 'Colony added successfully' });
@@ -3944,32 +3987,30 @@ app.post('/addColony', async (req, res) => {
   }
 });
 
+
 // PUT: Edit a colony
 app.put('/editColony', async (req, res) => {
-
-  const page = 'colonies';
-  // Verify Authorization header exists
+  const pageAccess = 'colonies';
   const authHeader = req.headers.authorization;
+
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized - No token provided' });
   }
 
-  const token = authHeader.split(' ')[1];
-
-    const accessiblity = await checkAccess(token, page);
-    
-    if (accessiblity.status !== 'success') {
-      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
-    }
-  
   const { previous, new: updated } = req.body;
-
   if (!previous || !updated) {
     return res.status(400).json({ message: 'Missing previous or new colony data' });
   }
 
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
+
+  const token = authHeader.split(' ')[1];
+
+  const accessiblity = await checkAccess(token, pageAccess, pool);
+  if (accessiblity.status !== 'success') {
+    return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+  }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -3979,17 +4020,16 @@ app.put('/editColony', async (req, res) => {
     if (tokenCheck.recordset.length === 0) {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
-    await sql.connect(dbConfig);
-    const request = new sql.Request();
-    request.input('PrevColonyNumber', sql.VarChar(30), previous.colonyNumber);
-    request.input('NewName', sql.VarChar(100), updated.name);
-    request.input('NewColonyNumber', sql.VarChar(30), updated.colonyNumber);
 
-    await request.query(`
-      UPDATE Colonies
-      SET Name = @NewName, ColonyNumber = @NewColonyNumber
-      WHERE ColonyNumber = @PrevColonyNumber
-    `);
+    await pool.request()
+      .input('PrevColonyNumber', sql.VarChar(30), previous.colonyNumber)
+      .input('NewName', sql.VarChar(100), updated.name)
+      .input('NewColonyNumber', sql.VarChar(30), updated.colonyNumber)
+      .query(`
+        UPDATE Colonies
+        SET Name = @NewName, ColonyNumber = @NewColonyNumber
+        WHERE ColonyNumber = @PrevColonyNumber
+      `);
 
     console.log(`[PUT] Colony updated: ${previous.colonyNumber} → ${updated.colonyNumber}`);
     res.json({ message: 'Colony updated successfully' });
@@ -3998,6 +4038,7 @@ app.put('/editColony', async (req, res) => {
     res.status(500).json({ message: 'Error updating colony' });
   }
 });
+
 
 
 
@@ -4125,18 +4166,22 @@ We will assign a skillman to your problem shortly and keep you updated.👍�
 
 // POST endpoint for creating complaints
 app.post('/complaints', async (req, res) => {
-  // Verify Authorization header exists
+  const pageAccess = 'launch-complaints';
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized - No token provided' });
   }
 
   const token = authHeader.split(' ')[1];
-  
-  try {
-    let pool = await sql.connect(dbConfig);
 
-    // Step 1: Verify token exists in Users table
+  try {
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
+
+    // Verify token
     const tokenCheck = await pool.request()
       .input('token', sql.VarChar(255), token)
       .query('SELECT id FROM Users WHERE token = @token');
@@ -4144,6 +4189,7 @@ app.post('/complaints', async (req, res) => {
     if (tokenCheck.recordset.length === 0) {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
+
     const {
       customerId,
       locationId,
@@ -4169,10 +4215,7 @@ app.post('/complaints', async (req, res) => {
         : 'Un-Assigned';
     }
 
-    pool = await sql.connect(dbConfig);
     const complaintId = await generateComplaintId(categoryName, pool);
-
-    // Get Islamabad time using UTC offset (+05:00)
     const launchedAt = new Date();
 
     await pool.request()
@@ -4184,7 +4227,6 @@ app.post('/complaints', async (req, res) => {
       .input('type', sql.VarChar(75), categoryType.name)
       .input('description', sql.VarChar(300), description)
       .input('priority', sql.VarChar(15), priority)
-      .input('launched_at', sql.DateTime, launchedAt) // PKT time
       .input('receiver_id', sql.VarChar(20), receiver.id)
       .input('skillman_id', sql.Int, primarySkillmanId || null)
       .input('status', sql.NVarChar(20), status)
@@ -4198,7 +4240,7 @@ app.post('/complaints', async (req, res) => {
           @type, @description, @priority, GETDATE(), @receiver_id, 
           @skillman_id, @status
         )
-      `);// replace @launched_at with GETDATE()
+      `);
 
     if (helperSkillmenIds.length > 0) {
       for (const helperId of helperSkillmenIds) {
@@ -4228,19 +4270,19 @@ app.post('/complaints', async (req, res) => {
       }
     }
 
-    // Get skillman name for the message
+    // Get skillman name for WhatsApp message
     let skillmanName = "will be assigned shortly";
     if (primarySkillmanId) {
       const skillmanResult = await pool.request()
         .input('skillmanId', sql.Int, primarySkillmanId)
         .query('SELECT name FROM Skillmen WHERE id = @skillmanId');
-      
+
       if (skillmanResult.recordset.length > 0) {
         skillmanName = skillmanResult.recordset[0].name;
       }
     }
 
-    // Send WhatsApp message to customer (non-blocking)
+    // Send WhatsApp message (non-blocking)
     sendWhatsAppMessageToCustomer(customerId, complaintId, skillmanName, pool)
       .catch(error => console.error('Error in sending WhatsApp message:', error));
 
@@ -4264,10 +4306,10 @@ app.post('/complaints', async (req, res) => {
 
 
 
-// Add this endpoint to your Express server
+
 app.get('/api/customers/:customerId/complaints', async (req, res) => {
+  const pageAccess = 'launch-complaints';
   try {
-    // Verify Authorization header exists
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({ error: 'Unauthorized - No token provided' });
@@ -4275,14 +4317,17 @@ app.get('/api/customers/:customerId/complaints', async (req, res) => {
 
     const token = authHeader.split(' ')[1];
     const { customerId } = req.params;
-    
-    // Validate customer ID
+
     if (!customerId || isNaN(parseInt(customerId))) {
       return res.status(400).json({ error: 'Valid customer ID is required' });
     }
 
-    const pool = await sql.connect(dbConfig);
-    
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
+
     // Verify token validity
     const tokenCheck = await pool.request()
       .input('token', sql.VarChar(255), token)
@@ -4292,7 +4337,6 @@ app.get('/api/customers/:customerId/complaints', async (req, res) => {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
 
-    // Query to get complaints for the specific customer
     const query = `
       SELECT 
         c.complaint_id as id,
@@ -4309,11 +4353,11 @@ app.get('/api/customers/:customerId/complaints', async (req, res) => {
       WHERE c.customer_id = @customerId
       ORDER BY c.launched_at DESC
     `;
-    
+
     const result = await pool.request()
       .input('customerId', sql.Int, parseInt(customerId))
       .query(query);
-    
+
     res.json(result.recordset);
   } catch (error) {
     console.error('Error fetching customer complaints:', error);
@@ -4338,18 +4382,22 @@ app.get('/api/customers/:customerId/complaints', async (req, res) => {
 
 // Complaints endpoint with pagination
 app.get('/api/complaints', async (req, res) => {
-  // Verify Authorization header exists
+  const pageAccess = 'all-complaints';
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized - No token provided' });
   }
 
   const token = authHeader.split(' ')[1];
-   
-  try {
-    let pool = await sql.connect(dbConfig);
 
-    // Step 1: Verify token exists in Users table
+  try {
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
+
+    // Verify token
     const tokenCheck = await pool.request()
       .input('token', sql.VarChar(255), token)
       .query('SELECT id FROM Users WHERE token = @token');
@@ -4357,6 +4405,7 @@ app.get('/api/complaints', async (req, res) => {
     if (tokenCheck.recordset.length === 0) {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
+
     const {
       page = 1,
       pageSize = 10,
@@ -4369,7 +4418,6 @@ app.get('/api/complaints', async (req, res) => {
     } = req.query;
 
     const offset = (page - 1) * pageSize;
-    await sql.connect(dbConfig);
 
     // Dynamic filters
     const filters = [];
@@ -4399,7 +4447,7 @@ app.get('/api/complaints', async (req, res) => {
     }
     const whereClause = filters.length ? `WHERE ${filters.join(' AND ')}` : '';
 
-    // Main query with fixed date formatting in +05:00
+    // Main query
     const query = `
       WITH FilteredComplaints AS (
         SELECT 
@@ -4437,7 +4485,7 @@ app.get('/api/complaints', async (req, res) => {
       WHERE row_num BETWEEN ${offset + 1} AND ${offset + parseInt(pageSize)}
     `;
 
-    const request = new sql.Request();
+    const request = pool.request();
     if (receiver) request.input('receiver', sql.VarChar, receiver);
     if (receiverId) request.input('receiverId', sql.VarChar, receiverId);
     if (colony) request.input('colony', sql.VarChar, colony);
@@ -4459,7 +4507,7 @@ app.get('/api/complaints', async (req, res) => {
       ${whereClause}
     `;
 
-    const countRequest = new sql.Request();
+    const countRequest = pool.request();
     if (receiver) countRequest.input('receiver', sql.VarChar, receiver);
     if (receiverId) countRequest.input('receiverId', sql.VarChar, receiverId);
     if (colony) countRequest.input('colony', sql.VarChar, colony);
@@ -4492,21 +4540,8 @@ app.get('/api/complaints', async (req, res) => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-// API endpoint to update complaint status
-/*
-app.post('/api/complaints/update-status', async (req, res) => {
+app.get('/api/get-colonies-for-all-complaints', async (req, res) => {
+  const pageAccess = 'all-complaints';
   // Verify Authorization header exists
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -4514,9 +4549,14 @@ app.post('/api/complaints/update-status', async (req, res) => {
   }
 
   const token = authHeader.split(' ')[1];
+  let pool; // Declare pool at function level
   
   try {
-    let pool = await sql.connect(dbConfig);
+    pool = await initDb(); // Use initDb() instead of sql.connect(dbConfig)
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -4526,97 +4566,42 @@ app.post('/api/complaints/update-status', async (req, res) => {
     if (tokenCheck.recordset.length === 0) {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
-    const { complaint_id, status } = req.body;
 
-    // Validate input
-    if (!complaint_id || !status) {
-      return res.status(400).json({
-        success: false,
-        message: 'complaint_id and status are required'
-      });
-    }
-
-    // Check if status is valid
-    const validStatuses = ['In-Progress', 'Completed', 'Deferred', 'Un-Assigned'];
-    if (!validStatuses.includes(status)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid status value'
-      });
-    }
-
-    await sql.connect(dbConfig);
-
-    // Get complaint + helper info
-    const checkResult = await sql.query`
-      SELECT c.complaint_id, c.skillman_id, ch.skillman_id AS helper_id
-      FROM Complaints c
-      LEFT JOIN ComplaintsHelpers ch ON c.complaint_id = ch.complaint_id
-      WHERE c.complaint_id = ${complaint_id}
+    const query = `
+      SELECT 
+        ColonyNumber AS id,
+        Name AS name
+      FROM Colonies
+      ORDER BY Name
     `;
-
-    if (checkResult.recordset.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'Complaint not found'
-      });
-    }
-
-    const skillmanId = checkResult.recordset[0].skillman_id;
-    const helperIds = checkResult.recordset.map(r => r.helper_id).filter(id => id !== null);
-
-    // Update complaint status and set completed_at if status is 'Completed'
-    if (status === 'Completed') {
-      await sql.query`
-        UPDATE Complaints
-        SET status = ${status},
-            completed_at = GETDATE()
-        WHERE complaint_id = ${complaint_id}
-      `;
-    } else {
-      await sql.query`
-        UPDATE Complaints
-        SET status = ${status}
-        WHERE complaint_id = ${complaint_id}
-      `;
-    }
-
-    // If status is NOT Deferred → set skillman and helpers to Active
-    if (status !== 'Deferred') {
-      if (skillmanId) {
-        await sql.query`
-          UPDATE Skillmen
-          SET status = 'Active'
-          WHERE id = ${skillmanId}
-        `;
-      }
-      if (helperIds.length > 0) {
-        await sql.query`
-          UPDATE Skillmen
-          SET status = 'Active'
-          WHERE id IN (${helperIds})
-        `;
-      }
-    }
-
-    res.json({
-      success: true,
-      message: `Complaint status updated to ${status} successfully`
-    });
-
-  } catch (error) {
-    console.error('Error updating complaint status:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Internal server error',
-      error: error.message
-    });
+    
+    // Execute the query using the existing pool connection
+    const result = await pool.request().query(query);
+    res.json(result.recordset);
+  } catch (err) {
+    console.error('Database error:', err);
+    res.status(500).json({ error: 'Failed to fetch colonies' });
   }
+  // REMOVED the finally block - don't close the connection!
 });
-*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+// API endpoint to update complaint status
+
 // API endpoint to update complaint status
 app.post('/api/complaints/update-status', async (req, res) => {
-  // Verify Authorization header exists
+  const pageAccess = 'all-complaints';
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized - No token provided' });
@@ -4625,9 +4610,13 @@ app.post('/api/complaints/update-status', async (req, res) => {
   const token = authHeader.split(' ')[1];
   
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
-    // Step 1: Verify token exists in Users table
+    // Verify token
     const tokenCheck = await pool.request()
       .input('token', sql.VarChar(255), token)
       .query('SELECT id FROM Users WHERE token = @token');
@@ -4638,7 +4627,6 @@ app.post('/api/complaints/update-status', async (req, res) => {
     
     const { complaint_id, status } = req.body;
 
-    // Validate input
     if (!complaint_id || !status) {
       return res.status(400).json({
         success: false,
@@ -4646,7 +4634,6 @@ app.post('/api/complaints/update-status', async (req, res) => {
       });
     }
 
-    // Check if status is valid (including SNA)
     const validStatuses = ['In-Progress', 'Completed', 'Deferred', 'Un-Assigned', 'SNA'];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({
@@ -4655,7 +4642,7 @@ app.post('/api/complaints/update-status', async (req, res) => {
       });
     }
 
-    // Get complaint + helper info
+    // Complaint + helpers
     const checkResult = await pool.request()
       .input('complaint_id', sql.VarChar(25), complaint_id)
       .query(`
@@ -4675,31 +4662,28 @@ app.post('/api/complaints/update-status', async (req, res) => {
     const skillmanId = checkResult.recordset[0].skillman_id;
     const helperIds = checkResult.recordset.map(r => r.helper_id).filter(id => id !== null);
 
-    // Update complaint status and set completed_at if status is 'Completed'
+    // Update complaint status (+ completed_at if needed)
+    const complaintReq = pool.request()
+      .input('complaint_id', sql.VarChar(25), complaint_id)
+      .input('status', sql.NVarChar(20), status);
+
     if (status === 'Completed') {
-      await pool.request()
-        .input('complaint_id', sql.VarChar(25), complaint_id)
-        .input('status', sql.NVarChar(20), status)
-        .query(`
-          UPDATE Complaints
-          SET status = @status,
-              completed_at = GETDATE()
-          WHERE complaint_id = @complaint_id
-        `);
+      await complaintReq.query(`
+        UPDATE Complaints
+        SET status = @status,
+            completed_at = GETDATE()
+        WHERE complaint_id = @complaint_id
+      `);
     } else {
-      await pool.request()
-        .input('complaint_id', sql.VarChar(25), complaint_id)
-        .input('status', sql.NVarChar(20), status)
-        .query(`
-          UPDATE Complaints
-          SET status = @status
-          WHERE complaint_id = @complaint_id
-        `);
+      await complaintReq.query(`
+        UPDATE Complaints
+        SET status = @status
+        WHERE complaint_id = @complaint_id
+      `);
     }
 
-
-    // If status is Deferred or SNA → set skillman and helpers to Active
-    if (status === 'Deferred' || status === 'SNA' || status === 'Completed') {
+    // Free skillmen if needed
+    if (['Deferred', 'SNA', 'Completed'].includes(status)) {
       if (skillmanId) {
         await pool.request()
           .input('skillman_id', sql.Int, skillmanId)
@@ -4711,13 +4695,9 @@ app.post('/api/complaints/update-status', async (req, res) => {
       }
       
       if (helperIds.length > 0) {
-        // Create a parameterized query for multiple helper IDs
-        const helperIdList = helperIds.map((id, index) => `@helper_id_${index}`).join(',');
+        const helperIdList = helperIds.map((_, i) => `@helper_id_${i}`).join(',');
         const request = pool.request();
-        
-        helperIds.forEach((id, index) => {
-          request.input(`helper_id_${index}`, sql.Int, id);
-        });
+        helperIds.forEach((id, i) => request.input(`helper_id_${i}`, sql.Int, id));
         
         await request.query(`
           UPDATE Skillmen
@@ -4727,8 +4707,9 @@ app.post('/api/complaints/update-status', async (req, res) => {
       }
     }
     
-    //Whatsapp call for Complaints
-    sendWhatsappToCustomerForStatusUpdate(complaint_id, pool);
+    // WhatsApp call (non-blocking)
+    sendWhatsappToCustomerForStatusUpdate(complaint_id, pool)
+      .catch(err => console.error('Error sending WhatsApp status update:', err));
 
     res.json({
       success: true,
@@ -4742,13 +4723,6 @@ app.post('/api/complaints/update-status', async (req, res) => {
       message: 'Internal server error',
       error: error.message
     });
-  } finally {
-    // Close the connection pool
-    try {
-      //await sql.close();
-    } catch (err) {
-      console.error('Error closing connection:', err);
-    }
   }
 });
 
@@ -4797,7 +4771,7 @@ async function sendWhatsappToCustomerForStatusUpdate(complaintId, pool) {
         
         switch (status) {
             case 'Completed':
-                message = `Your complaint #${complaint_id} has been resolved. Thank you for your patience!`;
+                message = `Your complaint #${complaint_id} has been marked resolved.\n Thank you for your patience!\nWe will send you a reviewing request shortly.`;
                 break;
                 
             case 'Deferred':
@@ -4810,7 +4784,7 @@ async function sendWhatsappToCustomerForStatusUpdate(complaintId, pool) {
                 
             case 'In-Progress':
                 const skillmanInfo = skillman_name ? ` Our technician ${skillman_name} is on the way.` : '';
-                message = `Your complaint #${complaint_id} is now in progress.${skillmanInfo} Thank you for your patience!`;
+                message = `Your complaint #${complaint_id} is now in progress.`+'\n'+`${skillmanInfo} `+'\n'+`Thank you for your patience!`;
                 break;
                 
             default:
@@ -4843,6 +4817,23 @@ async function sendWhatsappToCustomerForStatusUpdate(complaintId, pool) {
         return { success: false, message: error.message };
     }
 }
+function formatPhoneNumber(phoneNumber) {
+    let digitsOnly = phoneNumber.replace(/\D/g, '');
+    
+    // Convert local format to international
+    if (digitsOnly.startsWith('0') && digitsOnly.length === 11) {
+        return '92' + digitsOnly.substring(1);
+    }
+    else if (digitsOnly.startsWith('0') && digitsOnly.length > 11) {
+        return '92' + digitsOnly.substring(1, 12);
+    }
+    else if (!digitsOnly.startsWith('92') && digitsOnly.length === 10) {
+        return '92' + digitsOnly;
+    }
+    
+    // If already in international format or other, return as is
+    return digitsOnly.length > 12 ? digitsOnly.substring(0, 12) : digitsOnly;
+}
 
 
 
@@ -4850,19 +4841,24 @@ async function sendWhatsappToCustomerForStatusUpdate(complaintId, pool) {
 
 
 app.get('/api/complaints/:complaintId/previous-skillman', async (req, res) => {
-  // Verify Authorization header exists
+  const pageAccess = 'all-complaints';
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized - No token provided' });
   }
 
   const token = authHeader.split(' ')[1];
-  
   const { complaintId } = req.params;
-  try {
-    let pool = await sql.connect(dbConfig);
 
-    // Step 1: Verify token exists in Users table
+  try {
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
+
+
+    // Verify token
     const tokenCheck = await pool.request()
       .input('token', sql.VarChar(255), token)
       .query('SELECT id FROM Users WHERE token = @token');
@@ -4870,10 +4866,8 @@ app.get('/api/complaints/:complaintId/previous-skillman', async (req, res) => {
     if (tokenCheck.recordset.length === 0) {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
-    // Connect to DB if not already connected
-    // await sql.connect(dbConfig); // Not needed if using pool
 
-    // Get the skillman_id from Complaints
+    // Get the skillman_id for this complaint
     const complaintResult = await pool.request()
       .input('complaintId', sql.VarChar(25), complaintId)
       .query(`
@@ -4889,7 +4883,6 @@ app.get('/api/complaints/:complaintId/previous-skillman', async (req, res) => {
     const skillmanId = complaintResult.recordset[0].skillman_id;
 
     if (!skillmanId) {
-      // No skillman assigned
       return res.json({ success: true, skillman: null });
     }
 
@@ -4908,17 +4901,16 @@ app.get('/api/complaints/:complaintId/previous-skillman', async (req, res) => {
       `);
 
     if (skillmanResult.recordset.length === 0) {
-      // Skillman not found (shouldn't happen)
       return res.json({ success: true, skillman: null });
     }
 
-    // Return as array for consistency
     res.json({ success: true, skillman: skillmanResult.recordset });
   } catch (err) {
     console.error('Error fetching previous skillman:', err);
     res.status(500).json({ success: false, message: 'Failed to fetch previous skillman' });
   }
 });
+
 
 
 
@@ -5005,14 +4997,13 @@ They are on the way to solve your problem.`;
 }
 
 app.post('/api/complaints/assign-skillman', async (req, res) => {
-  // Verify Authorization header exists
+  const pageAccess = 'all-complaints';
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized - No token provided' });
   }
 
   const token = authHeader.split(' ')[1];
-  
   const { complaintId, skillmanId } = req.body;
 
   if (!complaintId || !skillmanId) {
@@ -5020,9 +5011,13 @@ app.post('/api/complaints/assign-skillman', async (req, res) => {
   }
 
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
-    // Step 1: Verify token exists in Users table
+    // Step 1: Verify token exists
     const tokenCheck = await pool.request()
       .input('token', sql.VarChar(255), token)
       .query('SELECT id FROM Users WHERE token = @token');
@@ -5031,11 +5026,13 @@ app.post('/api/complaints/assign-skillman', async (req, res) => {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
 
-    // 1. Get the previous skillman assigned to this complaint and customer ID
+    // 1. Get previous skillman + customer
     const prevResult = await pool.request()
       .input('complaintId', sql.VarChar(25), complaintId)
       .query(`
-        SELECT skillman_id, customer_id FROM Complaints WHERE complaint_id = @complaintId
+        SELECT skillman_id, customer_id 
+        FROM Complaints 
+        WHERE complaint_id = @complaintId
       `);
 
     if (prevResult.recordset.length === 0) {
@@ -5045,7 +5042,7 @@ app.post('/api/complaints/assign-skillman', async (req, res) => {
     const prevSkillmanId = prevResult.recordset[0].skillman_id;
     const customerId = prevResult.recordset[0].customer_id;
 
-    // 2. Set previous skillman status to 'Active' (if there was one and it's different from the new one)
+    // 2. Reset previous skillman status if needed
     if (prevSkillmanId && prevSkillmanId !== skillmanId) {
       await pool.request()
         .input('prevSkillmanId', sql.Int, prevSkillmanId)
@@ -5056,18 +5053,18 @@ app.post('/api/complaints/assign-skillman', async (req, res) => {
         `);
     }
 
-    // 3. Get the new skillman's name for the WhatsApp message
+    // 3. Get new skillman name
     const skillmanResult = await pool.request()
       .input('skillmanId', sql.Int, skillmanId)
       .query('SELECT name FROM Skillmen WHERE id = @skillmanId');
-    
+
     if (skillmanResult.recordset.length === 0) {
       return res.status(404).json({ success: false, message: 'Skillman not found' });
     }
-    
+
     const skillmanName = skillmanResult.recordset[0].name;
 
-    // 4. Update the complaint's skillman and set status to 'In-Progress'
+    // 4. Update complaint assignment
     const result = await pool.request()
       .input('complaintId', sql.VarChar(25), complaintId)
       .input('skillmanId', sql.Int, skillmanId)
@@ -5077,7 +5074,7 @@ app.post('/api/complaints/assign-skillman', async (req, res) => {
         WHERE complaint_id = @complaintId
       `);
 
-    // 5. Set new skillman's status to 'In-Progress'
+    // 5. Update new skillman status
     await pool.request()
       .input('skillmanId', sql.Int, skillmanId)
       .query(`
@@ -5086,7 +5083,7 @@ app.post('/api/complaints/assign-skillman', async (req, res) => {
         WHERE id = @skillmanId
       `);
 
-    // 6. Send WhatsApp message to customer about the assignment
+    // 6. Notify customer on WhatsApp
     const isReassignment = prevSkillmanId !== null && prevSkillmanId !== skillmanId;
     sendSkillmanAssignmentMessage(customerId, complaintId, skillmanName, isReassignment, pool)
       .catch(error => console.error('Error in sending WhatsApp assignment message:', error));
@@ -5112,20 +5109,23 @@ app.post('/api/complaints/assign-skillman', async (req, res) => {
 
 
 
+
 // APIs to retrieve complaints based on priority
 app.post('/api/complaints-by-priority', async (req, res) => {
-  // Verify Authorization header exists
-  console.log("fetched");
+  const pageAccess = 'all-complaints';
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-
     return res.status(401).json({ error: 'Unauthorized - No token provided' });
   }
 
   const token = authHeader.split(' ')[1];
-   
+
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -5135,14 +5135,13 @@ app.post('/api/complaints-by-priority', async (req, res) => {
     if (tokenCheck.recordset.length === 0) {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
+
     const { page = 1, pageSize = 10, priority } = req.query;
     const offset = (page - 1) * pageSize;
 
     if (!priority) {
       return res.status(400).json({ success: false, message: 'Priority is required' });
     }
-
-    await sql.connect(dbConfig);
 
     const query = `
       SELECT 
@@ -5177,18 +5176,16 @@ app.post('/api/complaints-by-priority', async (req, res) => {
       FETCH NEXT @pageSize ROWS ONLY
     `;
 
-    const request = new sql.Request();
+    const request = pool.request();
     request.input('priority', sql.VarChar(20), priority);
     request.input('offset', sql.Int, offset);
     request.input('pageSize', sql.Int, parseInt(pageSize));
 
     const result = await request.query(query);
 
-    // Get total count for pagination info
-    const countQuery = `
-      SELECT COUNT(*) AS total FROM Complaints WHERE priority = @priority
-    `;
-    const countResult = await new sql.Request()
+    // Count query
+    const countQuery = `SELECT COUNT(*) AS total FROM Complaints WHERE priority = @priority`;
+    const countResult = await pool.request()
       .input('priority', sql.VarChar(20), priority)
       .query(countQuery);
     const total = countResult.recordset[0].total;
@@ -5227,17 +5224,23 @@ app.post('/api/complaints-by-priority', async (req, res) => {
 
 
 
+
 app.get('/api/receivers', async (req, res) => {
   // Verify Authorization header exists
+  const pageAccess = 'all-complaints';
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized - No token provided' });
   }
 
   const token = authHeader.split(' ')[1];
-   
+
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -5245,13 +5248,13 @@ app.get('/api/receivers', async (req, res) => {
       .query('SELECT id FROM Users WHERE token = @token');
 
     if (tokenCheck.recordset.length === 0) {
-      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+      return res.status(401).json({
+        error: 'Unauthorized - Invalid token. Please login again.'
+      });
     }
-    // Connect to database
-    await sql.connect(dbConfig);
 
     // Query distinct receiver names from Users
-    const result = await sql.query(`
+    const result = await pool.request().query(`
       SELECT DISTINCT id, name
       FROM Users
       ORDER BY name
@@ -5261,8 +5264,6 @@ app.get('/api/receivers', async (req, res) => {
   } catch (error) {
     console.error('Error fetching receivers:', error);
     res.status(500).json({ error: 'Failed to fetch receivers' });
-  } finally {
-    //sql.close();
   }
 });
 
@@ -5272,31 +5273,35 @@ app.get('/api/receivers', async (req, res) => {
 
 
 
+
 //API for delay complaints
-/*
 app.post('/api/delay-complaints', async (req, res) => {
-  // Verify Authorization header exists
+
+  const pageAccess = 'delay-complaints';
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized - No token provided' });
   }
 
   const token = authHeader.split(' ')[1];
-   
-  let connection;
-  try {
-    let pool = await sql.connect(dbConfig);
 
-    // Step 1: Verify token exists in Users table
+  try {
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
+
+    // Verify token
     const tokenCheck = await pool.request()
       .input('token', sql.VarChar(255), token)
       .query('SELECT id FROM Users WHERE token = @token');
 
     if (tokenCheck.recordset.length === 0) {
-      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+      return res.status(401).json({
+        error: 'Unauthorized - Invalid token. Please login again.'
+      });
     }
-    connection = new sql.ConnectionPool(dbConfig);
-    await connection.connect();
 
     const page = Math.max(parseInt(req.query.page) || 1, 1);
     const limit = Math.max(Math.min(parseInt(req.query.limit) || 10, 100), 1);
@@ -5316,180 +5321,14 @@ app.post('/api/delay-complaints', async (req, res) => {
         c.status,
         CASE 
           WHEN c.priority = 'Immediate' THEN 
-            ROUND(
-              CASE 
-                WHEN c.status = 'Completed' THEN 
-                  DATEDIFF(MINUTE, DATEADD(HOUR, 2, c.launched_at), c.completed_at) / 60.0
-                ELSE 
-                  DATEDIFF(MINUTE, DATEADD(HOUR, 2, c.launched_at), SWITCHOFFSET(SYSDATETIMEOFFSET(), '+05:00')) / 60.0
-              END, 1)
+            ROUND(DATEDIFF(MINUTE, DATEADD(HOUR, 2, c.launched_at), 
+              CASE WHEN c.status = 'Completed' THEN c.completed_at ELSE GETDATE() END) / 60.0, 1)
           WHEN c.priority = 'Urgent' THEN 
-            ROUND(
-              CASE 
-                WHEN c.status = 'Completed' THEN 
-                  DATEDIFF(MINUTE, DATEADD(HOUR, 6, c.launched_at), c.completed_at) / 60.0
-                ELSE 
-                  DATEDIFF(MINUTE, DATEADD(HOUR, 6, c.launched_at), SWITCHOFFSET(SYSDATETIMEOFFSET(), '+05:00')) / 60.0
-              END, 1)
+            ROUND(DATEDIFF(MINUTE, DATEADD(HOUR, 6, c.launched_at), 
+              CASE WHEN c.status = 'Completed' THEN c.completed_at ELSE GETDATE() END) / 60.0, 1)
           WHEN c.priority = 'Routine' THEN 
-            ROUND(
-              CASE 
-                WHEN c.status = 'Completed' THEN 
-                  DATEDIFF(MINUTE, DATEADD(HOUR, 24, c.launched_at), c.completed_at) / 60.0
-                ELSE 
-                  DATEDIFF(MINUTE, DATEADD(HOUR, 24, c.launched_at), SWITCHOFFSET(SYSDATETIMEOFFSET(), '+05:00')) / 60.0
-              END, 1)
-        END AS delay_time_hours
-      FROM Complaints c
-      LEFT JOIN Location l ON c.location_id = l.location_id
-      LEFT JOIN Colonies col ON l.colony_number = col.ColonyNumber
-      LEFT JOIN Users u ON c.receiver_id = u.id
-      LEFT JOIN Skillmen s ON c.skillman_id = s.id
-      WHERE c.status IN ('Completed', 'In-Progress')   -- ✅ Include in-progress
-      AND c.status != 'Deferred'
-      AND (
-        (c.priority = 'Immediate' AND 
-          DATEDIFF(MINUTE, DATEADD(HOUR, 2, c.launched_at), 
-            CASE WHEN c.status = 'Completed' THEN c.completed_at ELSE SWITCHOFFSET(SYSDATETIMEOFFSET(), '+05:00') END) > 0
-        )
-        OR
-        (c.priority = 'Urgent' AND 
-          DATEDIFF(MINUTE, DATEADD(HOUR, 6, c.launched_at), 
-            CASE WHEN c.status = 'Completed' THEN c.completed_at ELSE SWITCHOFFSET(SYSDATETIMEOFFSET(), '+05:00') END) > 0
-        )
-        OR
-        (c.priority = 'Routine' AND 
-          DATEDIFF(MINUTE, DATEADD(HOUR, 24, c.launched_at), 
-            CASE WHEN c.status = 'Completed' THEN c.completed_at ELSE SWITCHOFFSET(SYSDATETIMEOFFSET(), '+05:00') END) > 0
-        )
-      )
-    `;
-
-    if (search) {
-      const safeSearch = search.replace(/'/g, "''");
-      baseQuery += `
-        AND (
-          c.complaint_id LIKE '%${safeSearch}%' OR
-          c.nature + ' / ' + c.type LIKE '%${safeSearch}%' OR
-          l.building_number LIKE '%${safeSearch}%' OR
-          col.Name LIKE '%${safeSearch}%' OR
-          u.name LIKE '%${safeSearch}%' OR
-          s.name LIKE '%${safeSearch}%' OR
-          c.priority LIKE '%${safeSearch}%' OR
-          c.status LIKE '%${safeSearch}%'
-        )
-      `;
-    }
-
-    const countResult = await connection.request().query(`
-      SELECT COUNT(*) as total FROM (${baseQuery.replace(/SELECT.*FROM/, 'SELECT c.complaint_id FROM')}) AS temp
-    `);
-    const total = countResult.recordset[0].total;
-
-    const result = await connection.request().query(`
-      ${baseQuery}
-      ORDER BY delay_time_hours DESC
-      OFFSET ${offset} ROWS
-      FETCH NEXT ${limit} ROWS ONLY
-    `);
-
-    const complaints = result.recordset.map(complaint => ({
-      complaintId: complaint.complaint_id,
-      date: complaint.date,
-      category: complaint.category,
-      building: complaint.building,
-      colony: complaint.colony,
-      launchedBy: complaint.launched_by,
-      skillman: complaint.skillman || 'Unassigned',
-      type: complaint.type,
-      delayTime: `${parseFloat(complaint.delay_time_hours).toFixed(1)} hours`,
-      status: complaint.status
-    }));
-
-    res.json({
-      success: true,
-      data: complaints,
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit)
-    });
-
-  } catch (err) {
-    console.error('Error:', err);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching delayed complaints'
-    });
-  } finally {
-    if (connection && connection.connected) {
-      //await connection.close();
-    }
-  }
-});*/
-app.post('/api/delay-complaints', async (req, res) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Unauthorized - No token provided' });
-  }
-
-  const token = authHeader.split(' ')[1];
-   
-  let connection;
-  try {
-    let pool = await sql.connect(dbConfig);
-
-    const tokenCheck = await pool.request()
-      .input('token', sql.VarChar(255), token)
-      .query('SELECT id FROM Users WHERE token = @token');
-
-    if (tokenCheck.recordset.length === 0) {
-      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
-    }
-    connection = new sql.ConnectionPool(dbConfig);
-    await connection.connect();
-
-    const page = Math.max(parseInt(req.query.page) || 1, 1);
-    const limit = Math.max(Math.min(parseInt(req.query.limit) || 10, 100), 1);
-    const search = req.query.search || '';
-    const offset = (page - 1) * limit;
-
-    let baseQuery = `
-      SELECT 
-        c.complaint_id,
-        CONVERT(VARCHAR(10), c.launched_at, 120) AS date,
-        c.nature + ' / ' + c.type AS category,
-        l.building_number AS building,
-        col.Name AS colony,
-        u.name AS launched_by,
-        s.name AS skillman,
-        c.priority AS type,
-        c.status,
-        CASE 
-          WHEN c.priority = 'Immediate' THEN 
-            ROUND(
-              CASE 
-                WHEN c.status = 'Completed' THEN 
-                  DATEDIFF(MINUTE, DATEADD(HOUR, 2, c.launched_at), c.completed_at) / 60.0
-                ELSE 
-                  DATEDIFF(MINUTE, DATEADD(HOUR, 2, c.launched_at), GETDATE()) / 60.0
-              END, 1)
-          WHEN c.priority = 'Urgent' THEN 
-            ROUND(
-              CASE 
-                WHEN c.status = 'Completed' THEN 
-                  DATEDIFF(MINUTE, DATEADD(HOUR, 6, c.launched_at), c.completed_at) / 60.0
-                ELSE 
-                  DATEDIFF(MINUTE, DATEADD(HOUR, 6, c.launched_at), GETDATE()) / 60.0
-              END, 1)
-          WHEN c.priority = 'Routine' THEN 
-            ROUND(
-              CASE 
-                WHEN c.status = 'Completed' THEN 
-                  DATEDIFF(MINUTE, DATEADD(HOUR, 24, c.launched_at), c.completed_at) / 60.0
-                ELSE 
-                  DATEDIFF(MINUTE, DATEADD(HOUR, 24, c.launched_at), GETDATE()) / 60.0
-              END, 1)
+            ROUND(DATEDIFF(MINUTE, DATEADD(HOUR, 24, c.launched_at), 
+              CASE WHEN c.status = 'Completed' THEN c.completed_at ELSE GETDATE() END) / 60.0, 1)
         END AS delay_time_hours,
         c.launched_at
       FROM Complaints c
@@ -5498,23 +5337,17 @@ app.post('/api/delay-complaints', async (req, res) => {
       LEFT JOIN Users u ON c.receiver_id = u.id
       LEFT JOIN Skillmen s ON c.skillman_id = s.id
       WHERE c.status IN ('Completed', 'In-Progress')
-      AND c.status != 'Deferred'
-      AND (
-        (c.priority = 'Immediate' AND 
-          DATEDIFF(MINUTE, DATEADD(HOUR, 2, c.launched_at), 
-            CASE WHEN c.status = 'Completed' THEN c.completed_at ELSE GETDATE() END) > 0
+        AND c.status != 'Deferred'
+        AND (
+          (c.priority = 'Immediate' AND DATEDIFF(MINUTE, DATEADD(HOUR, 2, c.launched_at), 
+            CASE WHEN c.status = 'Completed' THEN c.completed_at ELSE GETDATE() END) > 0)
+          OR
+          (c.priority = 'Urgent' AND DATEDIFF(MINUTE, DATEADD(HOUR, 6, c.launched_at), 
+            CASE WHEN c.status = 'Completed' THEN c.completed_at ELSE GETDATE() END) > 0)
+          OR
+          (c.priority = 'Routine' AND DATEDIFF(MINUTE, DATEADD(HOUR, 24, c.launched_at), 
+            CASE WHEN c.status = 'Completed' THEN c.completed_at ELSE GETDATE() END) > 0)
         )
-        OR
-        (c.priority = 'Urgent' AND 
-          DATEDIFF(MINUTE, DATEADD(HOUR, 6, c.launched_at), 
-            CASE WHEN c.status = 'Completed' THEN c.completed_at ELSE GETDATE() END) > 0
-        )
-        OR
-        (c.priority = 'Routine' AND 
-          DATEDIFF(MINUTE, DATEADD(HOUR, 24, c.launched_at), 
-            CASE WHEN c.status = 'Completed' THEN c.completed_at ELSE GETDATE() END) > 0
-        )
-      )
     `;
 
     if (search) {
@@ -5533,12 +5366,15 @@ app.post('/api/delay-complaints', async (req, res) => {
       `;
     }
 
-    const countResult = await connection.request().query(`
-      SELECT COUNT(*) as total FROM (${baseQuery.replace(/SELECT.*FROM/, 'SELECT c.complaint_id FROM')}) AS temp
+    // Count total
+    const countResult = await pool.request().query(`
+      SELECT COUNT(*) as total 
+      FROM (${baseQuery.replace(/SELECT.*FROM/, 'SELECT c.complaint_id FROM')}) AS temp
     `);
     const total = countResult.recordset[0].total;
 
-    const result = await connection.request().query(`
+    // Fetch paginated data
+    const result = await pool.request().query(`
       ${baseQuery}
       ORDER BY c.launched_at DESC
       OFFSET ${offset} ROWS
@@ -5573,12 +5409,9 @@ app.post('/api/delay-complaints', async (req, res) => {
       success: false,
       message: 'Error fetching delayed complaints'
     });
-  } finally {
-    if (connection && connection.connected) {
-      // await connection.close();
-    }
   }
 });
+
 
 
 
@@ -5595,8 +5428,7 @@ app.post('/api/delay-complaints', async (req, res) => {
 
 // API endpoint to get colonies with their buildings
 app.get('/api/colonies-with-buildings', async (req, res) => {
-  
-  
+  const pageAccess = 'complaints-report';
   // Verify Authorization header exists
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -5604,8 +5436,13 @@ app.get('/api/colonies-with-buildings', async (req, res) => {
   }
 
   const token = authHeader.split(' ')[1];
+
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -5613,19 +5450,12 @@ app.get('/api/colonies-with-buildings', async (req, res) => {
       .query('SELECT id FROM Users WHERE token = @token');
 
     if (tokenCheck.recordset.length === 0) {
-      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+      return res.status(401).json({
+        error: 'Unauthorized - Invalid token. Please login again.'
+      });
     }
-  } catch(error) {
-    console.err('Error: '+error);
-  }
 
-  let pool;
-  try {
-    // Connect to the database
-    pool = await sql.connect(dbConfig);
-    
-    // Query to get colonies and their buildings
-    // Using the exact column names from your database schema
+    // Query colonies and buildings
     const query = `
       SELECT 
         c.ColonyNumber as id, 
@@ -5636,53 +5466,33 @@ app.get('/api/colonies-with-buildings', async (req, res) => {
       LEFT JOIN Location l ON c.ColonyNumber = l.colony_number
       ORDER BY c.Name, l.building_number
     `;
-    
-    // Execute the query
+
     const result = await pool.request().query(query);
-    
-    // Log the raw result to check what's coming from the database
-    //console.log('Raw database result:', result.recordset);
-    
-    // Process the data to group buildings by colony
+
+    // Group buildings by colony
     const coloniesMap = new Map();
-    
     result.recordset.forEach(row => {
-      const colonyId = row.id;
-      
-      // If colony doesn't exist in map, add it
-      if (!coloniesMap.has(colonyId)) {
-        coloniesMap.set(colonyId, {
-          id: colonyId,
+      if (!coloniesMap.has(row.id)) {
+        coloniesMap.set(row.id, {
+          id: row.id,
           name: row.name,
           buildings: []
         });
       }
-      
-      // Add building to colony if it exists
       if (row.buildingId && row.buildingName) {
-        coloniesMap.get(colonyId).buildings.push({
+        coloniesMap.get(row.id).buildings.push({
           id: row.buildingId,
           name: row.buildingName
         });
       }
     });
-    
-    // Convert map to array
+
     const colonies = Array.from(coloniesMap.values());
-    
-    // Log the final processed data
-    //console.log('Processed colonies data:', colonies);
-    
-    // Send the response
     res.json(colonies);
+
   } catch (err) {
-    console.error('Database query error:', err);
+    console.error('Error fetching colonies with buildings:', err);
     res.status(500).json({ error: 'Failed to fetch colonies and buildings' });
-  } finally {
-    // Close the database connection
-    if (pool) {
-      //await pool.close();
-    }
   }
 });
 
@@ -5692,19 +5502,21 @@ app.get('/api/colonies-with-buildings', async (req, res) => {
 // Endpoint to get categories(subdivision) and natures
 // API endpoint to get categories with their natures
 app.get('/api/categories-with-natures', async (req, res) => {
-
-
-  
-  
   // Verify Authorization header exists
+  const pageAccess = 'complaints-report';
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized - No token provided' });
   }
 
   const token = authHeader.split(' ')[1];
+
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -5712,65 +5524,42 @@ app.get('/api/categories-with-natures', async (req, res) => {
       .query('SELECT id FROM Users WHERE token = @token');
 
     if (tokenCheck.recordset.length === 0) {
-      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+      return res.status(401).json({
+        error: 'Unauthorized - Invalid token. Please login again.'
+      });
     }
-  } catch(error) {
-    console.err('Error: '+error);
-  }
 
-
-
-
-  let pool;
-  try {
-    // Connect to the database
-    pool = await sql.connect(dbConfig);
-    
-    // Query to get categories and their natures from the Category table
+    // Query categories with natures
     const query = `
       SELECT 
-        subdivision_name as category,
-        nature_name as nature
+        subdivision_name AS category,
+        nature_name AS nature
       FROM Category
       ORDER BY subdivision_name, nature_name
     `;
-    
-    // Execute the query
+
     const result = await pool.request().query(query);
-    
-    // Process the data to group natures by category
+
+    // Group natures by category
     const categoriesMap = new Map();
-    
     result.recordset.forEach(row => {
-      const categoryName = row.category;
-      
-      // If category doesn't exist in map, add it
-      if (!categoriesMap.has(categoryName)) {
-        categoriesMap.set(categoryName, {
-          name: categoryName,
+      if (!categoriesMap.has(row.category)) {
+        categoriesMap.set(row.category, {
+          name: row.category,
           natures: []
         });
       }
-      
-      // Add nature to category
       if (row.nature) {
-        categoriesMap.get(categoryName).natures.push(row.nature);
+        categoriesMap.get(row.category).natures.push(row.nature);
       }
     });
-    
-    // Convert map to array
+
     const categories = Array.from(categoriesMap.values());
-    
-    // Send the response
     res.json(categories);
+
   } catch (err) {
-    console.error('Database query error:', err);
+    console.error('Error fetching categories with natures:', err);
     res.status(500).json({ error: 'Failed to fetch categories and natures' });
-  } finally {
-    // Close the database connection
-    if (pool) {
-      //await pool.close();
-    }
   }
 });
 
@@ -5789,10 +5578,7 @@ app.get('/api/categories-with-natures', async (req, res) => {
 
 // API endpoint for sub division report
 app.post('/api/subdiv-report', async (req, res) => {
-
-
-  
-  
+  const pageAccess = 'complaints-report';
   // Verify Authorization header exists
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -5800,8 +5586,14 @@ app.post('/api/subdiv-report', async (req, res) => {
   }
 
   const token = authHeader.split(' ')[1];
+  const { fromDate, toDate, category } = req.body;
+
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -5809,32 +5601,22 @@ app.post('/api/subdiv-report', async (req, res) => {
       .query('SELECT id FROM Users WHERE token = @token');
 
     if (tokenCheck.recordset.length === 0) {
-      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+      return res.status(401).json({
+        error: 'Unauthorized - Invalid token. Please login again.'
+      });
     }
-  } catch(error) {
-    console.err('Error: '+error);
-  }
 
-
-
-  const { fromDate, toDate, category } = req.body;
-  
-  try {
-    // Connect to the database
-    await sql.connect(dbConfig);
-    
     // Build the WHERE clause based on the provided filters
     let whereClause = `WHERE launched_at BETWEEN @fromDate AND @toDate`;
     if (category && category !== '') {
-      // Handle the special case for '-' category
       if (category === '-') {
         whereClause += ` AND (category IS NULL OR category = '-')`;
       } else {
         whereClause += ` AND category = @category`;
       }
     }
-    
-    // Query for status data (Inprogress, Completed, SNA, Deferred)
+
+    // Queries
     const statusQuery = `
       SELECT 
         COALESCE(category, '-') AS subDivision,
@@ -5848,9 +5630,7 @@ app.post('/api/subdiv-report', async (req, res) => {
       GROUP BY COALESCE(category, '-')
       ORDER BY COALESCE(category, '-')
     `;
-    
-    // Query for priority data (Immediate, Urgent, Routine, Deferred)
-    // Note: Using priority deferred, not status deferred
+
     const priorityQuery = `
       SELECT 
         COALESCE(category, '-') AS subDivision,
@@ -5864,37 +5644,33 @@ app.post('/api/subdiv-report', async (req, res) => {
       GROUP BY COALESCE(category, '-')
       ORDER BY COALESCE(category, '-')
     `;
-    
-    // Create request object
-    const request = new sql.Request();
-    
-    // Add parameters to the request
-    request.input('fromDate', sql.DateTime, new Date(fromDate));
-    request.input('toDate', sql.DateTime, new Date(toDate));
+
+    // Create request with parameters
+    const request = pool.request()
+      .input('fromDate', sql.DateTime, new Date(fromDate))
+      .input('toDate', sql.DateTime, new Date(toDate));
+
     if (category && category !== '' && category !== '-') {
       request.input('category', sql.VarChar(10), category);
     }
-    
-    // Execute both queries in parallel
+
+    // Run queries in parallel
     const [statusResult, priorityResult] = await Promise.all([
       request.query(statusQuery),
       request.query(priorityQuery)
     ]);
-    
-    // Send the response
+
     res.json({
       statusData: statusResult.recordset,
       priorityData: priorityResult.recordset
     });
-    
+
   } catch (error) {
-    console.error('Database error:', error);
+    console.error('Error fetching subdivision report:', error);
     res.status(500).json({ error: 'Internal server error' });
-  } finally {
-    // Close the connection
-    //sql.close && await sql.close();
   }
 });
+
 
 
 
@@ -5906,10 +5682,7 @@ app.post('/api/subdiv-report', async (req, res) => {
 // API for summary reporting
 
 app.get('/api/summary-report', async (req, res) => {
-
-
-  
-  
+  const pageAccess = 'complaints-report';
   // Verify Authorization header exists
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -5917,8 +5690,18 @@ app.get('/api/summary-report', async (req, res) => {
   }
 
   const token = authHeader.split(' ')[1];
+  const { year } = req.query;
+
+  if (!year || isNaN(year)) {
+    return res.status(400).json({ error: 'Valid year parameter is required' });
+  }
+
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -5926,27 +5709,12 @@ app.get('/api/summary-report', async (req, res) => {
       .query('SELECT id FROM Users WHERE token = @token');
 
     if (tokenCheck.recordset.length === 0) {
-      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+      return res.status(401).json({
+        error: 'Unauthorized - Invalid token. Please login again.'
+      });
     }
-  } catch(error) {
-    console.err('Error: '+error);
-  }
 
-
-
-  const { year } = req.query;
-  
-  if (!year || isNaN(year)) {
-    return res.status(400).json({ error: 'Valid year parameter is required' });
-  }
-
-  let pool;
-  try {
-    pool = await sql.connect(dbConfig);
-    
-    // Get start and end dates for the year
-    const startDate = `${year}-01-01`;
-    const endDate = `${year}-12-31`;
+    const intYear = parseInt(year);
 
     // Get all natures and colonies first
     const [naturesResult, coloniesResult] = await Promise.all([
@@ -5968,7 +5736,9 @@ app.get('/api/summary-report', async (req, res) => {
           ELSE 0 
         END as percentage
       FROM Natures n
-      LEFT JOIN Complaints c ON n.name = c.nature AND YEAR(c.launched_at) = @year
+      LEFT JOIN Complaints c 
+        ON n.name = c.nature 
+       AND YEAR(c.launched_at) = @year
       GROUP BY n.name
       ORDER BY total DESC, n.name
     `;
@@ -5985,40 +5755,28 @@ app.get('/api/summary-report', async (req, res) => {
         END as percentage
       FROM Colonies col
       LEFT JOIN Location l ON col.ColonyNumber = l.colony_number
-      LEFT JOIN Complaints c ON l.location_id = c.location_id AND YEAR(c.launched_at) = @year
+      LEFT JOIN Complaints c 
+        ON l.location_id = c.location_id 
+       AND YEAR(c.launched_at) = @year
       GROUP BY col.Name, col.ColonyNumber
       ORDER BY total DESC, col.Name
     `;
 
-    const natureRequest = pool.request();
-    natureRequest.input('year', sql.Int, parseInt(year));
-    
-    const colonyRequest = pool.request();
-    colonyRequest.input('year', sql.Int, parseInt(year));
-
     const [natureComplaints, colonyComplaints] = await Promise.all([
-      natureRequest.query(natureQuery),
-      colonyRequest.query(colonyQuery)
+      pool.request().input('year', sql.Int, intYear).query(natureQuery),
+      pool.request().input('year', sql.Int, intYear).query(colonyQuery)
     ]);
 
-    // Ensure all natures are included (even with 0 complaints)
+    // Ensure all natures included
     const natureData = allNatures.map(natureItem => {
       const found = natureComplaints.recordset.find(item => item.nature === natureItem.name);
-      return found || {
-        nature: natureItem.name,
-        total: 0,
-        percentage: 0
-      };
+      return found || { nature: natureItem.name, total: 0, percentage: 0 };
     });
 
-    // Ensure all colonies are included (even with 0 complaints)
+    // Ensure all colonies included
     const colonyData = allColonies.map(colonyItem => {
       const found = colonyComplaints.recordset.find(item => item.colony === colonyItem.Name);
-      return found || {
-        colony: colonyItem.Name,
-        total: 0,
-        percentage: 0
-      };
+      return found || { colony: colonyItem.Name, total: 0, percentage: 0 };
     });
 
     res.json({
@@ -6027,12 +5785,8 @@ app.get('/api/summary-report', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Database error:', error);
+    console.error('Error fetching summary report:', error);
     res.status(500).json({ error: 'Internal server error' });
-  } finally {
-    if (pool) {
-      //await pool.close();
-    }
   }
 });
 
@@ -6060,22 +5814,22 @@ app.get('/api/summary-report', async (req, res) => {
 // Endpoints for Default Reporting
 // Complaints endpoint
 app.get('/complaints-report', async (req, res) => {
-
-
-
-  
-  
-  // Verify Authorization header exists
+  const pageAccess = 'complaints-report';
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized - No token provided' });
   }
 
   const token = authHeader.split(' ')[1];
-  try {
-    let pool = await sql.connect(dbConfig);
 
-    // Step 1: Verify token exists in Users table
+  try {
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
+
+    // Step 1: Verify token
     const tokenCheck = await pool.request()
       .input('token', sql.VarChar(255), token)
       .query('SELECT id FROM Users WHERE token = @token');
@@ -6083,15 +5837,7 @@ app.get('/complaints-report', async (req, res) => {
     if (tokenCheck.recordset.length === 0) {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
-  } catch(error) {
-    console.err('Error: '+error);
-  }
 
-
-
-
-  try {
-    // Extract query parameters
     const {
       colony,
       building,
@@ -6103,7 +5849,6 @@ app.get('/complaints-report', async (req, res) => {
       toDate
     } = req.query;
 
-    // Base query with joins
     let query = `
       SELECT 
         c.complaint_id as id,
@@ -6127,23 +5872,45 @@ app.get('/complaints-report', async (req, res) => {
       WHERE 1=1
     `;
 
-    // Add filters based on query parameters
-    if (colony) query += ` AND col.ColonyNumber LIKE '%${colony}%'`;
-    if (building) query += ` AND l.building_number LIKE '%${building}%'`;
-    if (category) query += ` AND c.category = '${category}'`;
-    if (nature) query += ` AND c.nature = '${nature}'`;
-    if (status) query += ` AND c.status = '${status}'`;
-    if (priority) query += ` AND c.priority = '${priority}'`;
-    if (fromDate) query += ` AND CAST(c.launched_at as DATE) >= '${fromDate}'`;
-    if (toDate) query += ` AND CAST(c.launched_at as DATE) <= '${toDate}'`;
+    const request = pool.request();
 
-    // Order by date (most recent first)
+    if (colony) {
+      query += ` AND col.ColonyNumber LIKE @colony`;
+      request.input('colony', sql.VarChar, `%${colony}%`);
+    }
+    if (building) {
+      query += ` AND l.building_number LIKE @building`;
+      request.input('building', sql.VarChar, `%${building}%`);
+    }
+    if (category) {
+      query += ` AND c.category = @category`;
+      request.input('category', sql.VarChar, category);
+    }
+    if (nature) {
+      query += ` AND c.nature = @nature`;
+      request.input('nature', sql.VarChar, nature);
+    }
+    if (status) {
+      query += ` AND c.status = @status`;
+      request.input('status', sql.VarChar, status);
+    }
+    if (priority) {
+      query += ` AND c.priority = @priority`;
+      request.input('priority', sql.VarChar, priority);
+    }
+    if (fromDate) {
+      query += ` AND CAST(c.launched_at as DATE) >= @fromDate`;
+      request.input('fromDate', sql.Date, fromDate);
+    }
+    if (toDate) {
+      query += ` AND CAST(c.launched_at as DATE) <= @toDate`;
+      request.input('toDate', sql.Date, toDate);
+    }
+
     query += ` ORDER BY c.launched_at DESC`;
 
-    // Execute query
-    const result = await pool.request().query(query);
-    
-    // Send response
+    const result = await request.query(query);
+
     res.json(result.recordset);
   } catch (err) {
     console.error('Error fetching complaints:', err);
@@ -6169,10 +5936,7 @@ app.get('/complaints-report', async (req, res) => {
 // Rating Report
 // API endpoint to get rating reports
 app.get('/ratings', async (req, res) => {
-
-
-  
-  
+  const pageAccess = 'rating-report';
   // Verify Authorization header exists
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -6180,8 +5944,13 @@ app.get('/ratings', async (req, res) => {
   }
 
   const token = authHeader.split(' ')[1];
+
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -6191,17 +5960,7 @@ app.get('/ratings', async (req, res) => {
     if (tokenCheck.recordset.length === 0) {
       return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
-  } catch(error) {
-    console.err('Error: '+error);
-  }
 
-
-
-
-  try {
-    // Connect to the database
-    await sql.connect(dbConfig);
-    
     // SQL query to get rating data
     const query = `
       SELECT 
@@ -6224,10 +5983,9 @@ app.get('/ratings', async (req, res) => {
       WHERE cf.rating IS NOT NULL
       ORDER BY cf.created_at DESC
     `;
-    
-    // Execute the query
-    const result = await sql.query(query);
-    
+
+    const result = await pool.request().query(query);
+
     // Format the data for the frontend
     const ratingsData = result.recordset.map(item => ({
       date: item.date,
@@ -6241,16 +5999,11 @@ app.get('/ratings', async (req, res) => {
       rating: item.rating,
       review: item.review || 'No review provided'
     }));
-    
-    // Send the response
+
     res.json(ratingsData);
-    
   } catch (error) {
     console.error('Database error:', error);
     res.status(500).json({ error: 'Failed to fetch rating data' });
-  } finally {
-    // Close the connection
-    //await sql.close();
   }
 });
 
@@ -6263,11 +6016,7 @@ app.get('/ratings', async (req, res) => {
 
 // API endpoint to get all skillman summary data
 app.get('/api/all-skillman-summary', async (req, res) => {
-
-
-
-  
-  
+  const pageAccess = 'skillman-report';
   // Verify Authorization header exists
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -6275,8 +6024,13 @@ app.get('/api/all-skillman-summary', async (req, res) => {
   }
 
   const token = authHeader.split(' ')[1];
+
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -6284,19 +6038,12 @@ app.get('/api/all-skillman-summary', async (req, res) => {
       .query('SELECT id FROM Users WHERE token = @token');
 
     if (tokenCheck.recordset.length === 0) {
-      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+      return res.status(401).json({
+        error: 'Unauthorized - Invalid token. Please login again.'
+      });
     }
-  } catch(error) {
-    console.err('Error: '+error);
-  }
 
-
-
-  try {
-    // Connect to the database
-    await sql.connect(dbConfig);
-    
-    // Query to get skillman performance data - only count reviewed feedback for rating
+    // Query to get skillman performance data
     const query = `
       SELECT 
         s.id,
@@ -6334,18 +6081,17 @@ app.get('/api/all-skillman-summary', async (req, res) => {
       GROUP BY s.id, s.name, s.phoneNumber, s.designation
       ORDER BY s.name
     `;
-    
-    const result = await sql.query(query);
-    
+
+    const result = await pool.request().query(query);
+
     // Format the data for the frontend
     const skillmanData = result.recordset.map(row => {
-      // Format time values to 1 decimal place
       const totalHours = parseFloat(row.totalHours).toFixed(1);
       const averageHours = parseFloat(row.averageHours).toFixed(1);
-      
-      // Handle rating - if no reviewed feedbacks, set rating to 0, otherwise format to 1 decimal place
-      const rating = row.reviewedFeedbacks > 0 ? parseFloat(row.rating).toFixed(1) : '0.0';
-      
+      const rating = row.reviewedFeedbacks > 0
+        ? parseFloat(row.rating).toFixed(1)
+        : '0.0';
+
       return {
         id: row.id,
         name: row.name,
@@ -6360,14 +6106,11 @@ app.get('/api/all-skillman-summary', async (req, res) => {
         productivity: parseFloat(row.productivity).toFixed(1) + '%'
       };
     });
-    
+
     res.json(skillmanData);
   } catch (error) {
     console.error('Database error:', error);
     res.status(500).json({ error: 'Failed to fetch skillman data' });
-  } finally {
-    // Close the connection
-    //await sql.close();
   }
 });
 
@@ -6377,12 +6120,10 @@ app.get('/api/all-skillman-summary', async (req, res) => {
 
 
 
+
 // POST endpoint to retrieve complaints for a specific skillman with filters
 app.post('/api/retrieve-complaints-for-one-skillman', async (req, res) => {
-
-
-  
-  
+  const pageAccess = 'skillman-report';
   // Verify Authorization header exists
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -6390,8 +6131,13 @@ app.post('/api/retrieve-complaints-for-one-skillman', async (req, res) => {
   }
 
   const token = authHeader.split(' ')[1];
+
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -6399,26 +6145,18 @@ app.post('/api/retrieve-complaints-for-one-skillman', async (req, res) => {
       .query('SELECT id FROM Users WHERE token = @token');
 
     if (tokenCheck.recordset.length === 0) {
-      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+      return res.status(401).json({
+        error: 'Unauthorized - Invalid token. Please login again.'
+      });
     }
-  } catch(error) {
-    console.err('Error: '+error);
-  }
 
+    const { skillmanName, status, type, fromDate, toDate } = req.body;
 
-
-  const { skillmanName, status, type, fromDate, toDate } = req.body;
-
-  try {
-    // Validate required parameter
     if (!skillmanName) {
       return res.status(400).json({ error: 'Skillman name is required' });
     }
 
-    // Create database connection pool
-    const pool = await sql.connect(dbConfig);
-
-    // Build the base query
+    // Build base query
     let query = `
       SELECT 
         c.complaint_id,
@@ -6429,16 +6167,13 @@ app.post('/api/retrieve-complaints-for-one-skillman', async (req, res) => {
         u.name as launched_by,
         cust.full_name as customer,
         c.status,
-        -- Calculate hours taken from assigned time to completion time
         CASE 
           WHEN c.assigned_at IS NOT NULL AND c.completed_at IS NOT NULL 
           THEN ROUND(DATEDIFF(SECOND, c.assigned_at, c.completed_at) / 3600.0, 2)
           ELSE NULL 
         END as hours_taken,
-        -- Format the time values for display
         FORMAT(c.assigned_at, 'yyyy-MM-dd HH:mm:ss') as assigned_time,
         FORMAT(c.completed_at, 'yyyy-MM-dd HH:mm:ss') as completed_time,
-        -- Include the original launched_at for proper sorting
         c.launched_at
       FROM Complaints c
       INNER JOIN Skillmen s ON c.skillman_id = s.id
@@ -6450,59 +6185,53 @@ app.post('/api/retrieve-complaints-for-one-skillman', async (req, res) => {
         AND c.status NOT IN ('Deferred', 'SNA')
     `;
 
-    // Add filters based on request parameters
-    const params = [{ name: 'skillmanName', type: sql.VarChar, value: skillmanName }];
+    const params = [
+      { name: 'skillmanName', type: sql.VarChar, value: skillmanName }
+    ];
 
-    if (status && status !== '') {
+    if (status) {
       query += ` AND c.status = @status`;
       params.push({ name: 'status', type: sql.VarChar, value: status });
     }
 
-    if (type && type !== '') {
+    if (type) {
       query += ` AND c.type = @type`;
       params.push({ name: 'type', type: sql.VarChar, value: type });
     }
 
-    if (fromDate && fromDate !== '') {
+    if (fromDate) {
       query += ` AND c.launched_at >= @fromDate`;
       params.push({ name: 'fromDate', type: sql.DateTime, value: fromDate });
     }
 
-    if (toDate && toDate !== '') {
-      // Add one day to include the entire end date
+    if (toDate) {
       const nextDay = new Date(toDate);
       nextDay.setDate(nextDay.getDate() + 1);
-      
       query += ` AND c.launched_at < @toDate`;
-      params.push({ name: 'toDate', type: sql.DateTime, value: nextDay.toISOString().split('T')[0] });
+      params.push({
+        name: 'toDate',
+        type: sql.DateTime,
+        value: nextDay
+      });
     }
 
-    // Order by launch date (newest first) - This ensures ALL results are in descending order
     query += ` ORDER BY c.launched_at DESC`;
 
-    // Execute the query
     const request = pool.request();
-    
-    // Add all parameters to the request
-    params.forEach(param => {
-      request.input(param.name, param.type, param.value);
-    });
-    
+    params.forEach(p => request.input(p.name, p.type, p.value));
+
     const result = await request.query(query);
 
-    // Remove the raw launched_at from the response since we don't need to expose it
-    const cleanedResults = result.recordset.map(item => {
-      const { launched_at, ...rest } = item;
-      return rest;
-    });
+    // Hide raw launched_at
+    const cleanedResults = result.recordset.map(({ launched_at, ...rest }) => rest);
 
-    // Return the results
     res.json(cleanedResults);
   } catch (error) {
     console.error('Database error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 
 
 
@@ -6535,13 +6264,14 @@ async function runQuery(query, params = []) {
 }
 
 
+
+
+
+
+
 // daily-complaints
-
 app.get('/api/complaints/daily-stats', async (req, res) => {
-
-
-  
-  
+  const pageAccess = 'daily-report';
   // Verify Authorization header exists
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -6549,8 +6279,13 @@ app.get('/api/complaints/daily-stats', async (req, res) => {
   }
 
   const token = authHeader.split(' ')[1];
+
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -6558,25 +6293,22 @@ app.get('/api/complaints/daily-stats', async (req, res) => {
       .query('SELECT id FROM Users WHERE token = @token');
 
     if (tokenCheck.recordset.length === 0) {
-      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+      return res
+        .status(401)
+        .json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
-  } catch(error) {
-    console.err('Error: '+error);
+  } catch (error) {
+    console.error('Token validation error:', error);
+    return res.status(500).json({ error: 'Database error while checking token' });
   }
 
-
-
   const date = req.query.date || new Date().toISOString().split('T')[0];
-  //console.log(`📡 API Called: /api/complaints/daily-stats?date=${date}`);
-
   const page = parseInt(req.query.page) || 1;
   const pageSize = parseInt(req.query.pageSize) || 10;
   const offset = (page - 1) * pageSize;
 
   try {
-    //console.log(`📊 Fetching data for ${date}...`);
-
-    // 1️⃣ Status by Category - FIXED STATUS SPELLINGS
+    // 1️⃣ Status by Category
     const statusResult = await runQuery(
       `
       SELECT 
@@ -6610,7 +6342,7 @@ app.get('/api/complaints/daily-stats', async (req, res) => {
       data: statusResult.recordset.map(r => r.total)
     };
 
-    // 3️⃣ Priority Table (category → priority counts) - FIXED PRIORITY SPELLINGS
+    // 3️⃣ Priority Table
     const priorityResult = await runQuery(
       `
       SELECT 
@@ -6628,7 +6360,7 @@ app.get('/api/complaints/daily-stats', async (req, res) => {
       [{ name: 'date', type: sql.Date, value: date }]
     );
 
-    // 4️⃣ Productivity Chart (priority → status breakdown) - FIXED PRIORITY SPELLINGS
+    // 4️⃣ Productivity Chart
     const productivityResult = await runQuery(
       `
       SELECT 
@@ -6653,7 +6385,6 @@ app.get('/api/complaints/daily-stats', async (req, res) => {
       [{ name: 'date', type: sql.Date, value: date }]
     );
 
-    // Prepare productivity chart data
     const productivityData = {
       labels: productivityResult.recordset.map(r => r.priority),
       datasets: [
@@ -6664,7 +6395,7 @@ app.get('/api/complaints/daily-stats', async (req, res) => {
       ]
     };
 
-    // 5️⃣ Deferred Complaints List - FIXED STATUS MATCHING
+    // 5️⃣ Deferred Complaints List
     const deferredResult = await runQuery(
       `
       SELECT 
@@ -6690,7 +6421,6 @@ app.get('/api/complaints/daily-stats', async (req, res) => {
       ]
     );
 
-    // Get total count for deferred complaints for pagination
     const deferredCountResult = await runQuery(
       `
       SELECT COUNT(*) AS totalCount
@@ -6703,9 +6433,6 @@ app.get('/api/complaints/daily-stats', async (req, res) => {
 
     const totalDeferred = deferredCountResult.recordset[0].totalCount;
 
-    //console.log("Deferred complaints rows:", deferredResult.recordset);
-
-    // ✅ Send response
     res.json({
       success: true,
       statusByCategory,
@@ -6723,8 +6450,6 @@ app.get('/api/complaints/daily-stats', async (req, res) => {
         totalPages: Math.ceil(totalDeferred / pageSize)
       }
     });
-
-    //console.log(`✅ Data retrieved successfully for ${date}`);
   } catch (err) {
     console.error('❌ Database error:', err);
     res.status(500).json({ success: false, error: err.message });
@@ -6743,23 +6468,26 @@ app.get('/api/complaints/daily-stats', async (req, res) => {
 
 
 
+
 // Dashboard APIs
 
 // Endpoint to get monthly complaints data for the current year
 app.get('/api/monthly-complaints', async (req, res) => {
-
-
-  
-  
-  // Verify Authorization header exists
+  const pageAccess = 'dashboard';
+  // 🔑 Verify Authorization header
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized - No token provided' });
   }
 
   const token = authHeader.split(' ')[1];
+
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -6767,81 +6495,60 @@ app.get('/api/monthly-complaints', async (req, res) => {
       .query('SELECT id FROM Users WHERE token = @token');
 
     if (tokenCheck.recordset.length === 0) {
-      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+      return res
+        .status(401)
+        .json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
-  } catch(error) {
-    console.err('Error: '+error);
-  }
 
-
-
-
-  try {
-    // Connect to the database
-    await sql.connect(dbConfig);
-    
     // Get current year
     const currentYear = new Date().getFullYear();
-    
-    // SQL query to get monthly complaints count by status for the current year
-    const query = `
-      SELECT 
-        MONTH(launched_at) as month,
-        status,
-        COUNT(*) as count
-      FROM Complaints
-      WHERE YEAR(launched_at) = @currentYear
-      GROUP BY MONTH(launched_at), status
-      ORDER BY month, status
-    `;
-    
-    // Execute the query
-    const result = await sql.query`
-      SELECT 
-        MONTH(launched_at) as month,
-        status,
-        COUNT(*) as count
-      FROM Complaints
-      WHERE YEAR(launched_at) = ${currentYear}
-      GROUP BY MONTH(launched_at), status
-      ORDER BY month, status
-    `;
-    
-    // Initialize arrays for each status with zeros for all months
+
+    // Step 2: Fetch complaints grouped by month + status
+    const result = await pool.request()
+      .input('currentYear', sql.Int, currentYear)
+      .query(`
+        SELECT 
+          MONTH(launched_at) AS month,
+          status,
+          COUNT(*) AS count
+        FROM Complaints
+        WHERE YEAR(launched_at) = @currentYear
+        GROUP BY MONTH(launched_at), status
+        ORDER BY month, status
+      `);
+
+    // Step 3: Initialize arrays (12 months each)
     const monthlyData = {
       pending: new Array(12).fill(0),
       inprogress: new Array(12).fill(0),
       completed: new Array(12).fill(0)
     };
-    
-    // Process the result and populate the monthlyData object
+
+    // Step 4: Map results into arrays
     result.recordset.forEach(row => {
-      const monthIndex = row.month - 1; // Convert month (1-12) to array index (0-11)
-      
-      switch(row.status) {
+      const monthIndex = row.month - 1; // convert 1–12 → 0–11
+
+      switch (row.status) {
         case 'Un-Assigned':
         case 'Deferred':
         case 'SNA':
-          monthlyData.pending[monthIndex] = row.count;
+          monthlyData.pending[monthIndex] += row.count; // += just in case multiple statuses map to pending
           break;
         case 'In-Progress':
-          monthlyData.inprogress[monthIndex] = row.count;
+          monthlyData.inprogress[monthIndex] += row.count;
           break;
         case 'Completed':
-          monthlyData.completed[monthIndex] = row.count;
+          monthlyData.completed[monthIndex] += row.count;
           break;
       }
     });
-    
-    // Send the response
+
+    // Step 5: Send result
     res.json(monthlyData);
-    
+
   } catch (error) {
     console.error('Error fetching monthly complaints data:', error);
     res.status(500).json({ error: 'Failed to fetch monthly complaints data' });
-  } finally {
-    // Close the connection
-    //await sql.close();
   }
 });
 
@@ -6851,21 +6558,24 @@ app.get('/api/monthly-complaints', async (req, res) => {
 
 
 
+
 // Category complaints endpoint
 app.get('/api/category-complaints', async (req, res) => {
-
-
-  
-  
-  // Verify Authorization header exists
+  const pageAccess = 'dashboard';
+  // 🔑 Verify Authorization header
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized - No token provided' });
   }
 
   const token = authHeader.split(' ')[1];
+
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -6873,66 +6583,62 @@ app.get('/api/category-complaints', async (req, res) => {
       .query('SELECT id FROM Users WHERE token = @token');
 
     if (tokenCheck.recordset.length === 0) {
-      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+      return res
+        .status(401)
+        .json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
-  } catch(error) {
-    console.err('Error: '+error);
-  }
 
-
-
-  try {
-    await sql.connect(dbConfig);
-    
-    // Get all subdivisions first
-    const subdivisionsResult = await sql.query`SELECT name FROM Subdivision`;
+    // Step 2: Get all subdivisions
+    const subdivisionsResult = await pool.request().query(`SELECT name FROM Subdivision`);
     const subdivisions = subdivisionsResult.recordset.map(row => row.name);
-    
-    // Get complaint counts by category
-    const result = await sql.query`
+
+    // Step 3: Get complaint counts by category + status
+    const result = await pool.request().query(`
       SELECT 
         category, 
-        COUNT(*) as count,
+        COUNT(*) AS count,
         status
       FROM Complaints 
       WHERE category IS NOT NULL
       GROUP BY category, status
-    `;
-    
-    // Initialize counts for all categories
+    `);
+
+    // Step 4: Initialize counts for all categories
     const categoryCounts = {};
     subdivisions.forEach(category => {
       categoryCounts[category] = {
         InProgress: 0,
         Completed: 0,
-        Deffered: 0,
+        Deferred: 0,
         UnAssigned: 0,
         SNA: 0
       };
     });
-    
-    // Process the results
+
+    // Step 5: Process query results into our structure
     result.recordset.forEach(row => {
-      const statusKey = row.status.replace('-', ''); // Convert "In-Progress" to "InProgress"
+      let statusKey = row.status.replace('-', ''); // "In-Progress" → "InProgress"
+      if (statusKey.toLowerCase() === 'deffered') statusKey = 'Deferred'; // fix typo handling
+
       if (categoryCounts[row.category]) {
         categoryCounts[row.category][statusKey] = row.count;
       }
     });
-    
-    // Calculate total for each category
+
+    // Step 6: Final format for frontend
     const categoryData = subdivisions.map(category => {
       const counts = categoryCounts[category];
       const total = Object.values(counts).reduce((sum, count) => sum + count, 0);
-      
+
       return {
         name: category,
         value: total,
-        // Generate a color based on category name for consistency
         details: counts
       };
     });
-    
+
     res.json(categoryData);
+
   } catch (error) {
     console.error('Error fetching category complaints:', error);
     res.status(500).json({ error: 'Failed to fetch category complaints data' });
@@ -6945,21 +6651,24 @@ app.get('/api/category-complaints', async (req, res) => {
 
 
 
+
 // Nature complaints endpoint
 app.get('/api/nature-complaints', async (req, res) => {
-
-
-  
-  
-  // Verify Authorization header exists
+  const pageAccess = 'dashboard';
+  // 🔑 Verify Authorization header
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized - No token provided' });
   }
 
   const token = authHeader.split(' ')[1];
+
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -6967,74 +6676,65 @@ app.get('/api/nature-complaints', async (req, res) => {
       .query('SELECT id FROM Users WHERE token = @token');
 
     if (tokenCheck.recordset.length === 0) {
-      return res.status(401).json({ error: 'Unauthorized - Invalid token. Please login again.' });
+      return res
+        .status(401)
+        .json({ error: 'Unauthorized - Invalid token. Please login again.' });
     }
-  } catch(error) {
-    console.err('Error: '+error);
-  }
 
-
-
-
-  try {
-    await sql.connect(dbConfig);
-    
-    // Get all natures first
-    const naturesResult = await sql.query`SELECT name FROM Natures`;
+    // Step 2: Get all natures
+    const naturesResult = await pool.request().query(`SELECT name FROM Natures`);
     const natures = naturesResult.recordset.map(row => row.name);
-    
-    // Get complaint counts by nature
-    const result = await sql.query`
+
+    // Step 3: Get complaint counts by nature + status
+    const result = await pool.request().query(`
       SELECT 
         nature, 
-        COUNT(*) as count,
+        COUNT(*) AS count,
         status
       FROM Complaints 
       WHERE nature IS NOT NULL
       GROUP BY nature, status
-    `;
-    
-    // Initialize counts for all natures
+    `);
+
+    // Step 4: Initialize counts for all natures
     const natureCounts = {};
     natures.forEach(nature => {
       natureCounts[nature] = {
         InProgress: 0,
         Completed: 0,
-        Deffered: 0,
+        Deferred: 0,
         UnAssigned: 0,
         SNA: 0
       };
     });
-    
-    // Process the results
+
+    // Step 5: Process results into our structure
     result.recordset.forEach(row => {
-      const statusKey = row.status.replace('-', ''); // Convert "In-Progress" to "InProgress"
+      let statusKey = row.status.replace('-', ''); // "In-Progress" → "InProgress"
+      if (statusKey.toLowerCase() === 'deffered') statusKey = 'Deferred'; // normalize typo
+
       if (natureCounts[row.nature]) {
         natureCounts[row.nature][statusKey] = row.count;
       }
     });
-    
-    // Calculate total for each nature
+
+    // Step 6: Final format
     const natureData = natures.map(nature => {
       const counts = natureCounts[nature];
       const total = Object.values(counts).reduce((sum, count) => sum + count, 0);
-      
+
       return {
         name: nature,
         value: total,
-        // Generate a color based on nature name for consistency
         details: counts
       };
     });
-    
+
     res.json(natureData);
+
   } catch (error) {
     console.error('Error fetching nature complaints:', error);
     res.status(500).json({ error: 'Failed to fetch nature complaints data' });
-  } finally {
-    if(pool) {
-      //await pool.close();
-    }
   }
 });
 
@@ -7043,12 +6743,9 @@ app.get('/api/nature-complaints', async (req, res) => {
 
 
 
+
 app.get('/api/stats', async (req, res) => {
-
-
-
-  
-  
+  const pageAccess = 'dashboard';
   // Verify Authorization header exists
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -7057,7 +6754,11 @@ app.get('/api/stats', async (req, res) => {
 
   const token = authHeader.split(' ')[1];
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -7075,7 +6776,7 @@ app.get('/api/stats', async (req, res) => {
 
   try {
     // Connect to the database
-    const pool = await sql.connect(dbConfig);
+    const pool = await initDb();
     
     // Execute all count queries in parallel
     const [coloniesResult, customersResult, apartmentsResult, skillmenResult] = await Promise.all([
@@ -7105,11 +6806,6 @@ app.get('/api/stats', async (req, res) => {
       error: 'Failed to fetch statistics',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
-  } finally {
-    // Close the connection
-    if (pool) {
-      //await pool.close();
-    }
   }
 });
 
@@ -7123,10 +6819,7 @@ app.get('/api/stats', async (req, res) => {
 
 
 app.get("/api/get-categories-for-dashboard", async (req, res) => {
-
-
-  
-  
+  const pageAccess = 'dashboard';
   // Verify Authorization header exists
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -7135,7 +6828,11 @@ app.get("/api/get-categories-for-dashboard", async (req, res) => {
 
   const token = authHeader.split(' ')[1];
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -7166,12 +6863,25 @@ app.get("/api/get-categories-for-dashboard", async (req, res) => {
 
 // Categories endpoint
 app.get('/get-categories-for-dashboard', async (req, res) => {
+
+  const pageAccess = 'dashboard';
+  // Verify Authorization header exists
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized - No token provided' });
+  }
+
+  const token = authHeader.split(' ')[1];
   try {
-    // Connect to the database
-    await sql.connect(dbConfig);
+    // Use the existing connection pool
+    const pool = await initDb(); // reuse the pool instead of creating a new connection
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
     
-    // Query the Natures table
-    const result = await sql.query('SELECT name FROM Natures ORDER BY name');
+    // Query the Natures table using the pool
+    const result = await pool.request().query('SELECT name FROM Natures ORDER BY name');
     
     // Format the results and encode the values
     const categories = result.recordset.map(row => {
@@ -7187,19 +6897,15 @@ app.get('/get-categories-for-dashboard', async (req, res) => {
   } catch (error) {
     console.error('Database error:', error);
     res.status(500).json({ error: 'Failed to fetch categories' });
-  } finally {
-    // Close the database connection
-    //await sql.close();
   }
 });
 
 
 
 
-
+///trend section not functional
 app.get('/api/trends-data', async (req, res) => {
-  
-  
+  const pageAccess = 'dashboard';
   // Verify Authorization header exists
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -7208,7 +6914,11 @@ app.get('/api/trends-data', async (req, res) => {
 
   const token = authHeader.split(' ')[1];
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -7231,7 +6941,7 @@ app.get('/api/trends-data', async (req, res) => {
     const decodedCategory = category ? decodeURIComponent(atob(category)) : '';
     
     // Connect to the database
-    const pool = await sql.connect(dbConfig);
+    const pool = await initDb();
     
     // Build the query with parameters
     let query = `
@@ -7301,22 +7011,14 @@ app.get('/api/trends-data', async (req, res) => {
   } catch (error) {
     console.error('Error fetching trends data:', error);
     res.status(500).json({ error: 'Failed to fetch trends data' });
-  } finally {
-    // Close the connection
-    if (pool) {
-      //await pool.close();
-    }
-  }
+  } 
 });
 
 
 
 
 app.get('/api/complaints-summary-count', async (req, res) => {
-
-
-  
-  
+  const pageAccess = 'dashboard';
   // Verify Authorization header exists
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -7325,7 +7027,11 @@ app.get('/api/complaints-summary-count', async (req, res) => {
 
   const token = authHeader.split(' ')[1];
   try {
-    let pool = await sql.connect(dbConfig);
+    const pool = await initDb();
+    const accessiblity = await checkAccess(token, pageAccess, pool);
+    if (accessiblity.status !== 'success') {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token please login again.' });
+    }
 
     // Step 1: Verify token exists in Users table
     const tokenCheck = await pool.request()
@@ -7343,7 +7049,7 @@ app.get('/api/complaints-summary-count', async (req, res) => {
 
   try {
     // Create pool for this request
-    const pool = await sql.connect(dbConfig);
+    const pool = await initDb();
 
     const result = await pool.request().query(`
       SELECT
